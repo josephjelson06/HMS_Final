@@ -45,7 +45,7 @@ const AppContent: React.FC = () => {
   const { isDarkMode } = useTheme();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [viewMode, setViewMode] = useState<'super' | 'hotel'>('super');
-  const [currentRoute, setCurrentRoute] = useState(ROUTES.DASHBOARD);
+  const [currentRoute, setCurrentRoute] = useState<string>(ROUTES.DASHBOARD);
   const [selectedKiosk, setSelectedKiosk] = useState<string | null>(null);
 
   // Layout State
