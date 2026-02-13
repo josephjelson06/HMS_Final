@@ -1,6 +1,6 @@
-import type { IHotelRepository } from '../../domain/contracts/IHotelRepository';
-import type { Hotel } from '../../domain/entities/Hotel';
-import { hotelsData } from '../../data/hotels';
+import type { IHotelRepository } from '../../../domain/contracts/IHotelRepository';
+import type { Hotel } from '../../../domain/entities/Hotel';
+import { hotelsData } from '../../../data/hotels';
 
 export class MockHotelRepository implements IHotelRepository {
   private data: Hotel[] = [...hotelsData] as Hotel[];

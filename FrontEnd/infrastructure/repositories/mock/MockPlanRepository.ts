@@ -1,6 +1,6 @@
-import type { IPlanRepository } from '../../domain/contracts/IPlanRepository';
-import type { PlanData } from '../../domain/entities/Plan';
-import { INITIAL_PLANS } from '../../data/plans';
+import type { IPlanRepository } from '../../../domain/contracts/IPlanRepository';
+import type { PlanData } from '../../../domain/entities/Plan';
+import { INITIAL_PLANS } from '../../../data/plans';
 
 export class MockPlanRepository implements IPlanRepository {
   private data: PlanData[] = INITIAL_PLANS.map(p => ({ ...p }));

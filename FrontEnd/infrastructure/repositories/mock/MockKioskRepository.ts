@@ -1,6 +1,6 @@
-import type { IKioskRepository } from '../../domain/contracts/IKioskRepository';
-import type { Kiosk, FirmwareRelease } from '../../domain/entities/Kiosk';
-import { kioskData, mockFirmware } from '../../data/kiosks';
+import type { IKioskRepository } from '../../../domain/contracts/IKioskRepository';
+import type { Kiosk, FirmwareRelease } from '../../../domain/entities/Kiosk';
+import { kioskData, mockFirmware } from '../../../data/kiosks';
 
 export class MockKioskRepository implements IKioskRepository {
   private data: Kiosk[] = [...kioskData] as Kiosk[];

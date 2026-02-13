@@ -1,6 +1,6 @@
-import type { ITicketRepository } from '../../domain/contracts/ITicketRepository';
-import type { Ticket } from '../../domain/entities/Ticket';
-import { mockTickets } from '../../data/helpdesk';
+import type { ITicketRepository } from '../../../domain/contracts/ITicketRepository';
+import type { Ticket } from '../../../domain/entities/Ticket';
+import { mockTickets } from '../../../data/helpdesk';
 
 export class MockTicketRepository implements ITicketRepository {
   private data: Ticket[] = mockTickets.map(t => ({ ...t }));

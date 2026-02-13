@@ -1,6 +1,6 @@
-import type { IInvoiceRepository } from '../../domain/contracts/IInvoiceRepository';
-import type { Invoice } from '../../domain/entities/Invoice';
-import { INITIAL_INVOICES } from '../../data/invoices';
+import type { IInvoiceRepository } from '../../../domain/contracts/IInvoiceRepository';
+import type { Invoice } from '../../../domain/entities/Invoice';
+import { INITIAL_INVOICES } from '../../../data/invoices';
 
 export class MockInvoiceRepository implements IInvoiceRepository {
   private data: Invoice[] = INITIAL_INVOICES.map(i => ({ ...i }));

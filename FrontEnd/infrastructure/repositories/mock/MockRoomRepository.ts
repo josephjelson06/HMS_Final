@@ -1,6 +1,6 @@
-import type { IRoomRepository } from '../../domain/contracts/IRoomRepository';
-import type { Room, RoomType, Booking } from '../../domain/entities/Room';
-import { mockRooms, INITIAL_BOOKINGS } from '../../data/rooms';
+import type { IRoomRepository } from '../../../domain/contracts/IRoomRepository';
+import type { Room, RoomType, Booking } from '../../../domain/entities/Room';
+import { mockRooms, INITIAL_BOOKINGS } from '../../../data/rooms';
 
 export class MockRoomRepository implements IRoomRepository {
   private data: Room[] = [...mockRooms];

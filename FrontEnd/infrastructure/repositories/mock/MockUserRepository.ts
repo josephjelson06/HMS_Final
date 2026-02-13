@@ -1,6 +1,6 @@
-import type { IUserRepository } from '../../domain/contracts/IUserRepository';
-import type { User, Role, StaffMember } from '../../domain/entities/User';
-import { INITIAL_USERS, INITIAL_ROLES } from '../../data/users';
+import type { IUserRepository } from '../../../domain/contracts/IUserRepository';
+import type { User, Role, StaffMember } from '../../../domain/entities/User';
+import { INITIAL_USERS, INITIAL_ROLES } from '../../../data/users';
 
 export class MockUserRepository implements IUserRepository {
   private data: User[] = INITIAL_USERS.map(u => ({ ...u, status: u.status as User['status'] }));
