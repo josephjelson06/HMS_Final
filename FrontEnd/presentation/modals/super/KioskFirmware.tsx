@@ -7,7 +7,8 @@ import {
 import GlassCard from '../../components/ui/GlassCard';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import AddFirmwareModal from './AddFirmwareModal';
-import { FirmwareRelease, mockFirmware } from '../../../data/kiosks';
+import type { FirmwareRelease } from '@/domain/entities/Kiosk';
+import { mockFirmware } from '../../../data/kiosks';
 
 const KioskFirmware: React.FC = () => {
   const [search, setSearch] = useState('');

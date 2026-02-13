@@ -6,7 +6,7 @@ import {
   Search, Info, Save, RotateCcw
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
-import { Role, User } from '../../../data/users';
+import type { Role, User } from '@/domain/entities/User';
 
 interface RoleDetailViewProps {
   role: Role;

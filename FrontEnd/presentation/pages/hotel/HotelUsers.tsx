@@ -11,7 +11,8 @@ import Button from '../../components/ui/Button';
 import AddHotelUserModal from '../../modals/hotel/AddHotelUserModal';
 import CreateHotelRoleModal from '../../modals/hotel/CreateHotelRoleModal';
 import RoleDetailView from '../../modals/super/RoleDetailView';
-import { StaffMember, mockStaff, rolesData } from '../../../data/hotelUsers';
+import type { HotelStaffMember as StaffMember } from '@/domain/entities/HotelStaff';
+import { mockStaff, rolesData } from '../../../data/hotelUsers';
 
 type Tab = 'STAFF' | 'ROLES' | 'VIEW_ROLE';
 

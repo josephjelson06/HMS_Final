@@ -10,7 +10,8 @@ import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import NewTicketModal from '../../modals/hotel/NewTicketModal';
 import HotelTicketDetailModal from '../../modals/hotel/HotelTicketDetailModal';
-import { TicketCategory, TicketPriority, TicketStatus, HotelTicket as Ticket, mockHotelTickets as mockTickets } from '../../../data/hotelHelp';
+import type { HotelTicketCategory as TicketCategory, HotelTicketPriority as TicketPriority, HotelTicketStatus as TicketStatus, HotelTicket as Ticket } from '@/domain/entities/HotelTicket';
+import { mockHotelTickets as mockTickets } from '../../../data/hotelHelp';
 
 const HotelHelp: React.FC = () => {
   const [search, setSearch] = useState('');

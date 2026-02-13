@@ -11,7 +11,8 @@ import UpdatePlanPanel from '../../modals/super/UpdatePlanPanel';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import { useTheme } from '../../hooks/useTheme';
-import { PlanData, INITIAL_PLANS } from '../../../data/plans';
+import type { PlanData } from '@/domain/entities/Plan';
+import { INITIAL_PLANS } from '../../../data/plans';
 
 const PlanCard: React.FC<{ 
   plan: PlanData; 

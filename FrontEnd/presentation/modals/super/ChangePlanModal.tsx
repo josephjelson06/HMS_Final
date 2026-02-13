@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Zap, ArrowRight, Info, X, RefreshCcw } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import Button from '../../components/ui/Button';
-import { Subscription } from '../../../data/subscriptions';
+import type { Subscription } from '@/domain/entities/Subscription';
 
 interface ChangePlanModalProps {
   isOpen: boolean;

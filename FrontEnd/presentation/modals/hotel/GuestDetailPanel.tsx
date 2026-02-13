@@ -11,7 +11,7 @@ import {
 import GlassCard from '../../components/ui/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
 import { useModalVisibility } from '../../hooks/useModalVisibility';
-import { Guest, KYCStatus } from '../../../data/guests';
+import type { Guest, KYCStatus } from '@/domain/entities/Guest';
 
 interface GuestDetailPanelProps {
   isOpen: boolean;

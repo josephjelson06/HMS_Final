@@ -3,7 +3,7 @@ import { User as UserIcon, Mail, Phone, Shield, Save } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
-import { User } from '../../../data/users';
+import type { User } from '@/domain/entities/User';
 
 interface EditUserModalProps {
   isOpen: boolean;

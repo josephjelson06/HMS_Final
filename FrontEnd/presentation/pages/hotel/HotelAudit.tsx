@@ -11,7 +11,8 @@ import GlassCard from '../../components/ui/GlassCard';
 import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
-import { HotelActionType, HotelModule, HotelAuditEntry, mockHotelLogs } from '../../../data/hotelAudit';
+import type { HotelActionType, HotelModule, HotelAuditLog as HotelAuditEntry } from '@/domain/entities/HotelAuditLog';
+import { mockHotelLogs } from '../../../data/hotelAudit';
 
 const ActionBadge = ({ action }: { action: HotelActionType }) => {
   const styles = {

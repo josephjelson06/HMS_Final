@@ -5,7 +5,7 @@ import {
   Send, Paperclip, Monitor
 } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
-import { HotelTicket as Ticket } from '../../../data/hotelHelp';
+import type { HotelTicket as Ticket } from '@/domain/entities/HotelTicket';
 
 interface HotelTicketDetailModalProps {
   isOpen: boolean;

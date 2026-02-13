@@ -12,7 +12,8 @@ import CreateRoleModal from '../../modals/super/CreateRoleModal';
 import RoleDetailView from '../../modals/super/RoleDetailView';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
-import { User, Role, INITIAL_USERS, INITIAL_ROLES } from '../../../data/users';
+import type { User, Role } from '@/domain/entities/User';
+import { INITIAL_USERS, INITIAL_ROLES } from '../../../data/users';
 
 type Tab = 'USERS' | 'ROLES' | 'VIEW_ROLE';
 

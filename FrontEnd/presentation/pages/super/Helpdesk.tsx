@@ -8,7 +8,8 @@ import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import HelpdeskDetailModal from '../../modals/super/HelpdeskDetailModal';
-import { HelpdeskTicket as Ticket, HelpdeskPriority as Priority, HelpdeskStatus as Status, HelpdeskCategory as Category, mockTickets } from '../../../data/helpdesk';
+import type { HelpdeskTicket as Ticket, HelpdeskPriority as Priority, HelpdeskStatus as Status, HelpdeskCategory as Category } from '@/domain/entities/Ticket';
+import { mockTickets } from '../../../data/helpdesk';
 
 type ViewMode = 'table' | 'kanban';
 

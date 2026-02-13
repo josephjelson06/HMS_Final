@@ -18,7 +18,8 @@ import GuestDetailPanel from '../../modals/hotel/GuestDetailPanel';
 import AddRoomModal from '../../modals/hotel/AddRoomModal';
 import AddBuildingModal from '../../modals/hotel/AddBuildingModal';
 import ManageRoomTypeModal from '../../modals/hotel/ManageRoomTypeModal';
-import { RoomStatus, ViewMode, Room, mockRooms, INITIAL_BOOKINGS, CELL_WIDTH, ROOM_LIST_WIDTH, DAYS_TO_SHOW } from '../../../data/rooms';
+import type { RoomStatus, RoomViewMode as ViewMode, Room } from '@/domain/entities/Room';
+import { mockRooms, INITIAL_BOOKINGS, CELL_WIDTH, ROOM_LIST_WIDTH, DAYS_TO_SHOW } from '../../../data/rooms';
 
 const RoomManagement: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('GRID');

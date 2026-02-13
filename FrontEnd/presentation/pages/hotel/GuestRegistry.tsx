@@ -14,7 +14,8 @@ import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import GuestDetailPanel from '../../modals/hotel/GuestDetailPanel';
 import NewBookingWizard from '../../modals/hotel/NewBookingWizard';
-import { KYCStatus, GuestStatus, Guest, mockGuests } from '../../../data/guests';
+import type { KYCStatus, GuestStatus, Guest } from '@/domain/entities/Guest';
+import { mockGuests } from '../../../data/guests';
 
 const KycBadge = ({ status }: { status: KYCStatus }) => {
   const styles = {

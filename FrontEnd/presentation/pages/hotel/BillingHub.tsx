@@ -12,7 +12,8 @@ import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import InvoiceDetail from '../../modals/hotel/InvoiceDetail';
 import NewPOSBillModal from '../../modals/hotel/NewPOSBillModal';
-import { InvoiceStatus, InvoiceRecord, mockInvoices } from '../../../data/billingHub';
+import type { InvoiceStatus, BillingInvoice as InvoiceRecord } from '@/domain/entities/BillingInvoice';
+import { mockInvoices } from '../../../data/billingHub';
 
 const BillingHub: React.FC = () => {
   const [view, setView] = useState<'list' | 'detail'>('list');

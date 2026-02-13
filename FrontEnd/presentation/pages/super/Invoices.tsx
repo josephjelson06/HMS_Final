@@ -11,7 +11,8 @@ import Button from '../../components/ui/Button';
 import SharedStatusBadge, { statusToVariant } from '../../components/ui/StatusBadge';
 import InvoiceDetailModal from '../../modals/super/InvoiceDetailModal';
 import InvoiceCreateModal from '../../modals/super/InvoiceCreateModal';
-import { Invoice, INITIAL_INVOICES } from '../../../data/invoices';
+import type { Invoice } from '@/domain/entities/Invoice';
+import { INITIAL_INVOICES } from '../../../data/invoices';
 
 const StatusBadge = ({ status }: { status: string }) => (
   <SharedStatusBadge label={status} variant={statusToVariant(status.charAt(0).toUpperCase() + status.slice(1))} />

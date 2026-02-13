@@ -35,3 +35,23 @@ export interface TicketNote {
   content: string;
   timestamp: string;
 }
+
+// Helpdesk-specific aliases (super-admin view)
+export type HelpdeskPriority = 'Low' | 'Medium' | 'High' | 'Critical';
+export type HelpdeskStatus = 'Open' | 'In Progress' | 'Waiting on Client' | 'Resolved' | 'Closed';
+export type HelpdeskCategory = 'Hardware' | 'Software' | 'Billing' | 'General';
+
+export interface HelpdeskTicket {
+  id: string;
+  hotel: string;
+  subject: string;
+  category: HelpdeskCategory;
+  priority: HelpdeskPriority;
+  status: HelpdeskStatus;
+  assignedTo: string;
+  createdDate: string;
+  lastUpdated: string;
+  slaBreached: boolean;
+  linkedKiosk?: string;
+}
+

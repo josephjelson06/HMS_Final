@@ -13,7 +13,8 @@ import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import NewIncidentModal from '../../modals/hotel/NewIncidentModal';
 import IncidentDetailModal from '../../modals/hotel/IncidentDetailModal';
-import { IncidentCategory, IncidentPriority, IncidentStatus, Incident, mockIncidents } from '../../../data/incidents';
+import type { IncidentCategory, IncidentPriority, IncidentStatus, Incident } from '@/domain/entities/Incident';
+import { mockIncidents } from '../../../data/incidents';
 
 const IncidentsRecord: React.FC = () => {
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('kanban');

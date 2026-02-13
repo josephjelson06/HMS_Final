@@ -8,7 +8,7 @@ import {
 import GlassCard from '../../components/ui/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
 import { useModalVisibility } from '../../hooks/useModalVisibility';
-import { Invoice } from '../../../data/invoices';
+import type { Invoice } from '@/domain/entities/Invoice';
 
 interface LineItem {
   id: string;

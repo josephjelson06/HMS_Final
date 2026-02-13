@@ -9,7 +9,8 @@ import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import ChangePlanModal from '../../modals/super/ChangePlanModal';
 import ExtendSubscriptionModal from '../../modals/super/ExtendSubscriptionModal';
-import { Subscription, mockSubscriptions } from '../../../data/subscriptions';
+import type { Subscription } from '@/domain/entities/Subscription';
+import { mockSubscriptions } from '../../../data/subscriptions';
 
 const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onNavigate }) => {
   const [filterPlan, setFilterPlan] = useState('All Plans');
