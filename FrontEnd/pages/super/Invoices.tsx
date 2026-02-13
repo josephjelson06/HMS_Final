@@ -6,27 +6,18 @@ import {
 import GlassCard from '../../components/ui/GlassCard';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import Pagination from '../../components/ui/Pagination';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
+import SharedStatusBadge, { statusToVariant } from '../../components/ui/StatusBadge';
 import InvoiceDetailModal from '../../modals/super/InvoiceDetailModal';
 import InvoiceCreateModal from '../../modals/super/InvoiceCreateModal';
 import { Invoice, INITIAL_INVOICES } from '../../data/invoices';
 
-const StatusBadge = ({ status }: { status: string }) => {
-  const styles = {
-    paid: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-    overdue: 'bg-red-500/10 text-red-500 border-red-500/20',
-    failed: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
-  };
-  return (
-    <span className={`px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-widest ${styles[status as keyof typeof styles]}`}>
-      {status}
-    </span>
-  );
-};
+const StatusBadge = ({ status }: { status: string }) => (
+  <SharedStatusBadge label={status} variant={statusToVariant(status.charAt(0).toUpperCase() + status.slice(1))} />
+);
 
 const Invoices: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const [invoices, setInvoices] = useState<Invoice[]>(INITIAL_INVOICES);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -72,21 +63,16 @@ const Invoices: React.FC = () => {
     <div className="p-4 md:p-8 space-y-8 min-h-screen pb-20 animate-in fade-in duration-500">
       
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">The Ledger</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">B2B Billing Registry</p>
-        </div>
-        <div className="flex items-center gap-4">
-           <button 
-             onClick={() => setIsCreateModalOpen(true)}
-             className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-blue-600 text-white text-[11px] font-bold uppercase tracking-wider shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
-           >
-             <Plus size={16} strokeWidth={4} />
-             GENERATE INVOICE
-           </button>
-        </div>
-      </div>
+      <PageHeader title="The Ledger" subtitle="B2B Billing Registry">
+        <Button
+          variant="action"
+          size="md"
+          onClick={() => setIsCreateModalOpen(true)}
+          icon={<Plus size={16} strokeWidth={4} />}
+        >
+          Generate Invoice
+        </Button>
+      </PageHeader>
 
       {/* Summary Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -100,7 +86,7 @@ const Invoices: React.FC = () => {
       <GlassCard noPadding clipContent className="overflow-hidden border-white/10 shadow-2xl">
         <div className="px-8 py-4 border-b border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-black/5 dark:bg-white/[0.01]">
             <div className="relative group w-full sm:max-w-md">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-accent transition-colors" />
                 <input
                   type="text"
                   value={search}
@@ -112,7 +98,7 @@ const Invoices: React.FC = () => {
             <div className="flex items-center gap-2">
                 <GlassDropdown 
                     trigger={
-                        <button className="flex items-center justify-between gap-3 px-5 py-2 bg-black/10 dark:bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase text-gray-700 dark:text-gray-300 hover:bg-black/20 dark:hover:bg-white/10 transition-all min-w-[140px]">
+                        <button className="flex items-center justify-between gap-3 px-5 py-2 bg-black/10 dark:bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold uppercase text-gray-700 dark:text-gray-300 hover:bg-black/20 dark:hover:bg-white/10 transition-all min-w-[140px]">
                             <span>{statusFilter}</span>
                             <ChevronDown size={14} className="text-gray-400" />
                         </button>
@@ -132,7 +118,7 @@ const Invoices: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-white/[0.03] text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border-b border-white/10">
+              <tr className="bg-slate-50 dark:bg-white/[0.03] text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 border-b border-white/10">
                 <th className="px-8 py-3.5">Invoice #</th>
                 <th className="px-8 py-3.5">Hotel Name</th>
                 <th className="px-8 py-3.5 text-right">Base</th>
@@ -151,7 +137,7 @@ const Invoices: React.FC = () => {
                   className="hover:bg-black/5 dark:hover:bg-white/5 transition-all group cursor-pointer"
                 >
                   <td className="px-8 py-3">
-                    <span className="text-xs font-mono font-bold text-blue-600 dark:text-orange-500">
+                    <span className="text-xs font-mono font-bold text-accent-strong">
                       {inv.id}
                     </span>
                   </td>

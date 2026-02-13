@@ -9,7 +9,9 @@ import GlassCard from '../../components/ui/GlassCard';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import AddHotelModal from '../../modals/super/AddHotelModal';
 import Pagination from '../../components/ui/Pagination';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
+import SharedStatusBadge, { statusToVariant } from '../../components/ui/StatusBadge';
 import { hotelsData } from '../../data/hotels';
 
 interface HotelsProps {
@@ -19,39 +21,20 @@ interface HotelsProps {
 
 const PlanBadge = ({ plan }: { plan: string }) => {
   const styles: Record<string, string> = {
-    Starter: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    Starter: "bg-blue-500/10 text-accent-strong border-accent/20",
     Professional: "bg-purple-500/10 text-purple-600 border-purple-500/20",
-    Enterprise: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+    Enterprise: "bg-accent-muted text-accent-strong border-accent/20",
   };
   return (
-    <span className={`px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-wider ${styles[plan] || styles.Starter}`}>
+    <span className={`px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-wider ${styles[plan] || styles.Starter}`}>
       {plan}
     </span>
   );
 };
 
-const StatusBadge = ({ status }: { status: string }) => {
-  const styles: Record<string, string> = {
-    Active: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
-    Suspended: "text-red-500 bg-red-500/10 border-red-500/20",
-    Onboarding: "text-gray-400 bg-gray-500/10 border-gray-500/20",
-    "Past Due": "text-amber-500 bg-amber-500/10 border-amber-500/20",
-  };
-  
-  const dots: Record<string, string> = {
-    Active: "bg-emerald-500",
-    Suspended: "bg-red-500",
-    Onboarding: "bg-gray-400",
-    "Past Due": "bg-amber-500",
-  };
-
-  return (
-    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${styles[status]} w-fit backdrop-blur-md`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${dots[status]} shadow-[0_0_8px_currentColor]`}></span>
-      <span className="text-[10px] font-black uppercase tracking-widest">{status}</span>
-    </div>
-  );
-};
+const StatusBadge = ({ status }: { status: string }) => (
+  <SharedStatusBadge label={status} variant={statusToVariant(status)} />
+);
 
 const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -98,35 +81,32 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
     <div className="p-4 md:p-8 space-y-10 min-h-screen pb-24 animate-in fade-in duration-500">
       
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">Hotels Registry</h1>
-          <p className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-3">Core Tenant Ecosystem • {filteredHotels.length} Active Accounts</p>
+      <PageHeader
+        title="Hotels Registry"
+        subtitle={`Core Tenant Ecosystem • ${filteredHotels.length} Active Accounts`}
+      >
+        <div className="flex bg-black/5 dark:bg-white/5 rounded-2xl p-1.5 border border-white/10">
+          <button 
+            onClick={() => setViewMode('grid')}
+            className={`p-3 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 shadow-lg text-accent-strong' : 'text-gray-400 hover:text-white'}`}
+          >
+            <LayoutGrid size={22} />
+          </button>
+          <button 
+            onClick={() => setViewMode('list')}
+            className={`p-3 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-white/10 shadow-lg text-accent-strong' : 'text-gray-400 hover:text-white'}`}
+          >
+            <List size={22} />
+          </button>
         </div>
-        <div className="flex items-center gap-4">
-            <div className="flex bg-black/5 dark:bg-white/5 rounded-2xl p-1.5 border border-white/10">
-                <button 
-                  onClick={() => setViewMode('grid')}
-                  className={`p-3 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 shadow-lg text-blue-600 dark:text-orange-500' : 'text-gray-400 hover:text-white'}`}
-                >
-                    <LayoutGrid size={22} />
-                </button>
-                <button 
-                  onClick={() => setViewMode('list')}
-                  className={`p-3 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-white/10 shadow-lg text-blue-600 dark:text-orange-500' : 'text-gray-400 hover:text-white'}`}
-                >
-                    <List size={22} />
-                </button>
-            </div>
-            <button 
-                onClick={() => setIsAddModalOpen(true)}
-                className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-black px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
-            >
-                <Plus size={20} strokeWidth={3} />
-                Onboard Hotel
-            </button>
-        </div>
-      </div>
+        <Button
+          size="lg"
+          onClick={() => setIsAddModalOpen(true)}
+          icon={<Plus size={20} strokeWidth={3} />}
+        >
+          Onboard Hotel
+        </Button>
+      </PageHeader>
 
       {/* Control Bar */}
       <div className="relative z-30">
@@ -134,7 +114,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
           <div className="p-3 w-full flex-1 flex flex-col md:flex-row gap-3">
                <div className="relative group flex-1">
                   <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 dark:group-focus-within:text-orange-500 transition-colors" />
+                    <Search className="h-5 w-5 text-gray-400 group-focus-within:text-accent transition-colors" />
                   </div>
                   <input
                     type="text"
@@ -149,7 +129,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                   <GlassDropdown 
                       trigger={
                           <div className="flex items-center justify-between gap-4 px-6 py-3.5 bg-black/5 dark:bg-white/5 rounded-2xl cursor-pointer hover:bg-black/10 transition-all min-w-[160px]">
-                              <span className="text-[11px] font-black uppercase text-gray-700 dark:text-gray-300 tracking-widest">{filterPlan}</span>
+                              <span className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-300 tracking-widest">{filterPlan}</span>
                               <ChevronDown size={16} className="text-gray-400" />
                           </div>
                       }
@@ -164,7 +144,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                   <GlassDropdown 
                       trigger={
                           <div className="flex items-center justify-between gap-4 px-6 py-3.5 bg-black/5 dark:bg-white/5 rounded-2xl cursor-pointer hover:bg-black/10 transition-all min-w-[160px]">
-                              <span className="text-[11px] font-black uppercase text-gray-700 dark:text-gray-300 tracking-widest">{filterStatus}</span>
+                              <span className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-300 tracking-widest">{filterStatus}</span>
                               <ChevronDown size={16} className="text-gray-400" />
                           </div>
                       }
@@ -186,7 +166,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
              {paginatedHotels.map((hotel) => (
-               <GlassCard key={hotel.id} noPadding clipContent className="group flex flex-col h-full border-white/10 hover:border-orange-500/30 overflow-hidden shadow-2xl">
+               <GlassCard key={hotel.id} noPadding clipContent className="group flex flex-col h-full border-white/10 hover:border-accent/30 overflow-hidden shadow-2xl">
                   {/* UNIFIED CONTAINER: Full-Bleed Image Header */}
                   <div className="aspect-[16/9] w-full bg-black/40 relative overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10"></div>
@@ -205,7 +185,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                       <div className="absolute bottom-5 left-6 right-6 z-20">
                           <div className="space-y-3">
                               <StatusBadge status={hotel.status} />
-                              <h3 className="text-2xl font-black text-white leading-none tracking-tight group-hover:text-orange-400 transition-colors">{hotel.name}</h3>
+                              <h3 className="text-2xl font-black text-white leading-none tracking-tight group-hover:text-accent transition-colors">{hotel.name}</h3>
                           </div>
                       </div>
                   </div>
@@ -217,10 +197,10 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.address + ", " + hotel.name)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-3 text-gray-500 hover:text-blue-500 dark:hover:text-orange-500 transition-all group/loc"
+                            className="flex items-center gap-3 text-gray-500 hover:text-accent transition-all group/loc"
                           >
                               <MapPin size={16} className="shrink-0" />
-                              <span className="text-[11px] font-black uppercase tracking-[0.15em] truncate border-b border-transparent group-hover/loc:border-current">{hotel.address}</span>
+                              <span className="text-[11px] font-bold uppercase tracking-[0.15em] truncate border-b border-transparent group-hover/loc:border-current">{hotel.address}</span>
                           </a>
                           
                           <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/5">
@@ -229,10 +209,10 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                                   <div className="space-y-2">
                                       <p className="text-sm font-bold dark:text-gray-200 truncate">{hotel.owner}</p>
                                       <div className="flex items-center gap-4">
-                                          <a href={`tel:${hotel.mobile}`} title="Call Manager" className="p-2 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-orange-500 transition-all">
+                                          <a href={`tel:${hotel.mobile}`} title="Call Manager" className="p-2 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 hover:bg-accent-muted hover:text-accent transition-all">
                                               <Phone size={14} />
                                           </a>
-                                          <a href={`mailto:${hotel.email}`} title="Email Manager" className="p-2 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-orange-500 transition-all">
+                                          <a href={`mailto:${hotel.email}`} title="Email Manager" className="p-2 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 hover:bg-accent-muted hover:text-accent transition-all">
                                               <Mail size={14} />
                                           </a>
                                       </div>
@@ -251,7 +231,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                                   <div className="flex flex-col">
                                       <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Kiosks</span>
                                       <span className="text-xl font-black dark:text-white flex items-center gap-2 mt-1">
-                                          <Smartphone size={16} className="text-blue-500" /> {hotel.kiosks}
+                                          <Smartphone size={16} className="text-accent" /> {hotel.kiosks}
                                       </span>
                                   </div>
                                   <div className="flex flex-col">
@@ -283,7 +263,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                   {/* UNIFIED CONTAINER: Full-Bleed Anchored Footer Button */}
                   <button 
                       onClick={() => onNavigate('hotel-details')}
-                      className="w-full py-5 bg-gray-900 dark:bg-white text-white dark:text-black text-[11px] font-black uppercase tracking-[0.25em] hover:bg-blue-600 dark:hover:bg-orange-500 hover:text-white transition-all flex items-center justify-center gap-3 group/btn border-t border-white/5"
+                      className="w-full py-5 bg-gray-900 dark:bg-white text-white dark:text-black text-[11px] font-bold uppercase tracking-[0.25em] hover:bg-accent-strong hover:text-white transition-all flex items-center justify-center gap-3 group/btn border-t border-white/5"
                   >
                       Access Property Profile <ArrowUpRight size={16} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                   </button>
@@ -292,7 +272,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
           </div>
         ) : (
           <div className="space-y-1 animate-in fade-in slide-in-from-bottom-6 duration-700">
-              <div className="px-8 py-6 grid grid-cols-12 gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 bg-black/10 dark:bg-white/5 rounded-t-[2rem] border-x border-t border-white/10 shadow-sm">
+              <div className="px-8 py-6 grid grid-cols-12 gap-4 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 bg-black/10 dark:bg-white/5 rounded-t-[2rem] border-x border-t border-white/10 shadow-sm">
                   <div className="col-span-1 flex items-center"><CheckSquare size={16} className="opacity-30" /></div>
                   <div className="col-span-3 flex items-center">Identity & Location</div>
                   <div className="col-span-2 flex items-center">Tax Identifier</div>
@@ -310,16 +290,16 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                       className="group relative grid grid-cols-12 gap-4 items-center p-6 rounded-[2rem] glass-card border-white/5 dark:border-white/10 transition-all hover:border-blue-500/30 shadow-md"
                   >
                       <div className="col-span-1" onClick={(e) => { e.stopPropagation(); toggleSelect(hotel.id); }}>
-                        {selectedHotels.includes(hotel.id) ? <CheckSquare size={20} className="text-blue-600 dark:text-orange-500" /> : <Square size={20} className="text-gray-400" />}
+                        {selectedHotels.includes(hotel.id) ? <CheckSquare size={20} className="text-accent-strong" /> : <Square size={20} className="text-gray-400" />}
                       </div>
                       <div className="col-span-3 flex items-center gap-5">
-                          <div className="w-14 h-14 rounded-2xl bg-black/10 dark:bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-blue-500 dark:group-hover:text-orange-500 transition-colors shrink-0">
+                          <div className="w-14 h-14 rounded-2xl bg-black/10 dark:bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-accent transition-colors shrink-0">
                               <Building2 size={28} />
                           </div>
                           <div className="min-w-0">
                               <button 
                                   onClick={() => onNavigate('hotel-details')}
-                                  className="font-black text-gray-900 dark:text-white text-base hover:text-blue-600 dark:hover:text-orange-500 transition-colors text-left truncate block w-full tracking-tight"
+                                  className="font-black text-gray-900 dark:text-white text-base hover:text-accent-strong transition-colors text-left truncate block w-full tracking-tight"
                               >
                                   {hotel.name}
                               </button>
@@ -327,7 +307,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.address + ", " + hotel.name)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 mt-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-tighter hover:text-blue-500 dark:hover:text-orange-500 transition-colors"
+                                className="flex items-center gap-2 mt-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-tighter hover:text-accent transition-colors"
                               >
                                   <MapPin size={12} /> {hotel.address}
                               </a>
@@ -337,8 +317,8 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                       <div className="col-span-2 flex flex-col gap-1.5">
                           <span className="text-sm font-black text-gray-800 dark:text-gray-200">{hotel.owner}</span>
                           <div className="flex items-center gap-3">
-                              <a href={`tel:${hotel.mobile}`} className="text-gray-500 hover:text-blue-500 dark:hover:text-orange-500 transition-colors"><Phone size={12} /></a>
-                              <a href={`mailto:${hotel.email}`} className="text-gray-500 hover:text-blue-500 dark:hover:text-orange-500 transition-colors"><Mail size={12} /></a>
+                              <a href={`tel:${hotel.mobile}`} className="text-gray-500 hover:text-accent transition-colors"><Phone size={12} /></a>
+                              <a href={`mailto:${hotel.email}`} className="text-gray-500 hover:text-accent transition-colors"><Mail size={12} /></a>
                           </div>
                       </div>
                       <div className="col-span-1"><PlanBadge plan={hotel.plan} /></div>

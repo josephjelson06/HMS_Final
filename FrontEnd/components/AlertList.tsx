@@ -31,7 +31,7 @@ const AlertItem = ({
       </div>
       <p className="text-xs text-gray-700 dark:text-gray-400 truncate mb-1">{subtitle}</p>
       {time.includes('Action needed') && (
-         <span className="text-[10px] font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded">Action needed</span>
+         <span className="text-[10px] font-medium text-accent-strong bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded">Action needed</span>
       )}
     </div>
   </div>
@@ -68,7 +68,7 @@ const AlertList: React.FC = () => {
           title="Contract Expiring"
           subtitle="Ginger Hotel - expires in 15 days"
           time="Action needed"
-          color="bg-blue-500"
+          color="bg-accent"
         />
       </div>
     </GlassCard>

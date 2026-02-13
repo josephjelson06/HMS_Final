@@ -10,7 +10,8 @@ import {
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import Pagination from '../../components/ui/Pagination';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
 import GuestDetailPanel from '../../modals/hotel/GuestDetailPanel';
 import NewBookingWizard from '../../modals/hotel/NewBookingWizard';
 import { KYCStatus, GuestStatus, Guest, mockGuests } from '../../data/guests';
@@ -45,14 +46,13 @@ const StatusBadge = ({ status }: { status: GuestStatus }) => {
     'No-Show': 'bg-slate-900 text-white'
   };
   return (
-    <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm ${styles[status]}`}>
+    <span className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm ${styles[status]}`}>
       {status}
     </span>
   );
 };
 
 const GuestRegistry: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const [search, setSearch] = useState('');
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -92,20 +92,17 @@ const GuestRegistry: React.FC = () => {
     <div className="p-4 md:p-8 space-y-6 min-h-screen pb-20 animate-in fade-in duration-500">
       
       {/* Header Context */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase">Guest Registry</h1>
-        <p className="text-sm font-medium text-gray-500 tracking-wide">Active Guest List</p>
-      </div>
+      <PageHeader title="Guest Registry" subtitle="Active Guest List" />
 
       {/* Control Bar */}
       <div className="flex flex-col lg:flex-row items-center gap-4">
         <div className="relative flex-1 w-full group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-accent-strong transition-colors" />
             <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="block w-full pl-16 pr-6 py-4 border border-slate-200 dark:border-white/10 rounded-2xl bg-white/40 dark:bg-black/40 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 sm:text-sm shadow-sm backdrop-blur-md font-medium"
+                className="block w-full pl-16 pr-6 py-4 border border-slate-200 dark:border-white/10 rounded-2xl bg-white/40 dark:bg-black/40 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-accent/10 sm:text-sm shadow-sm backdrop-blur-md font-medium"
                 placeholder="Search phone, name, room or ref ID..."
             />
         </div>
@@ -116,26 +113,28 @@ const GuestRegistry: React.FC = () => {
                     <button 
                         key={f}
                         onClick={() => setActiveFilter(f as any)}
-                        className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeFilter === f ? 'bg-white dark:bg-white/10 text-blue-600 dark:text-white shadow-sm border border-slate-200 dark:border-white/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-gray-300'}`}
+                        className={`px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeFilter === f ? 'bg-white dark:bg-white/10 text-accent-strong dark:text-white shadow-sm border border-slate-200 dark:border-white/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-gray-300'}`}
                     >
                         {f}
                     </button>
                 ))}
                 <button 
                     onClick={() => setActiveFilter('ESCALATED')}
-                    className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2 ${activeFilter === 'ESCALATED' ? 'bg-red-600 text-white shadow-sm border border-red-700' : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10'}`}
+                    className={`px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2 ${activeFilter === 'ESCALATED' ? 'bg-red-600 text-white shadow-sm border border-red-700' : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10'}`}
                 >
                     <AlertTriangle size={14} /> Escalations
                 </button>
             </div>
 
-            <button 
+            <Button
+                variant="primary"
+                size="lg"
                 onClick={() => setIsWizardOpen(true)}
-                className="flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:scale-[1.02] active:scale-95 transition-all whitespace-nowrap"
+                icon={<Plus size={18} strokeWidth={3} />}
+                className="whitespace-nowrap shadow-lg shadow-accent-strong/20"
             >
-                <Plus size={18} strokeWidth={3} />
                 New Booking
-            </button>
+            </Button>
         </div>
       </div>
 
@@ -161,7 +160,7 @@ const GuestRegistry: React.FC = () => {
                 <tr 
                   key={g.id} 
                   onClick={() => setSelectedGuest(g)}
-                  className={`hover:bg-blue-50/30 dark:hover:bg-white/5 transition-all group cursor-pointer border-l-4 border-transparent hover:border-blue-600 ${activeFilter === 'ESCALATED' ? 'bg-red-500/[0.02]' : ''}`}
+                  className={`hover:bg-blue-50/30 dark:hover:bg-white/5 transition-all group cursor-pointer border-l-4 border-transparent hover:border-accent-strong ${activeFilter === 'ESCALATED' ? 'bg-red-500/[0.02]' : ''}`}
                 >
                   <td className="px-8 py-6 align-middle">
                     <span className="text-sm font-bold text-orange-800 dark:text-orange-400 group-hover:underline font-mono">
@@ -175,7 +174,7 @@ const GuestRegistry: React.FC = () => {
                         </div>
                         <div className="flex flex-col">
                             <span className="text-sm font-black text-slate-900 dark:text-white leading-none mb-1.5">{g.name}</span>
-                            {g.isReturning && <span className="text-[9px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-500/20 uppercase w-fit">Repeat Guest</span>}
+                            {g.isReturning && <span className="text-[9px] font-bold text-accent-strong bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-100 dark:border-accent/20 uppercase w-fit">Repeat Guest</span>}
                         </div>
                     </div>
                   </td>
@@ -193,7 +192,7 @@ const GuestRegistry: React.FC = () => {
                     <KycBadge status={g.kycStatus} />
                   </td>
                   <td className="px-8 py-6 align-middle text-right">
-                    <span className={`text-sm font-black ${g.balance > 0 ? 'text-red-600' : g.balance < 0 ? 'text-blue-600' : 'text-emerald-600'}`}>
+                    <span className={`text-sm font-black ${g.balance > 0 ? 'text-red-600' : g.balance < 0 ? 'text-accent-strong' : 'text-emerald-600'}`}>
                         {g.balance > 0 ? `₹${g.balance.toLocaleString()}` : g.balance < 0 ? `-₹${Math.abs(g.balance).toLocaleString()}` : '₹0.00'}
                     </span>
                   </td>
@@ -201,7 +200,7 @@ const GuestRegistry: React.FC = () => {
                     <StatusBadge status={g.status} />
                   </td>
                   <td className="px-8 py-6 align-middle text-right pr-10">
-                    <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-white/5 px-2.5 py-1 rounded-md border border-slate-200 dark:border-white/5">{g.source}</span>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-white/5 px-2.5 py-1 rounded-md border border-slate-200 dark:border-white/5">{g.source}</span>
                   </td>
                 </tr>
               ))}

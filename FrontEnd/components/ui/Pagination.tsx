@@ -27,17 +27,17 @@ const Pagination: React.FC<PaginationProps> = ({
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mt-10 px-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-8">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 whitespace-nowrap">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 whitespace-nowrap">
           Showing <span className="text-gray-900 dark:text-white px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">{startIdx}-{endIdx}</span> of <span className="text-gray-900 dark:text-white px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">{totalItems}</span> records
         </p>
         
         <div className="flex items-center gap-3">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Per Page:</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Per Page:</span>
           <div className="relative group">
             <select 
               value={itemsPerPage}
               onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-              className="appearance-none bg-black/5 dark:bg-white/5 border border-white/10 rounded-xl pl-4 pr-10 py-1.5 text-[10px] font-black uppercase dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition-all"
+              className="appearance-none bg-black/5 dark:bg-white/5 border border-white/10 rounded-xl pl-4 pr-10 py-1.5 text-[10px] font-bold uppercase dark:text-white focus:outline-none focus:ring-2 focus:ring-accent/20 cursor-pointer transition-all"
             >
               {pageSizeOptions.map(opt => (
                 <option key={opt} value={opt} className="bg-gray-900 text-white">{opt}</option>
@@ -53,7 +53,7 @@ const Pagination: React.FC<PaginationProps> = ({
           <button 
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="p-2 rounded-xl text-gray-500 hover:text-blue-600 dark:hover:text-orange-500 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+            className="p-2 rounded-xl text-gray-500 hover:text-accent-strong disabled:opacity-20 disabled:cursor-not-allowed transition-all"
           >
             <ChevronLeft size={18} strokeWidth={3} />
           </button>
@@ -76,7 +76,7 @@ const Pagination: React.FC<PaginationProps> = ({
                   onClick={() => onPageChange(pageNum)}
                   className={`w-9 h-9 rounded-xl text-[10px] font-black transition-all ${
                     currentPage === pageNum 
-                      ? 'bg-white dark:bg-white/10 text-blue-600 dark:text-orange-500 shadow-md scale-105' 
+                      ? 'bg-white dark:bg-white/10 text-accent-strong shadow-md scale-105' 
                       : 'text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5'
                   }`}
                 >
@@ -89,7 +89,7 @@ const Pagination: React.FC<PaginationProps> = ({
           <button 
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="p-2 rounded-xl text-gray-500 hover:text-blue-600 dark:hover:text-orange-500 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+            className="p-2 rounded-xl text-gray-500 hover:text-accent-strong disabled:opacity-20 disabled:cursor-not-allowed transition-all"
           >
             <ChevronRight size={18} strokeWidth={3} />
           </button>

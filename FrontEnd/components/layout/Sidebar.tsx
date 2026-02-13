@@ -62,22 +62,22 @@ const SidebarItem = ({
       className={`
       flex items-center gap-3 px-4 py-3.5 rounded-[1.25rem] cursor-pointer transition-all duration-300 group relative
       ${active 
-        ? 'bg-white text-blue-600 shadow-[0_10px_20px_-5px_rgba(0,0,0,0.1)] dark:bg-white/10 dark:text-white dark:shadow-none' 
+        ? 'bg-white text-accent-strong shadow-[0_10px_20px_-5px_rgba(0,0,0,0.1)] dark:bg-white/10 dark:text-white dark:shadow-none' 
         : 'text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5'
       }
       ${collapsed ? 'justify-center px-0 mx-2' : ''}
     `}>
       <Icon size={collapsed ? 22 : 20} className={`
-        ${active ? 'text-blue-600 dark:text-orange-500' : 'group-hover:scale-110 transition-transform text-gray-500 dark:text-gray-400'}
+        ${active ? 'text-accent-strong' : 'group-hover:scale-110 transition-transform text-gray-500 dark:text-gray-400'}
         ${collapsed ? 'shrink-0' : ''}
       `} />
       {!collapsed && (
-        <span className={`text-[14px] font-bold whitespace-nowrap transition-all duration-300 ${active ? 'text-blue-600 dark:text-white' : ''}`}>
+        <span className={`text-[14px] font-bold whitespace-nowrap transition-all duration-300 ${active ? 'text-accent-strong dark:text-white' : ''}`}>
           {label}
         </span>
       )}
       {collapsed && active && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 dark:bg-orange-500 rounded-r-full"></div>
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-accent-strong rounded-r-full"></div>
       )}
     </div>
   );
@@ -124,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           
           {/* Brand Section */}
           <div className={`flex items-center gap-3 mb-10 mt-2 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'px-2'}`}>
-            <div className={`rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-600/20 transition-all ${isCollapsed ? 'w-10 h-10' : 'w-11 h-11'}`}>
+            <div className={`rounded-xl bg-accent-strong flex items-center justify-center text-white shadow-xl shadow-accent-strong/20 transition-all ${isCollapsed ? 'w-10 h-10' : 'w-11 h-11'}`}>
               <Zap size={22} fill="currentColor" strokeWidth={0} />
             </div>
             {!isCollapsed && (
@@ -187,18 +187,18 @@ const Sidebar: React.FC<SidebarProps> = ({
               {!isHotelMode ? (
                 <button 
                   onClick={onSwitchToHotel}
-                  className={`w-full flex items-center gap-3 px-4 py-3 bg-orange-500/10 dark:bg-orange-500 text-orange-600 dark:text-white rounded-xl transition-all shadow-lg shadow-orange-500/10 hover:scale-[1.02] active:scale-95 group ${isCollapsed ? 'justify-center px-0 mx-2 w-auto' : ''}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 bg-accent-muted text-accent-strong rounded-xl transition-all shadow-lg shadow-accent/10 hover:scale-[1.02] active:scale-95 group ${isCollapsed ? 'justify-center px-0 mx-2 w-auto' : ''}`}
                 >
                     <ArrowRightLeft size={18} className="group-hover:rotate-180 transition-transform duration-500" />
-                    {!isCollapsed && <span className="text-[13px] font-black uppercase tracking-widest">Hotel Panel</span>}
+                    {!isCollapsed && <span className="text-[13px] font-bold uppercase tracking-widest">Hotel Panel</span>}
                 </button>
               ) : (
                 <button 
                   onClick={onSwitchBack}
-                  className={`w-full flex items-center gap-3 px-4 py-3 bg-blue-500/10 dark:bg-blue-600 text-blue-600 dark:text-white rounded-xl transition-all shadow-lg shadow-blue-500/10 hover:scale-[1.02] active:scale-95 group ${isCollapsed ? 'justify-center px-0 mx-2 w-auto' : ''}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 bg-accent-muted text-accent-strong rounded-xl transition-all shadow-lg shadow-accent/10 hover:scale-[1.02] active:scale-95 group ${isCollapsed ? 'justify-center px-0 mx-2 w-auto' : ''}`}
                 >
                     <ShieldCheck size={18} className="group-hover:scale-110 transition-transform duration-300" />
-                    {!isCollapsed && <span className="text-[13px] font-black uppercase tracking-widest">Admin View</span>}
+                    {!isCollapsed && <span className="text-[13px] font-bold uppercase tracking-widest">Admin View</span>}
                 </button>
               )}
               

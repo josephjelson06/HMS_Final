@@ -182,7 +182,7 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
              <button className="p-3 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-all"><Mail size={20} /></button>
              <div className="w-px h-10 bg-white/10 mx-2"></div>
              {invoice.status === 'Draft' ? (
-                <button className="px-8 py-3.5 rounded-2xl bg-blue-600 text-white text-xs font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all">Finalize & Generate Invoice</button>
+                <button className="px-8 py-3.5 rounded-2xl bg-accent-strong text-white text-xs font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all">Finalize & Generate Invoice</button>
              ) : (
                 <button className="px-8 py-3.5 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all">Download Signed PDF</button>
              )}
@@ -198,7 +198,7 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                 <div className="p-10 border-b border-white/5 bg-black/5 flex flex-col md:flex-row justify-between gap-10">
                    <div className="space-y-4">
                       <div className="flex items-center gap-4">
-                         <div className="w-14 h-14 rounded-2xl bg-blue-600 dark:bg-orange-500 flex items-center justify-center text-white shadow-xl">
+                         <div className="w-14 h-14 rounded-2xl bg-accent-strong flex items-center justify-center text-white shadow-xl">
                             <Zap size={28} fill="currentColor" />
                          </div>
                          <div>
@@ -217,7 +217,7 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                       {/* E-Invoice QR Placeholder */}
                       <div className="hidden lg:flex flex-col items-center gap-2 p-3 rounded-2xl bg-white border border-gray-100">
                          <QrCode size={64} className="text-black" />
-                         <span className="text-[7px] font-black uppercase text-black tracking-tighter">GST E-Invoice Auth</span>
+                         <span className="text-[7px] font-bold uppercase text-black tracking-tighter">GST E-Invoice Auth</span>
                       </div>
                       <div className="text-right space-y-6">
                         <div>
@@ -243,15 +243,15 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                    <div className="space-y-4">
                       <div className="flex items-center gap-2 text-gray-500">
                          <Building2 size={16} />
-                         <h3 className="text-[10px] font-black uppercase tracking-widest">Bill To (Customer)</h3>
+                         <h3 className="text-[10px] font-bold uppercase tracking-widest">Bill To (Customer)</h3>
                       </div>
                       <div className="p-6 rounded-[2rem] bg-black/5 dark:bg-white/[0.02] border border-white/5">
                          <h4 className="text-lg font-black dark:text-white mb-2">{invoice.companyName || invoice.guestName}</h4>
                          <p className="text-xs text-gray-400 font-medium leading-relaxed mb-4">Level 12, Tower B, Brigade Tech Gardens, Brookfield, Bangalore, KA 560037</p>
                          {invoice.companyGstin ? (
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500">
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-accent/20 text-accent">
                                <ShieldCheck size={12} />
-                               <span className="text-[10px] font-black uppercase tracking-tight">GSTIN: {invoice.companyGstin}</span>
+                               <span className="text-[10px] font-bold uppercase tracking-tight">GSTIN: {invoice.companyGstin}</span>
                             </div>
                          ) : (
                             <p className="text-[10px] font-bold text-amber-500 uppercase">B2C Retail Invoice (Consumer)</p>
@@ -262,13 +262,13 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                    <div className="flex flex-col justify-end">
                       <div className="p-6 rounded-[2rem] border border-dashed border-white/10 bg-black/5 dark:bg-white/[0.01]">
                          <div className="flex justify-between mb-4">
-                            <span className="text-[10px] font-black uppercase text-gray-500">Place of Supply</span>
+                            <span className="text-[10px] font-bold uppercase text-gray-500">Place of Supply</span>
                             <span className="text-[10px] font-black dark:text-white uppercase">{hotel.state} ({hotel.stateCode})</span>
                          </div>
                          <div className="flex justify-between items-center pt-4 border-t border-white/5">
                             <div className="flex items-center gap-2">
-                               <div className={`w-2 h-2 rounded-full ${isInterState ? 'bg-orange-500' : 'bg-blue-500'}`}></div>
-                               <span className="text-[10px] font-black uppercase dark:text-gray-300">{isInterState ? 'IGST Logic Applied' : 'CGST + SGST Logic Applied'}</span>
+                               <div className={`w-2 h-2 rounded-full ${isInterState ? 'bg-accent' : 'bg-accent'}`}></div>
+                               <span className="text-[10px] font-bold uppercase dark:text-gray-300">{isInterState ? 'IGST Logic Applied' : 'CGST + SGST Logic Applied'}</span>
                             </div>
                             <div className="group relative">
                                <AlertCircle size={14} className="text-gray-600 cursor-help" />
@@ -285,7 +285,7 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className="bg-black/10 dark:bg-white/5 text-[9px] font-black uppercase tracking-widest text-gray-500 border-b border-white/5">
+                            <tr className="bg-black/10 dark:bg-white/5 text-[9px] font-bold uppercase tracking-widest text-gray-500 border-b border-white/5">
                                 <th className="px-8 py-5">Service Description / SAC</th>
                                 <th className="px-4 py-5 text-center">Qty</th>
                                 <th className="px-4 py-5 text-right">Rate</th>
@@ -308,7 +308,7 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                                <td colSpan={9} className="px-8 py-4">
                                   <button 
                                     onClick={addItem}
-                                    className="flex items-center gap-2 text-[10px] font-black text-blue-600 dark:text-orange-500 uppercase tracking-widest hover:underline"
+                                    className="flex items-center gap-2 text-[10px] font-black text-accent-strong uppercase tracking-widest hover:underline"
                                   >
                                      <Plus size={12} strokeWidth={3} /> Add Service Item
                                   </button>
@@ -321,7 +321,7 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                 <div className="p-10 bg-black/5 dark:bg-white/[0.02] border-t border-white/5 flex flex-col md:flex-row justify-between gap-10">
                    {/* 4. Grouped Tax Summary */}
                    <div className="flex-1 max-w-md">
-                      <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4">Consolidated Tax Summary</h5>
+                      <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-4">Consolidated Tax Summary</h5>
                       <div className="rounded-2xl border border-white/5 overflow-hidden">
                         <table className="w-full text-[10px]">
                             <thead className="bg-black/10 dark:bg-white/5 text-gray-500 font-bold uppercase tracking-tighter">
@@ -369,7 +369,7 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                          )}
                          <div className="pt-4 border-t border-white/10 flex justify-between items-end">
                             <span className="text-xs font-black uppercase text-gray-400">Grand Total</span>
-                            <span className="text-3xl font-black text-blue-600 dark:text-orange-500 tracking-tighter">₹{totals.grand.toLocaleString()}</span>
+                            <span className="text-3xl font-black text-accent-strong tracking-tighter">₹{totals.grand.toLocaleString()}</span>
                          </div>
                       </div>
 
@@ -378,7 +378,7 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                          <div className="w-32 h-16 border-b border-gray-500 mb-2 flex items-center justify-center opacity-30 grayscale">
                             <span className="text-[10px] font-mono italic">Digital Signature</span>
                          </div>
-                         <span className="text-[8px] font-black uppercase text-gray-500">Authorized Signatory</span>
+                         <span className="text-[8px] font-bold uppercase text-gray-500">Authorized Signatory</span>
                       </div>
                    </div>
                 </div>
@@ -391,13 +391,13 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                         <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500"><Clock size={20} /></div>
                         <h3 className="text-xs font-black uppercase tracking-[0.2em] dark:text-white">Transaction History</h3>
                     </div>
-                    <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-900/20">
+                    <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-emerald-900/20">
                         <Plus size={14} /> Record Payment
                     </button>
                 </div>
                 <div className="rounded-[2.5rem] border border-white/5 overflow-hidden">
                     <table className="w-full text-left">
-                        <thead className="bg-black/10 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-gray-500 border-b border-white/5">
+                        <thead className="bg-black/10 dark:bg-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-500 border-b border-white/5">
                             <tr>
                                 <th className="px-8 py-5">Timestamp</th>
                                 <th className="px-8 py-5">Payment Mode</th>
@@ -411,13 +411,13 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                                 <td className="px-8 py-5 text-xs font-medium">09 Feb, 10:05 AM</td>
                                 <td className="px-8 py-5">
                                    <div className="flex items-center gap-2">
-                                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                      <span className="text-[10px] font-black uppercase tracking-tighter">UPI Interface</span>
+                                      <div className="w-2 h-2 rounded-full bg-accent"></div>
+                                      <span className="text-[10px] font-bold uppercase tracking-tighter">UPI Interface</span>
                                    </div>
                                 </td>
                                 <td className="px-8 py-5 font-mono text-[11px] opacity-60 uppercase">UPI-REF-9923847</td>
                                 <td className="px-8 py-5 text-right text-sm font-black dark:text-white">₹12,400.00</td>
-                                <td className="px-8 py-5 text-right pr-10 text-[10px] font-black uppercase text-gray-500">Riya Mehta</td>
+                                <td className="px-8 py-5 text-right pr-10 text-[10px] font-bold uppercase text-gray-500">Riya Mehta</td>
                             </tr>
                         </tbody>
                     </table>
@@ -428,7 +428,7 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
         {/* Floating Sidebar Actions */}
         <div className="xl:col-span-3 space-y-6">
             <GlassCard className="border-white/5 bg-black/10 dark:bg-white/[0.01]">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-6">Financial Summary</h3>
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-6">Financial Summary</h3>
                 <div className="space-y-4 mb-8">
                     <div className="flex justify-between items-end">
                         <span className="text-[9px] font-bold text-gray-500 uppercase">Gross Bill</span>
@@ -439,30 +439,30 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                         <span className="text-xl font-black text-emerald-500">₹{invoice.paidAmount.toLocaleString()}</span>
                     </div>
                     <div className="pt-4 border-t border-white/5 flex justify-between items-center">
-                        <span className="text-[10px] font-black uppercase text-red-500 animate-pulse flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase text-red-500 animate-pulse flex items-center gap-2">
                             <AlertCircle size={12} /> Balance
                         </span>
                         <span className="text-2xl font-black text-red-500 tracking-tighter">₹{(totals.grand - invoice.paidAmount).toLocaleString()}</span>
                     </div>
                 </div>
                 <div className="space-y-3">
-                   <button className="w-full py-4 rounded-2xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-all">
+                   <button className="w-full py-4 rounded-2xl bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest shadow-xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-all">
                       <CreditCard size={16} /> Record Cash Receipt
                    </button>
-                   <button className="w-full py-4 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-all">
+                   <button className="w-full py-4 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest shadow-xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-all">
                       <Send size={16} /> WhatsApp Bill link
                    </button>
                 </div>
             </GlassCard>
 
-            <div className="p-6 rounded-[2.5rem] bg-orange-500/5 border border-orange-500/20">
-               <h4 className="text-[10px] font-black uppercase text-orange-600 mb-3 flex items-center gap-2">
+            <div className="p-6 rounded-[2.5rem] bg-accent/5 border border-accent/20">
+               <h4 className="text-[10px] font-bold uppercase text-accent-strong mb-3 flex items-center gap-2">
                   <ExternalLink size={14} /> OTA Collection Logic
                </h4>
                <p className="text-[11px] font-medium text-gray-500 leading-relaxed mb-4">
                   If this is a MakeMyTrip/Goibibo booking, mark payments as "OTA Collect" to settle the guest ledger and track platform receivables.
                </p>
-               <button className="w-full py-2 rounded-xl border border-orange-500/30 text-orange-600 text-[10px] font-black uppercase tracking-widest hover:bg-orange-500/10 transition-all">
+               <button className="w-full py-2 rounded-xl border border-orange-500/30 text-accent-strong text-[10px] font-bold uppercase tracking-widest hover:bg-accent-muted transition-all">
                   Switch to OTA Payment
                </button>
             </div>
@@ -471,7 +471,7 @@ const InvoiceDetail: React.FC<InvoiceDetailProps> = ({ invoice, onBack }) => {
                <button className="w-full flex items-center justify-between p-4 rounded-2xl bg-black/5 hover:bg-red-500/10 hover:text-red-500 transition-all text-xs font-black uppercase border border-white/5 group">
                   <span className="flex items-center gap-2"><Ban size={16} className="opacity-50 group-hover:opacity-100" /> Void this Invoice</span>
                </button>
-               <button className="w-full flex items-center justify-between p-4 rounded-2xl bg-black/5 hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-orange-500 transition-all text-xs font-black uppercase border border-white/5 group">
+               <button className="w-full flex items-center justify-between p-4 rounded-2xl bg-black/5 hover:bg-accent-muted hover:text-accent transition-all text-xs font-black uppercase border border-white/5 group">
                   <span className="flex items-center gap-2"><FileText size={16} className="opacity-50 group-hover:opacity-100" /> View History Log</span>
                </button>
             </div>

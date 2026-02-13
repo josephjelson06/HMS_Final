@@ -20,7 +20,7 @@ const KioskFirmware: React.FC = () => {
       Deprecated: 'bg-red-500/10 text-red-500 border-red-500/20',
     };
     return (
-      <span className={`px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest ${styles[status]}`}>
+      <span className={`px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-widest ${styles[status]}`}>
         {status}
       </span>
     );
@@ -28,12 +28,12 @@ const KioskFirmware: React.FC = () => {
 
   const ChannelBadge = ({ channel }: { channel: FirmwareRelease['channel'] }) => {
     const styles = {
-      Stable: 'bg-blue-600 text-white shadow-blue-500/20',
+      Stable: 'bg-accent-strong text-white shadow-blue-500/20',
       Beta: 'bg-purple-600 text-white shadow-purple-500/20',
-      Alpha: 'bg-orange-600 text-white shadow-orange-500/20',
+      Alpha: 'bg-accent-strong text-white shadow-accent/20',
     };
     return (
-      <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg ${styles[channel]}`}>
+      <span className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-lg ${styles[channel]}`}>
         {channel}
       </span>
     );
@@ -56,7 +56,7 @@ const KioskFirmware: React.FC = () => {
           value="94%" 
           subtext="v2.2+ adoption rate" 
           icon={Activity} 
-          color="text-blue-500"
+          color="text-accent"
         />
         <SummaryCard 
           title="Beta Testing" 
@@ -79,23 +79,23 @@ const KioskFirmware: React.FC = () => {
         <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 bg-black/5 dark:bg-white/[0.02]">
            <div className="flex items-center gap-6 w-full md:w-auto">
               <div className="relative group flex-1 md:w-80">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-accent transition-colors" />
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="block w-full pl-11 pr-4 py-2.5 rounded-xl border border-white/10 bg-black/5 dark:bg-white/5 text-sm dark:text-white placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+                    className="block w-full pl-11 pr-4 py-2.5 rounded-xl border border-white/10 bg-black/5 dark:bg-white/5 text-sm dark:text-white placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-accent/10 transition-all"
                     placeholder="Search version or channel..."
                   />
               </div>
-              <button className="flex items-center gap-2 text-[10px] font-black uppercase text-gray-500 hover:text-white transition-colors">
+              <button className="flex items-center gap-2 text-[10px] font-bold uppercase text-gray-500 hover:text-white transition-colors">
                 <Filter size={14} /> Filter Releases
               </button>
            </div>
            
            <button 
              onClick={() => setIsAddModalOpen(true)}
-             className="w-full md:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
+             className="w-full md:w-auto flex items-center justify-center gap-2 bg-accent-strong text-white px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
            >
               <Plus size={18} strokeWidth={3} />
               Upload New Build
@@ -105,7 +105,7 @@ const KioskFirmware: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-black/10 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-gray-500 border-b border-white/10">
+              <tr className="bg-black/10 dark:bg-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-500 border-b border-white/10">
                 <th className="px-10 py-5">Version Identifier</th>
                 <th className="px-8 py-5">Release Channel</th>
                 <th className="px-8 py-5">Publication Date</th>
@@ -120,7 +120,7 @@ const KioskFirmware: React.FC = () => {
                 <tr key={f.version} className="hover:bg-white/5 transition-all group">
                   <td className="px-10 py-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-black/10 dark:bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-blue-500 transition-colors">
+                        <div className="w-10 h-10 rounded-xl bg-black/10 dark:bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-accent transition-colors">
                             <BinaryIcon size={20} />
                         </div>
                         <span className="text-sm font-black dark:text-white font-mono uppercase tracking-tighter">{f.version}</span>
@@ -138,14 +138,14 @@ const KioskFirmware: React.FC = () => {
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-2">
                         <Cpu size={14} className="text-gray-400" />
-                        <span className="text-[10px] font-black uppercase text-gray-400">{f.compatibility}</span>
+                        <span className="text-[10px] font-bold uppercase text-gray-400">{f.compatibility}</span>
                     </div>
                   </td>
                   <td className="px-8 py-6 text-center">
                     <div className="flex flex-col items-center gap-1.5">
                         <span className="text-sm font-black dark:text-white">{f.activeDevices} Units</span>
                         <div className="h-1 w-16 bg-black/10 dark:bg-white/5 rounded-full overflow-hidden">
-                           <div className="h-full bg-blue-500" style={{ width: `${(f.activeDevices / 65) * 100}%` }}></div>
+                           <div className="h-full bg-accent" style={{ width: `${(f.activeDevices / 65) * 100}%` }}></div>
                         </div>
                     </div>
                   </td>
@@ -191,7 +191,7 @@ const KioskFirmware: React.FC = () => {
                   <p className="text-[10px] font-bold text-gray-500 uppercase mt-1">Automatic: Sunday 02:00 AM IST</p>
                </div>
             </div>
-            <button className="px-6 py-2 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black uppercase text-gray-400 hover:text-white transition-all">Reschedule</button>
+            <button className="px-6 py-2 rounded-xl bg-white/5 border border-white/10 text-[9px] font-bold uppercase text-gray-400 hover:text-white transition-all">Reschedule</button>
          </div>
       </div>
 

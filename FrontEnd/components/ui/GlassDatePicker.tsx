@@ -66,9 +66,9 @@ const GlassDatePicker: React.FC = () => {
     ? "text-gray-400 hover:text-white hover:bg-white/5"
     : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/50";
 
-  const accentColorClass = isDarkMode ? "bg-orange-500 text-white" : "bg-emerald-500 text-white";
-  const accentTextClass = isDarkMode ? "text-orange-500" : "text-emerald-500";
-  const hoverAccentClass = isDarkMode ? "hover:bg-orange-600" : "hover:bg-emerald-600";
+  const accentColorClass = isDarkMode ? "bg-accent text-white" : "bg-emerald-500 text-white";
+  const accentTextClass = isDarkMode ? "text-accent" : "text-emerald-500";
+  const hoverAccentClass = isDarkMode ? "hover:bg-accent-strong" : "hover:bg-emerald-600";
 
   return (
     <div className="relative" ref={containerRef}>
@@ -84,7 +84,7 @@ const GlassDatePicker: React.FC = () => {
         `}
       >
         <div className={`flex items-center gap-2 text-sm font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-          <span className={isDarkMode ? 'text-orange-500' : 'text-emerald-600'}>{period}</span>
+          <span className={isDarkMode ? 'text-accent' : 'text-emerald-600'}>{period}</span>
           <span className="w-1 h-1 rounded-full bg-gray-400"></span>
           <span>{formatDate(selectedDate)}</span>
         </div>
@@ -179,7 +179,7 @@ const GlassDatePicker: React.FC = () => {
                           ? 'text-gray-300 hover:bg-white/10' 
                           : 'text-gray-700 hover:bg-gray-100'
                       }
-                      ${!isSelected && isToday ? (isDarkMode ? 'ring-1 ring-orange-500 text-orange-500' : 'ring-1 ring-emerald-500 text-emerald-600') : ''}
+                      ${!isSelected && isToday ? (isDarkMode ? 'ring-1 ring-orange-500 text-accent' : 'ring-1 ring-emerald-500 text-emerald-600') : ''}
                     `}
                   >
                     {day}

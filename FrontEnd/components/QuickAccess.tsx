@@ -8,7 +8,7 @@ const QuickAction = ({ icon: Icon, title, desc, color }: { icon: any, title: str
       <Icon size={20} className={color.replace('bg-', 'text-')} />
     </div>
     <div>
-      <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-emerald-700 dark:group-hover:text-orange-500 transition-colors">{title}</h4>
+      <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-emerald-700 dark:group-hover:text-accent transition-colors">{title}</h4>
       <p className="text-xs text-gray-700 dark:text-gray-400">{desc}</p>
     </div>
   </div>
@@ -25,7 +25,7 @@ const QuickAccess: React.FC = () => {
             icon={Building2} 
             title="Hotels" 
             desc="Manage hotel registry" 
-            color="bg-blue-500" 
+            color="bg-accent" 
         />
         <QuickAction 
             icon={MonitorSmartphone} 

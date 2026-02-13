@@ -7,7 +7,8 @@ import {
   AlertTriangle, Bed, Trash
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
 
 type Tab = 'PROFILE' | 'TAX' | 'OPS' | 'ROOMS' | 'NOTIFS';
 
@@ -20,7 +21,6 @@ interface RoomType {
 }
 
 const PropertySettings: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const [activeTab, setActiveTab] = useState<Tab>('PROFILE');
 
   // Room Configuration States
@@ -29,20 +29,16 @@ const PropertySettings: React.FC = () => {
     { id: '2', name: 'Executive Suite', rackRate: 9500, occupancy: 3, amenities: ['AC', 'WiFi', 'Bathtub', 'Balcony'] },
   ]);
 
-  const inputClass = `w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border
-    ${isDarkMode 
-      ? 'bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-orange-500/50' 
-      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500/50'
-    }`;
+  const inputClass = "w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-accent/50 dark:focus:border-accent/50";
     
-  const labelClass = `block text-[10px] font-black uppercase tracking-widest mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
+  const labelClass = "block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400";
 
   const NavItem = ({ tab, label, icon: Icon }: { tab: Tab, label: string, icon: any }) => (
     <button
       onClick={() => setActiveTab(tab)}
       className={`w-full flex items-center justify-between p-5 rounded-[1.5rem] transition-all group
         ${activeTab === tab 
-          ? 'bg-blue-600 dark:bg-orange-500 text-white shadow-xl' 
+          ? 'bg-accent-strong text-white shadow-xl' 
           : 'hover:bg-white/5 text-gray-500 hover:text-white'
         }
       `}
@@ -58,16 +54,14 @@ const PropertySettings: React.FC = () => {
   return (
     <div className="p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase">The Configuration</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Property-wide Logic & Compliance Defaulting</p>
-        </div>
-        <button className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-black px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all">
-          <Save size={18} strokeWidth={3} />
+      <PageHeader title="The Configuration" subtitle="Property-wide Logic & Compliance Defaulting">
+        <Button
+          size="md"
+          icon={<Save size={18} strokeWidth={3} />}
+        >
           Sync All Departments
-        </button>
-      </div>
+        </Button>
+      </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Sidebar Nav */}
@@ -79,8 +73,8 @@ const PropertySettings: React.FC = () => {
           <NavItem tab="NOTIFS" label="SMS & Staff Alerts" icon={BellRing} />
           
           <div className="pt-10 mt-6 border-t border-white/5">
-             <div className="p-5 rounded-[2rem] bg-orange-500/5 border border-orange-500/20 flex gap-4">
-                <ShieldCheck size={20} className="text-orange-600 shrink-0" />
+             <div className="p-5 rounded-[2rem] bg-accent/5 border border-accent/20 flex gap-4">
+                <ShieldCheck size={20} className="text-accent-strong shrink-0" />
                 <p className="text-[10px] font-medium text-gray-500 leading-relaxed">Changes propagate to POS Terminals within 2 minutes.</p>
              </div>
           </div>
@@ -88,7 +82,7 @@ const PropertySettings: React.FC = () => {
 
         {/* Content Area */}
         <div className="lg:col-span-9">
-          <GlassCard className="min-h-[650px] border-l-4 border-l-blue-600 dark:border-l-orange-500">
+          <GlassCard className="min-h-[650px] border-l-4 border-l-accent-strong">
             
             {/* 1. PROPERTY IDENTITY TAB */}
             {activeTab === 'PROFILE' && (
@@ -118,7 +112,7 @@ const PropertySettings: React.FC = () => {
                         <label className={labelClass}>Property Star Rating</label>
                         <div className="flex gap-2">
                            {[1,2,3,4,5].map(s => (
-                             <button key={s} className={`p-3 rounded-xl border ${s <= 4 ? 'bg-orange-500/10 border-orange-500 text-orange-500' : 'bg-black/5 border-white/5 text-gray-500'}`}>
+                             <button key={s} className={`p-3 rounded-xl border ${s <= 4 ? 'bg-accent-muted border-orange-500 text-accent' : 'bg-black/5 border-white/5 text-gray-500'}`}>
                                 <Star size={16} fill={s <= 4 ? 'currentColor' : 'none'} />
                              </button>
                            ))}
@@ -130,7 +124,7 @@ const PropertySettings: React.FC = () => {
                          <label className={labelClass}>Invoice & Digital Branding Logo</label>
                          <div className="aspect-video w-full rounded-[2.5rem] border-2 border-dashed border-white/10 flex flex-col items-center justify-center bg-black/10 dark:bg-white/[0.01] hover:border-orange-500/50 transition-all cursor-pointer group">
                             <Plus size={32} className="text-gray-500 group-hover:scale-110 transition-transform mb-3" />
-                            <span className="text-[10px] font-black uppercase text-gray-500">Upload High-Res SVG</span>
+                            <span className="text-[10px] font-bold uppercase text-gray-500">Upload High-Res SVG</span>
                          </div>
                       </div>
                       <div>
@@ -163,8 +157,8 @@ const PropertySettings: React.FC = () => {
                          </div>
                       </div>
                    </div>
-                   <div className="p-8 rounded-[3rem] bg-blue-600/5 border border-blue-600/10 space-y-8">
-                      <div className="flex items-center gap-3 text-blue-500">
+                   <div className="p-8 rounded-[3rem] bg-accent-strong/5 border border-blue-600/10 space-y-8">
+                      <div className="flex items-center gap-3 text-accent">
                          <Percent size={20} strokeWidth={3} />
                          <h3 className="text-xs font-black uppercase tracking-widest">Active Slab Logic</h3>
                       </div>
@@ -272,13 +266,13 @@ const PropertySettings: React.FC = () => {
               <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="flex items-center justify-between">
                    <h2 className="text-2xl font-black dark:text-white tracking-tighter uppercase">Physical Blueprint</h2>
-                   <button className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg">
+                   <button className="flex items-center gap-2 bg-accent-strong text-white px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg">
                       <Plus size={14} strokeWidth={3} /> Add Room Category
                    </button>
                 </div>
                 
                 <div className="space-y-6">
-                   <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Room Categories & Rack Rates</h3>
+                   <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Room Categories & Rack Rates</h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {roomTypes.map(rt => (
                          <div key={rt.id} className="p-6 rounded-[2.5rem] bg-black/5 dark:bg-white/[0.02] border border-white/5 flex flex-col justify-between group hover:border-blue-500/30 transition-all h-48">
@@ -286,7 +280,7 @@ const PropertySettings: React.FC = () => {
                                <div>
                                   <h4 className="text-lg font-black dark:text-white uppercase">{rt.name}</h4>
                                   <div className="flex gap-1.5 mt-2">
-                                     {rt.amenities.map(a => <span key={a} className="text-[8px] font-black uppercase text-gray-500 bg-black/10 dark:bg-white/5 px-1.5 py-0.5 rounded border border-white/5">{a}</span>)}
+                                     {rt.amenities.map(a => <span key={a} className="text-[8px] font-bold uppercase text-gray-500 bg-black/10 dark:bg-white/5 px-1.5 py-0.5 rounded border border-white/5">{a}</span>)}
                                   </div>
                                </div>
                                <button className="p-2 rounded-xl text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"><Trash2 size={16} /></button>
@@ -294,7 +288,7 @@ const PropertySettings: React.FC = () => {
                             <div className="flex justify-between items-end pt-4 border-t border-white/5">
                                <div>
                                   <p className="text-[9px] font-black text-gray-500 uppercase">Base Rack Rate</p>
-                                  <p className="text-xl font-black text-blue-600 dark:text-orange-500 tracking-tighter">₹{rt.rackRate.toLocaleString()}</p>
+                                  <p className="text-xl font-black text-accent-strong tracking-tighter">₹{rt.rackRate.toLocaleString()}</p>
                                </div>
                                <button className="flex items-center gap-1.5 text-[9px] font-black text-gray-500 hover:text-white uppercase tracking-widest transition-all">
                                   <Edit3 size={12} /> Manage Category
@@ -305,15 +299,15 @@ const PropertySettings: React.FC = () => {
                    </div>
                 </div>
 
-                <div className="p-8 rounded-[2.5rem] bg-blue-600/10 border border-blue-600/20 flex items-center justify-between">
+                <div className="p-8 rounded-[2.5rem] bg-accent-strong/10 border border-accent-strong/20 flex items-center justify-between">
                    <div className="flex items-center gap-6">
-                      <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg"><Bed size={28} /></div>
+                      <div className="w-14 h-14 rounded-2xl bg-accent-strong text-white flex items-center justify-center shadow-lg"><Bed size={28} /></div>
                       <div>
                          <h4 className="text-sm font-black dark:text-white uppercase">Room Hardware Registry</h4>
                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">120 Total Rooms Mapped to floors</p>
                       </div>
                    </div>
-                   <button className="px-8 py-3 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest shadow-xl">Audit Room Grid</button>
+                   <button className="px-8 py-3 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest shadow-xl">Audit Room Grid</button>
                 </div>
               </div>
             )}
@@ -350,7 +344,7 @@ const PropertySettings: React.FC = () => {
 
                    {/* Staff Notifications */}
                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 text-blue-500 mb-6">
+                      <div className="flex items-center gap-3 text-accent mb-6">
                          <AlertTriangle size={20} />
                          <h3 className="text-xs font-black uppercase tracking-[0.2em]">Escalation Triggers</h3>
                       </div>
@@ -364,7 +358,7 @@ const PropertySettings: React.FC = () => {
                               <p className="text-sm font-black dark:text-white uppercase">{s.l}</p>
                               <p className="text-[10px] font-bold text-gray-500 mt-1">{s.d}</p>
                            </div>
-                           <button className={`w-11 h-6 rounded-full relative transition-all ${i < 2 ? 'bg-blue-600' : 'bg-gray-300 dark:bg-white/10'}`}>
+                           <button className={`w-11 h-6 rounded-full relative transition-all ${i < 2 ? 'bg-accent-strong' : 'bg-gray-300 dark:bg-white/10'}`}>
                               <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${i < 2 ? 'left-6' : 'left-1'}`}></div>
                            </button>
                         </div>

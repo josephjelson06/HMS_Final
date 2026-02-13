@@ -44,7 +44,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
             <div className={`px-8 py-6 border-b shrink-0 flex items-center justify-between ${isDarkMode ? 'border-white/10' : 'border-gray-200/50'}`}>
                 <div>
                     <h2 className="text-xl font-black dark:text-white tracking-tighter">Invoice Detail</h2>
-                    <p className="text-[10px] font-bold text-blue-600 dark:text-orange-500 uppercase tracking-widest">{invoice?.id}</p>
+                    <p className="text-[10px] font-bold text-accent-strong uppercase tracking-widest">{invoice?.id}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-gray-400"><Printer size={20} /></button>
@@ -60,7 +60,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
                 {/* 1. Branding & Basics */}
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-blue-600 dark:bg-orange-500 flex items-center justify-center text-white shadow-lg">
+                        <div className="w-12 h-12 rounded-xl bg-accent-strong flex items-center justify-center text-white shadow-lg">
                             <Zap size={24} fill="currentColor" />
                         </div>
                         <div>
@@ -70,7 +70,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
                         </div>
                     </div>
                     <div className="text-right">
-                        <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border mb-3 inline-block ${
+                        <div className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border mb-3 inline-block ${
                             invoice?.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
                         }`}>
                             {invoice?.status}
@@ -83,7 +83,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
                 <div className="p-6 rounded-3xl bg-black/5 dark:bg-white/5 border border-white/5">
                     <div className="flex items-center gap-2 mb-4 text-gray-500">
                         <Building2 size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Bill To</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Bill To</span>
                     </div>
                     <h4 className="text-lg font-black dark:text-white mb-1">{invoice?.hotel}</h4>
                     <p className="text-[11px] font-medium text-gray-400 max-w-xs mb-3">HAL Old Airport Rd, Domlur, Bangalore, Karnataka 560008</p>
@@ -96,7 +96,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
 
                 {/* 3. Line Items Table */}
                 <div className="space-y-4">
-                    <div className="grid grid-cols-12 px-4 text-[10px] font-black uppercase tracking-widest text-gray-500 border-b border-white/5 pb-2">
+                    <div className="grid grid-cols-12 px-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 border-b border-white/5 pb-2">
                         <div className="col-span-6">Description / SAC</div>
                         <div className="col-span-3 text-right">HSN/SAC</div>
                         <div className="col-span-3 text-right">Amount</div>
@@ -124,7 +124,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
                         </div>
                         <div className="flex justify-between items-end pt-2">
                             <span className="text-sm font-black dark:text-white uppercase tracking-widest">Total Invoice</span>
-                            <span className="text-2xl font-black text-blue-600 dark:text-orange-500 tracking-tighter">₹{invoice?.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            <span className="text-2xl font-black text-accent-strong tracking-tighter">₹{invoice?.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                         </div>
                     </div>
                 </div>
@@ -133,7 +133,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
                 <div className="space-y-6">
                     <div className="flex items-center gap-2">
                         <History size={16} className="text-gray-500" />
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] dark:text-white">Transaction Logs</h3>
+                        <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] dark:text-white">Transaction Logs</h3>
                     </div>
                     <div className="rounded-2xl border border-white/5 overflow-hidden">
                         <table className="w-full text-left text-[11px]">
@@ -171,13 +171,13 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
                     <button className="p-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all border border-red-500/20" title="Void Invoice">
                         <Ban size={18} />
                     </button>
-                    <button className="px-6 py-3 rounded-xl bg-black/5 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-all flex items-center gap-2">
+                    <button className="px-6 py-3 rounded-xl bg-black/5 dark:bg-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-all flex items-center gap-2">
                         <Mail size={16} /> Send Reminder
                     </button>
                 </div>
                 <button 
                   onClick={onClose}
-                  className="px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                  className="px-10 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
                 >
                     <CheckSquare size={16} /> Mark as Paid
                 </button>

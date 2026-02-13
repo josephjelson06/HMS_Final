@@ -10,13 +10,13 @@ import AddUserModal from '../../modals/super/AddUserModal';
 import EditUserModal from '../../modals/super/EditUserModal';
 import CreateRoleModal from '../../modals/super/CreateRoleModal';
 import RoleDetailView from '../../modals/super/RoleDetailView';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
 import { User, Role, INITIAL_USERS, INITIAL_ROLES } from '../../data/users';
 
 type Tab = 'USERS' | 'ROLES' | 'VIEW_ROLE';
 
 const UsersManagement: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const [activeTab, setActiveTab] = useState<Tab>('USERS');
   const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [roles, setRoles] = useState<Role[]>(INITIAL_ROLES);
@@ -108,44 +108,38 @@ const UsersManagement: React.FC = () => {
 
   return (
     <div className="p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">Access Control</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-2">Team Governance • Platform Security</p>
-        </div>
-        
-        <div className="flex gap-3">
-          {activeTab === 'USERS' ? (
-            <button 
-              onClick={() => setIsAddUserOpen(true)}
-              className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-black px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
-            >
-              <UserPlus size={18} strokeWidth={3} />
-              Add New Member
-            </button>
-          ) : (
-            <button 
-              onClick={() => setIsCreateRoleOpen(true)}
-              className="flex items-center gap-2 bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
-            >
-              <Plus size={18} strokeWidth={3} />
-              Add New Role
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHeader title="Access Control" subtitle="Team Governance • Platform Security">
+        {activeTab === 'USERS' ? (
+          <Button
+            size="md"
+            onClick={() => setIsAddUserOpen(true)}
+            icon={<UserPlus size={18} strokeWidth={3} />}
+          >
+            Add New Member
+          </Button>
+        ) : (
+          <Button
+            variant="action"
+            size="md"
+            onClick={() => setIsCreateRoleOpen(true)}
+            icon={<Plus size={18} strokeWidth={3} />}
+          >
+            Add New Role
+          </Button>
+        )}
+      </PageHeader>
 
       <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
         <div className="flex p-1.5 rounded-[1.5rem] bg-black/5 dark:bg-white/5 border border-white/5 w-fit">
             <button 
                 onClick={() => setActiveTab('USERS')}
-                className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'USERS' ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
+                className={`px-8 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === 'USERS' ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
             >
                 Users Registry
             </button>
             <button 
                 onClick={() => setActiveTab('ROLES')}
-                className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'ROLES' ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
+                className={`px-8 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === 'ROLES' ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
             >
                 System Roles
             </button>
@@ -153,13 +147,13 @@ const UsersManagement: React.FC = () => {
 
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
             <div className="relative w-full md:w-80 group">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-accent transition-colors" />
                 <input 
                     type="text" 
                     placeholder={`Search ${activeTab === 'USERS' ? 'Team Member' : 'Role'}...`} 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-white/40 dark:bg-black/40 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all backdrop-blur-md shadow-sm"
+                    className="w-full bg-white/40 dark:bg-black/40 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold dark:text-white focus:outline-none focus:ring-4 focus:ring-accent/10 transition-all backdrop-blur-md shadow-sm"
                 />
             </div>
         </div>
@@ -203,11 +197,11 @@ const UsersManagement: React.FC = () => {
                     </div>
 
                     <div className="flex gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border transition-all ${
+                        <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest border transition-all ${
                             user.status === 'Inactive' ? 'bg-gray-500/5 text-gray-500 border-gray-500/10 grayscale' :
                             user.role === 'Super Admin' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' : 
-                            user.role === 'Finance' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : 
-                            'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                            user.role === 'Finance' ? 'bg-accent-muted text-accent border-accent/20' : 
+                            'bg-blue-500/10 text-accent border-accent/20'
                         }`}>
                             {user.role}
                         </span>
@@ -216,18 +210,18 @@ const UsersManagement: React.FC = () => {
                     <div className="pt-4 border-t border-white/5 space-y-3">
                         <div className="flex items-center gap-4">
                             <a href={user.status === 'Active' ? `mailto:${user.email}` : undefined} title="Email Work" className={`flex items-center gap-2 group/link ${user.status === 'Inactive' ? 'cursor-default' : ''}`}>
-                                <div className={`p-2 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 transition-colors ${user.status === 'Active' ? 'group-hover/link:text-blue-500' : ''}`}>
+                                <div className={`p-2 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 transition-colors ${user.status === 'Active' ? 'group-hover/link:text-accent' : ''}`}>
                                     <Mail size={14} />
                                 </div>
-                                <span className={`text-[10px] font-bold text-gray-400 truncate max-w-[120px] transition-colors ${user.status === 'Active' ? 'group-hover/link:text-blue-500' : 'text-gray-500'}`}>{user.email}</span>
+                                <span className={`text-[10px] font-bold text-gray-400 truncate max-w-[120px] transition-colors ${user.status === 'Active' ? 'group-hover/link:text-accent' : 'text-gray-500'}`}>{user.email}</span>
                             </a>
                         </div>
                         <div className="flex items-center gap-4">
                             <a href={user.status === 'Active' ? `tel:${user.mobile}` : undefined} title="Call Mobile" className={`flex items-center gap-2 group/link ${user.status === 'Inactive' ? 'cursor-default' : ''}`}>
-                                <div className={`p-2 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 transition-colors ${user.status === 'Active' ? 'group-hover/link:text-blue-500' : ''}`}>
+                                <div className={`p-2 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 transition-colors ${user.status === 'Active' ? 'group-hover/link:text-accent' : ''}`}>
                                     <Phone size={14} />
                                 </div>
-                                <span className={`text-[10px] font-bold text-gray-400 transition-colors ${user.status === 'Active' ? 'group-hover/link:text-blue-500' : 'text-gray-500'}`}>{user.mobile}</span>
+                                <span className={`text-[10px] font-bold text-gray-400 transition-colors ${user.status === 'Active' ? 'group-hover/link:text-accent' : 'text-gray-500'}`}>{user.mobile}</span>
                             </a>
                         </div>
                     </div>
@@ -258,7 +252,7 @@ const UsersManagement: React.FC = () => {
                  className={`group border-white/10 hover:border-blue-500/30 h-full flex flex-col relative transition-all duration-300 cursor-pointer ${isInactive ? 'grayscale opacity-60' : ''}`}
                >
                   {isInactive && (
-                    <div className="absolute top-4 right-10 px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-[8px] font-black uppercase tracking-widest z-10">
+                    <div className="absolute top-4 right-10 px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-[8px] font-bold uppercase tracking-widest z-10">
                       Deactivated
                     </div>
                   )}
@@ -266,7 +260,7 @@ const UsersManagement: React.FC = () => {
                   <div className="p-10 pb-0 text-center">
                       <div className={`w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-6 shadow-xl transition-all ${
                           isInactive ? 'bg-gray-500/10 text-gray-500' :
-                          'bg-blue-600/10 text-blue-600'
+                          'bg-accent-strong/10 text-accent-strong'
                       }`}>
                           <Shield size={32} />
                       </div>
@@ -280,7 +274,7 @@ const UsersManagement: React.FC = () => {
                       <div className="flex items-center justify-end">
                           <GlassDropdown 
                               trigger={
-                                  <button onClick={(e) => e.stopPropagation()} className={`p-4 rounded-2xl bg-black/5 dark:bg-white/5 text-gray-500 transition-all shadow-sm ${!isInactive ? 'hover:text-white hover:bg-blue-600 dark:hover:bg-orange-500' : ''}`}>
+                                  <button onClick={(e) => e.stopPropagation()} className={`p-4 rounded-2xl bg-black/5 dark:bg-white/5 text-gray-500 transition-all shadow-sm ${!isInactive ? 'hover:text-white hover:bg-accent-strong' : ''}`}>
                                       <MoreVertical size={20} />
                                   </button>
                               }

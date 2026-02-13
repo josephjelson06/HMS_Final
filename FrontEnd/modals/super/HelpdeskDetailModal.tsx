@@ -109,9 +109,9 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                 <div>
                     <div className="flex items-center gap-3 mb-1">
                         <h2 className="text-xl font-black dark:text-white tracking-tighter">Ticket Investigation</h2>
-                        <span className="text-[10px] font-black text-blue-600 dark:text-orange-500 uppercase tracking-widest">{ticket?.id}</span>
+                        <span className="text-[10px] font-black text-accent-strong uppercase tracking-widest">{ticket?.id}</span>
                     </div>
-                    <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                    <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-500">
                         <div className="flex items-center gap-1.5"><Building2 size={12} /> {ticket?.hotel}</div>
                         <div className="flex items-center gap-1.5"><Clock size={12} /> SLA: 4h Remaining</div>
                     </div>
@@ -132,13 +132,13 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                     <div className="p-4 border-b border-white/5 flex gap-2">
                         <button 
                             onClick={() => setActiveTab('CHAT')}
-                            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'CHAT' ? 'bg-blue-600 text-white shadow-lg' : 'bg-black/5 dark:bg-white/5 text-gray-500'}`}
+                            className={`flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'CHAT' ? 'bg-accent-strong text-white shadow-lg' : 'bg-black/5 dark:bg-white/5 text-gray-500'}`}
                         >
                             <Users size={14} /> Client Conversation
                         </button>
                         <button 
                             onClick={() => setActiveTab('NOTES')}
-                            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'NOTES' ? 'bg-orange-600 text-white shadow-lg' : 'bg-black/5 dark:bg-white/5 text-gray-500'}`}
+                            className={`flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'NOTES' ? 'bg-accent-strong text-white shadow-lg' : 'bg-black/5 dark:bg-white/5 text-gray-500'}`}
                         >
                             <FileText size={14} /> Internal Team Notes
                         </button>
@@ -150,13 +150,13 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                             messages.map((m, i) => (
                                 <div key={i} className={`flex flex-col ${m.isMe ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2`}>
                                     <div className={`flex items-center gap-2 mb-1.5 px-2 ${m.isMe ? 'flex-row-reverse' : ''}`}>
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-500">{m.sender}</span>
+                                        <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500">{m.sender}</span>
                                         <span className="text-[8px] font-bold text-gray-400">{m.time}</span>
                                     </div>
                                     <div className={`
                                         max-w-[85%] p-4 rounded-3xl text-sm font-medium leading-relaxed
                                         ${m.isMe 
-                                            ? 'bg-blue-600 text-white rounded-tr-none shadow-xl shadow-blue-900/20' 
+                                            ? 'bg-accent-strong text-white rounded-tr-none shadow-xl shadow-accent-strong/20' 
                                             : 'bg-black/5 dark:bg-white/5 dark:text-gray-200 border border-white/5 rounded-tl-none shadow-sm'
                                         }
                                     `}>
@@ -167,7 +167,7 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                                                     <FileText size={20} />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-[10px] font-black uppercase tracking-tighter">{m.attachment}</p>
+                                                    <p className="text-[10px] font-bold uppercase tracking-tighter">{m.attachment}</p>
                                                     <p className="text-[9px] opacity-60 font-bold">2.4 MB • Click to preview</p>
                                                 </div>
                                                 <Zap size={14} className="text-gray-500" />
@@ -178,7 +178,7 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                             ))
                         ) : (
                             <div className="space-y-6">
-                                <div className="p-5 rounded-2xl bg-orange-500/5 border border-orange-500/20 text-[11px] font-bold text-orange-500 flex gap-4">
+                                <div className="p-5 rounded-2xl bg-accent/5 border border-accent/20 text-[11px] font-bold text-accent flex gap-4">
                                     <AlertTriangle size={18} className="shrink-0" />
                                     <p className="leading-relaxed">Internal notes are strictly restricted. They are NOT visible to the hotel manager or external parties.</p>
                                 </div>
@@ -186,8 +186,8 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                                     <div key={i} className="p-6 rounded-3xl bg-black/5 dark:bg-white/[0.02] border border-white/5 animate-in fade-in slide-in-from-bottom-2">
                                         <div className="flex justify-between items-center mb-3">
                                             <div className="flex items-center gap-2">
-                                                <div className={`w-1.5 h-1.5 rounded-full ${n.type === 'system' ? 'bg-blue-500' : 'bg-orange-500'}`}></div>
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{n.author}</span>
+                                                <div className={`w-1.5 h-1.5 rounded-full ${n.type === 'system' ? 'bg-accent' : 'bg-accent'}`}></div>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{n.author}</span>
                                             </div>
                                             <span className="text-[9px] font-bold text-gray-500">{n.time}</span>
                                         </div>
@@ -214,13 +214,13 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                                     }
                                 }}
                                 placeholder={activeTab === 'CHAT' ? "Type message to hotel manager..." : "Add confidential internal note..."}
-                                className={`w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-5 pr-20 text-sm dark:text-white focus:outline-none focus:border-blue-500/50 resize-none transition-all shadow-inner`}
+                                className={`w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-5 pr-20 text-sm dark:text-white focus:outline-none focus:border-accent/50 resize-none transition-all shadow-inner`}
                             />
                             <div className="absolute right-4 bottom-4 flex gap-2">
                                 <button className="p-3 rounded-xl hover:bg-white/10 text-gray-500 transition-all"><Paperclip size={20} /></button>
                                 <button 
                                     onClick={handleSendMessage}
-                                    className={`p-3 rounded-xl text-white shadow-xl transition-all hover:scale-110 active:scale-95 ${activeTab === 'CHAT' ? 'bg-blue-600' : 'bg-orange-600'}`}
+                                    className={`p-3 rounded-xl text-white shadow-xl transition-all hover:scale-110 active:scale-95 ${activeTab === 'CHAT' ? 'bg-accent-strong' : 'bg-accent-strong'}`}
                                 >
                                     <Send size={20} />
                                 </button>
@@ -234,21 +234,21 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                     
                     {/* Status Summary */}
                     <div>
-                         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">Execution Status</h3>
+                         <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-6">Execution Status</h3>
                          <div className="space-y-4">
-                             <div className="p-5 rounded-3xl bg-blue-600 text-white shadow-2xl shadow-blue-900/30 group cursor-pointer relative overflow-hidden">
+                             <div className="p-5 rounded-3xl bg-accent-strong text-white shadow-2xl shadow-accent-strong/30 group cursor-pointer relative overflow-hidden">
                                  <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity">
                                      {/* Added missing import for ChevronDown above and use it here */}
                                      <ChevronDown size={16} />
                                  </div>
-                                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Lifecycle State</p>
+                                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">Lifecycle State</p>
                                  <h4 className="text-sm font-black">{status}</h4>
                              </div>
                              <div className="p-5 rounded-3xl bg-black/5 dark:bg-white/[0.02] border border-white/5 group cursor-pointer relative">
                                  <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                      <Edit2 size={14} className="text-gray-500" />
                                  </div>
-                                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Priority</p>
+                                 <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Priority</p>
                                  <h4 className={`text-sm font-black ${priority === 'Critical' ? 'text-red-500' : 'dark:text-white'}`}>{priority}</h4>
                              </div>
                          </div>
@@ -257,9 +257,9 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                     {/* Linked Asset */}
                     {ticket?.linkedKiosk && (
                         <div>
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">Linked Infrastructure</h3>
+                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-6">Linked Infrastructure</h3>
                             <div className="p-5 rounded-3xl bg-black/5 dark:bg-white/[0.02] border border-white/5 flex items-center gap-4 group cursor-pointer hover:border-blue-500/30 transition-all">
-                                <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-500 shadow-inner"><Monitor size={22} /></div>
+                                <div className="p-3 rounded-2xl bg-blue-500/10 text-accent shadow-inner"><Monitor size={22} /></div>
                                 <div className="flex-1 min-w-0">
                                     <h4 className="text-sm font-black dark:text-white leading-tight">{ticket.linkedKiosk}</h4>
                                     <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mt-1">Hardware ID</p>
@@ -271,9 +271,9 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
 
                     {/* Assignment */}
                     <div>
-                         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">Assigned Ownership</h3>
+                         <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-6">Assigned Ownership</h3>
                          <div className="flex items-center gap-4 p-5 rounded-3xl bg-black/5 dark:bg-white/[0.02] border border-white/5">
-                             <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-600 font-black text-xs shadow-inner">
+                             <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-accent-strong font-black text-xs shadow-inner">
                                  {assignedTo.split(' ').map((n:any) => n[0]).join('')}
                              </div>
                              <div>
@@ -283,7 +283,7 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                          </div>
                          <button 
                             onClick={() => setShowReassign(true)}
-                            className="w-full mt-4 py-3 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2"
+                            className="w-full mt-4 py-3 rounded-xl border border-white/10 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2"
                          >
                             <UserPlus size={14} /> Reassign Owner
                          </button>
@@ -294,7 +294,7 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                          {status !== 'Resolved' ? (
                             <button 
                                 onClick={() => setShowResolve(true)}
-                                className="w-full py-5 rounded-3xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-emerald-900/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                                className="w-full py-5 rounded-3xl bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest shadow-2xl shadow-emerald-900/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
                             >
                                 <CheckCircle2 size={20} /> Mark as Resolved
                             </button>
@@ -336,7 +336,7 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                                                 setAssignedTo(eng.name);
                                                 setShowReassign(false);
                                             }}
-                                            className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${assignedTo === eng.name ? 'bg-blue-600 text-white shadow-lg' : 'hover:bg-white/5 text-gray-500'}`}
+                                            className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${assignedTo === eng.name ? 'bg-accent-strong text-white shadow-lg' : 'hover:bg-white/5 text-gray-500'}`}
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] ${assignedTo === eng.name ? 'bg-white/20' : 'bg-white/5 text-gray-400'}`}>{eng.name.split(' ').map(n=>n[0]).join('')}</div>
@@ -346,7 +346,7 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-end">
-                                                {assignedTo === eng.name ? <Check size={16} /> : <span className="text-[8px] font-black uppercase tracking-widest opacity-40">{eng.availability}</span>}
+                                                {assignedTo === eng.name ? <Check size={16} /> : <span className="text-[8px] font-bold uppercase tracking-widest opacity-40">{eng.availability}</span>}
                                             </div>
                                         </button>
                                     ))}
@@ -368,7 +368,7 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                             </div>
                             <div className="p-8 space-y-6">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3">Resolution Summary</label>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">Resolution Summary</label>
                                     <textarea 
                                         rows={4}
                                         value={resolutionSummary}
@@ -383,10 +383,10 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                                 </div>
                             </div>
                             <div className="p-8 bg-black/5 dark:bg-white/[0.05] border-t border-white/5 flex justify-end gap-3">
-                                <button onClick={() => setShowResolve(false)} className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white">Cancel</button>
+                                <button onClick={() => setShowResolve(false)} className="px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white">Cancel</button>
                                 <button 
                                     onClick={handleResolve}
-                                    className="px-8 py-3 rounded-xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
+                                    className="px-8 py-3 rounded-xl bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
                                 >
                                     Confirm Resolution
                                 </button>
@@ -406,12 +406,12 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                             </div>
                             <div className="p-8 space-y-6">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3">Subject Identity</label>
-                                    <input type="text" defaultValue={ticket?.subject} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-5 text-sm font-bold dark:text-white focus:outline-none focus:border-blue-500/50" />
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">Subject Identity</label>
+                                    <input type="text" defaultValue={ticket?.subject} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-5 text-sm font-bold dark:text-white focus:outline-none focus:border-accent/50" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3">Priority Level</label>
+                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">Priority Level</label>
                                         <select 
                                             value={priority}
                                             onChange={(e) => setPriority(e.target.value)}
@@ -424,16 +424,16 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({ isOpen, ticke
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3">Infrastructure Mapping</label>
+                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">Infrastructure Mapping</label>
                                         <input type="text" defaultValue={ticket?.linkedKiosk} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-5 text-sm font-bold dark:text-white focus:outline-none" />
                                     </div>
                                 </div>
                             </div>
                             <div className="p-8 bg-black/5 dark:bg-white/[0.05] border-t border-white/5 flex justify-end gap-3">
-                                <button onClick={() => setShowEdit(false)} className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white">Discard</button>
+                                <button onClick={() => setShowEdit(false)} className="px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white">Discard</button>
                                 <button 
                                     onClick={() => setShowEdit(false)}
-                                    className="px-10 py-3 rounded-xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
+                                    className="px-10 py-3 rounded-xl bg-accent-strong text-white text-[10px] font-bold uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
                                 >
                                     Update Blueprint
                                 </button>

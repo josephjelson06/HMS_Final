@@ -11,7 +11,8 @@ import {
 import { ResponsiveContainer, AreaChart, Area, Tooltip, XAxis } from 'recharts';
 import GlassCard from '../../components/ui/GlassCard';
 import OccupancyGauge from '../../components/hotel/OccupancyGauge';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
 import NightAuditWizard from '../../modals/hotel/NightAuditWizard';
 
 const CheckInRow = ({ refId, name, room, kyc, source, isOverdue }: any) => (
@@ -23,7 +24,7 @@ const CheckInRow = ({ refId, name, room, kyc, source, isOverdue }: any) => (
       <div className="min-w-0">
         <div className="flex items-center gap-2">
             <h4 className="text-sm font-black dark:text-white truncate uppercase tracking-tighter">{name}</h4>
-            {isOverdue && <span className="px-1.5 py-0.5 rounded bg-red-600 text-white text-[8px] font-black uppercase tracking-tighter">Overdue</span>}
+            {isOverdue && <span className="px-1.5 py-0.5 rounded bg-red-600 text-white text-[8px] font-bold uppercase tracking-tighter">Overdue</span>}
         </div>
         <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
           <span>{refId}</span>
@@ -37,7 +38,7 @@ const CheckInRow = ({ refId, name, room, kyc, source, isOverdue }: any) => (
           <p className="text-[10px] font-bold text-gray-500 uppercase">Assigned</p>
           <p className="text-sm font-black dark:text-gray-200">#{room}</p>
        </div>
-       <button className="px-5 py-2 rounded-xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-900/20 opacity-0 group-hover:opacity-100 transition-all hover:scale-105">
+       <button className="px-5 py-2 rounded-xl bg-accent-strong text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-accent-strong/20 opacity-0 group-hover:opacity-100 transition-all hover:scale-105">
           Process
        </button>
     </div>
@@ -68,48 +69,45 @@ const InlineAlert = ({ type, message }: { type: 'critical' | 'warning', message:
         <div className={`w-2 h-2 rounded-full ${type === 'critical' ? 'bg-red-500 animate-pulse' : 'bg-amber-500'}`} />
         <div className={`absolute inset-0 rounded-full ${type === 'critical' ? 'bg-red-500' : 'bg-amber-500'} animate-ping opacity-30`} />
       </div>
-      <span className="text-[10px] font-black uppercase tracking-[0.1em]">{message}</span>
+      <span className="text-[10px] font-bold uppercase tracking-[0.1em]">{message}</span>
     </div>
   );
 };
 
 const HotelDashboard: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const [isAuditOpen, setIsAuditOpen] = useState(false);
 
   return (
     <div className="p-4 md:p-8 space-y-8 min-h-screen pb-32 animate-in fade-in duration-500">
       
       {/* Header Context */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div className="space-y-1">
-          <div className="mb-4 flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-500 w-fit">
-            <Info size={14} strokeWidth={3} />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dummy Data Page</span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">Shift Overview</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Property Status • Feb 10, 2026</p>
-        </div>
+      <PageHeader
+        title="Shift Overview"
+        subtitle="Property Status • Feb 10, 2026"
+        badge="Dummy Data Page"
+      >
         <div className="flex flex-wrap gap-3">
-            <button 
-              onClick={() => setIsAuditOpen(true)}
-              className="flex items-center gap-2 px-5 md:px-6 py-2.5 rounded-2xl bg-transparent border border-white/20 text-gray-500 dark:text-gray-400 hover:text-white hover:border-white/40 transition-all group"
-            >
-                <Terminal size={18} className="group-hover:text-orange-500 transition-colors" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Start Night Audit</span>
-            </button>
-            <div className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-600">
-                <Clock size={16} strokeWidth={3} className="animate-spin-slow" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Shift Ends: 5h 22m</span>
-            </div>
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={() => setIsAuditOpen(true)}
+            icon={<Terminal size={18} />}
+            className="border border-white/20 text-gray-500 dark:text-gray-400 hover:text-white hover:border-white/40"
+          >
+            Start Night Audit
+          </Button>
+          <div className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-accent-muted border border-accent/20 text-accent-strong">
+            <Clock size={16} strokeWidth={3} className="animate-spin-slow" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Shift Ends: 5h 22m</span>
+          </div>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Top Notification Banner */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
          <InlineAlert type="critical" message="Room 412: Maintenance Required (Plumbing)" />
          <InlineAlert type="warning" message="Compliance GAP: Missing Signature RM 608" />
-      </div>
+      </div> */}
 
       {/* KPI Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -117,22 +115,22 @@ const HotelDashboard: React.FC = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Arrivals Today</p>
-              <h3 className="text-4xl font-black text-blue-600 tracking-tighter">38</h3>
+              <h3 className="text-4xl font-black text-accent-strong tracking-tighter">38</h3>
             </div>
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600"><ArrowDownRight size={24} /></div>
+            <div className="p-2 rounded-xl bg-blue-500/10 text-accent-strong"><ArrowDownRight size={24} /></div>
           </div>
           <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-500 uppercase bg-emerald-500/5 w-fit px-2 py-1 rounded-lg border border-emerald-500/10">
             26 Expected Arrival
           </div>
         </GlassCard>
 
-        <GlassCard className="flex flex-col justify-between h-44 border-l-4 border-l-orange-500 bg-orange-500/[0.02]">
+        <GlassCard className="flex flex-col justify-between h-44 border-l-4 border-l-orange-500 bg-accent/[0.02]">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Departures Today</p>
-              <h3 className="text-4xl font-black text-orange-500 tracking-tighter">22</h3>
+              <h3 className="text-4xl font-black text-accent tracking-tighter">22</h3>
             </div>
-            <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500"><ArrowUpRight size={24} /></div>
+            <div className="p-2 rounded-xl bg-accent-muted text-accent"><ArrowUpRight size={24} /></div>
           </div>
           <div className="flex items-center gap-2 text-[10px] font-bold text-red-500 uppercase bg-red-500/5 w-fit px-2 py-1 rounded-lg border border-red-500/10 animate-pulse">
             8 with pending balance
@@ -163,7 +161,7 @@ const HotelDashboard: React.FC = () => {
              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">94 of 120 rooms sold</p>
              <div className="mt-4 flex items-center gap-2 text-emerald-500">
                 <TrendingUp size={14} />
-                <span className="text-[10px] font-black uppercase">+12% vs LW</span>
+                <span className="text-[10px] font-bold uppercase">+12% vs LW</span>
              </div>
           </div>
           <OccupancyGauge percentage={78} />
@@ -180,13 +178,13 @@ const HotelDashboard: React.FC = () => {
               <div className="flex-1 p-8 flex flex-col justify-between">
                   {[
                     { label: 'Reservations', count: 38, pct: 100, color: 'bg-gray-500' },
-                    { label: 'Pre-checkin done', count: 24, pct: 63, color: 'bg-blue-500' },
+                    { label: 'Pre-checkin done', count: 24, pct: 63, color: 'bg-accent' },
                     { label: 'KYC Verified', count: 18, pct: 47, color: 'bg-emerald-500' },
-                    { label: 'Key Issued', count: 12, pct: 31, color: 'bg-orange-500' }
+                    { label: 'Key Issued', count: 12, pct: 31, color: 'bg-accent' }
                   ].map((step, i) => (
                     <div key={i} className="space-y-2">
                         <div className="flex justify-between items-end">
-                            <span className="text-[10px] font-black uppercase text-gray-500">{step.label}</span>
+                            <span className="text-[10px] font-bold uppercase text-gray-500">{step.label}</span>
                             <span className="text-sm font-black dark:text-white">{step.count}</span>
                         </div>
                         <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden">
@@ -209,8 +207,8 @@ const HotelDashboard: React.FC = () => {
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Real-time Task Prioritization</p>
             </div>
             <div className="flex gap-2">
-                <span className="px-4 py-2 rounded-xl bg-red-600/10 text-red-600 border border-red-600/20 text-[9px] font-black uppercase tracking-widest shadow-sm">3 Overdue</span>
-                <span className="px-4 py-2 rounded-xl bg-blue-600/10 text-blue-600 border border-blue-600/20 text-[9px] font-black uppercase tracking-widest shadow-sm">26 Expected</span>
+                <span className="px-4 py-2 rounded-xl bg-red-600/10 text-red-600 border border-red-600/20 text-[9px] font-bold uppercase tracking-widest shadow-sm">3 Overdue</span>
+                <span className="px-4 py-2 rounded-xl bg-accent-strong/10 text-accent-strong border border-accent-strong/20 text-[9px] font-bold uppercase tracking-widest shadow-sm">26 Expected</span>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
@@ -228,15 +226,15 @@ const HotelDashboard: React.FC = () => {
         <GlassCard className="lg:col-span-4 flex flex-col min-h-[450px]" noPadding>
           <div className="p-8 border-b border-white/5 flex justify-between items-center bg-black/5 dark:bg-white/[0.02]">
             <h3 className="text-sm font-black dark:text-white uppercase tracking-[0.2em]">Inventory Health</h3>
-            <div className="p-2 rounded-xl bg-blue-600/10 text-blue-600"><ShieldCheck size={20} /></div>
+            <div className="p-2 rounded-xl bg-accent-strong/10 text-accent-strong"><ShieldCheck size={20} /></div>
           </div>
 
           <div className="p-6 space-y-6">
               <div className="space-y-2">
                  <ReadinessItem label="Clean & Vacant" count={26} color="bg-emerald-500" />
                  <ReadinessItem label="Dirty & Vacant" count={14} color="bg-red-500" />
-                 <ReadinessItem label="Clean & Occupied" count={68} color="bg-blue-500" />
-                 <ReadinessItem label="Dirty & Occupied" count={10} color="bg-orange-500" />
+                 <ReadinessItem label="Clean & Occupied" count={68} color="bg-accent" />
+                 <ReadinessItem label="Dirty & Occupied" count={10} color="bg-accent" />
                  <ReadinessItem label="Maintenance" count={2} color="bg-gray-500" />
               </div>
           </div>

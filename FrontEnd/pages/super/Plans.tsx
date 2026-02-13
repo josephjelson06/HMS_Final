@@ -8,6 +8,8 @@ import {
 import GlassCard from '../../components/ui/GlassCard';
 import CreatePlanPanel from '../../modals/super/CreatePlanPanel';
 import UpdatePlanPanel from '../../modals/super/UpdatePlanPanel';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
 import { useTheme } from '../../hooks/useTheme';
 import { PlanData, INITIAL_PLANS } from '../../data/plans';
 
@@ -20,11 +22,11 @@ const PlanCard: React.FC<{
   
   const themeStyles = {
     blue: {
-      accent: 'bg-blue-600',
-      text: 'text-blue-600 dark:text-blue-400',
+      accent: 'bg-accent-strong',
+      text: 'text-accent-strong dark:text-blue-400',
       bg: 'bg-blue-500/5',
-      border: 'border-blue-500/20',
-      shadow: 'shadow-blue-500/10'
+      border: 'border-accent/20',
+      shadow: 'shadow-accent/10'
     },
     purple: {
       accent: 'bg-purple-600',
@@ -34,11 +36,11 @@ const PlanCard: React.FC<{
       shadow: 'shadow-purple-500/10'
     },
     orange: {
-      accent: 'bg-orange-600',
-      text: 'text-orange-600 dark:text-orange-400',
-      bg: 'bg-orange-500/5',
-      border: 'border-orange-500/20',
-      shadow: 'shadow-orange-500/10'
+      accent: 'bg-accent-strong',
+      text: 'text-accent-strong dark:text-orange-400',
+      bg: 'bg-accent/5',
+      border: 'border-accent/20',
+      shadow: 'shadow-accent/10'
     }
   };
 
@@ -49,7 +51,7 @@ const PlanCard: React.FC<{
       {/* Plan Header */}
       <div className={`p-8 border-b border-white/5 ${style.bg} relative`}>
         {plan.isArchived && (
-          <div className="absolute top-0 left-0 w-full bg-red-500/80 text-white text-[8px] font-black uppercase text-center py-1 tracking-widest z-10">
+          <div className="absolute top-0 left-0 w-full bg-red-500/80 text-white text-[8px] font-bold uppercase text-center py-1 tracking-widest z-10">
             Archived / Legacy Offering
           </div>
         )}
@@ -57,7 +59,7 @@ const PlanCard: React.FC<{
            <div className={`w-14 h-14 rounded-2xl ${style.accent} text-white flex items-center justify-center shadow-xl`}>
               <Zap size={28} fill="currentColor" />
            </div>
-           <div className="px-3 py-1 rounded-full bg-black/5 dark:bg-white/10 text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-300">
+           <div className="px-3 py-1 rounded-full bg-black/5 dark:bg-white/10 text-[9px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-300">
               ID: {plan.id.toUpperCase()}
            </div>
         </div>
@@ -125,7 +127,7 @@ const PlanCard: React.FC<{
           <div className="flex gap-2">
              <button 
                onClick={() => onEdit(plan)}
-               className="flex-1 py-4 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+               className="flex-1 py-4 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
              >
                 <Edit3 size={14} /> Update Catalog
              </button>
@@ -147,7 +149,6 @@ const Plans: React.FC = () => {
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const [isUpdatePanelOpen, setIsUpdatePanelOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanData | null>(null);
-  const { isDarkMode } = useTheme();
 
   const handleArchivePlan = (id: string) => {
     setPlans(prev => prev.map(p => 
@@ -172,35 +173,32 @@ const Plans: React.FC = () => {
     <div className="p-4 md:p-8 space-y-10 min-h-screen pb-24 animate-in fade-in duration-500">
       
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">Product Catalog</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Commercial Configuration & Tier Management</p>
+      <PageHeader
+        title="Product Catalog"
+        subtitle="Commercial Configuration & Tier Management"
+      >
+        <div className="hidden lg:flex items-center gap-3 px-6 py-3 rounded-2xl bg-accent-strong/10 border border-accent-strong/20 text-accent-strong">
+          <BarChart size={18} />
+          <span className="text-[10px] font-bold uppercase tracking-widest">Yield Optimization: Active</span>
         </div>
-        <div className="flex items-center gap-4">
-            <div className="hidden lg:flex items-center gap-3 px-6 py-3 rounded-2xl bg-blue-600/10 border border-blue-600/20 text-blue-600">
-                <BarChart size={18} />
-                <span className="text-[10px] font-black uppercase tracking-widest">Yield Optimization: Active</span>
-            </div>
-            <button 
-                onClick={() => setIsCreatePanelOpen(true)}
-                className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-black px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
-            >
-                <Plus size={20} strokeWidth={3} />
-                Create New Offering
-            </button>
-        </div>
-      </div>
+        <Button
+          size="lg"
+          onClick={() => setIsCreatePanelOpen(true)}
+          icon={<Plus size={20} strokeWidth={3} />}
+        >
+          Create New Offering
+        </Button>
+      </PageHeader>
 
       {/* Summary Analytics Strip */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <GlassCard className="border-l-4 border-l-blue-600">
+          <GlassCard className="border-l-4 border-l-accent-strong">
              <div className="flex justify-between items-center">
                 <div>
                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-1">Total Recurring Yield</p>
                    <h3 className="text-3xl font-black dark:text-white tracking-tighter">₹{(totalRevenue/100000).toFixed(2)}L <span className="text-xs font-bold text-gray-500">/ mo</span></h3>
                 </div>
-                <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-500"><IndianRupee size={24} /></div>
+                <div className="p-3 rounded-2xl bg-blue-500/10 text-accent"><IndianRupee size={24} /></div>
              </div>
           </GlassCard>
           <GlassCard className="border-l-4 border-l-purple-600">
@@ -239,7 +237,7 @@ const Plans: React.FC = () => {
             onClick={() => setIsCreatePanelOpen(true)}
             className="group relative flex flex-col items-center justify-center p-12 rounded-[2.5rem] border-2 border-dashed border-gray-200 dark:border-white/10 hover:border-blue-500/50 hover:bg-blue-50/5 transition-all bg-white/40 dark:bg-transparent h-full min-h-[500px]"
           >
-             <div className="w-20 h-20 rounded-full bg-white/5 dark:bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-blue-600 group-hover:scale-110 transition-all shadow-sm mb-6">
+             <div className="w-20 h-20 rounded-full bg-white/5 dark:bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-accent-strong group-hover:scale-110 transition-all shadow-sm mb-6">
                 <Plus size={40} strokeWidth={2} />
              </div>
              <h3 className="text-xl font-black dark:text-white uppercase tracking-widest">Define New Tier</h3>

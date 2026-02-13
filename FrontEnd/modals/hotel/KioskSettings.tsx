@@ -5,7 +5,7 @@ import {
   Smartphone, CheckCircle2, Save, Trash2, Edit3, 
   Upload, CheckSquare, Square, Info, ShieldCheck,
   Zap, Languages, Check, Image as ImageIcon,
-  Clock, Signal
+  Clock, Signal, IndianRupee
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
@@ -44,7 +44,7 @@ const KioskSettings: React.FC = () => {
     setActiveLanguages(prev => prev.includes(lang) ? prev.filter(l => l !== lang) : [...prev, lang]);
   };
 
-  const labelClass = `block text-[10px] font-black uppercase tracking-widest mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
+  const labelClass = `block text-[10px] font-bold uppercase tracking-widest mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
   
   const toggleBtnClass = (active: boolean) => `
     relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none 
@@ -60,7 +60,7 @@ const KioskSettings: React.FC = () => {
           <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase">Self-Service Config</h1>
           <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Configure Guest Kiosk Behavior & UI</p>
         </div>
-        <button className="flex items-center gap-2 bg-blue-600 text-white px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-[1.02] active:scale-95 transition-all">
+        <button className="flex items-center gap-2 bg-accent-strong text-white px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-[1.02] active:scale-95 transition-all">
           <Save size={18} strokeWidth={3} />
           Sync to Hardware
         </button>
@@ -72,9 +72,9 @@ const KioskSettings: React.FC = () => {
         <div className="xl:col-span-8 space-y-8">
           
           {/* Section 1: Kiosk Behavior */}
-          <GlassCard className="border-l-4 border-l-blue-600">
+          <GlassCard className="border-l-4 border-l-accent-strong">
             <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600"><Settings2 size={20} /></div>
+              <div className="p-2 rounded-xl bg-blue-500/10 text-accent-strong"><Settings2 size={20} /></div>
               <h3 className="text-sm font-black uppercase tracking-[0.2em] dark:text-white">Workflow Governance</h3>
             </div>
 
@@ -109,7 +109,7 @@ const KioskSettings: React.FC = () => {
                      <button 
                         key={id} 
                         onClick={() => toggleID(id)}
-                        className={`flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all text-xs font-bold uppercase tracking-widest ${acceptedIDs.includes(id) ? 'bg-blue-600 border-blue-600 text-white shadow-xl shadow-blue-900/20' : 'bg-black/5 dark:bg-white/5 border-white/10 text-gray-500 hover:border-white/20'}`}
+                        className={`flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all text-xs font-bold uppercase tracking-widest ${acceptedIDs.includes(id) ? 'bg-accent-strong border-blue-600 text-white shadow-xl shadow-accent-strong/20' : 'bg-black/5 dark:bg-white/5 border-white/10 text-gray-500 hover:border-white/20'}`}
                       >
                         {acceptedIDs.includes(id) ? <Check size={14} strokeWidth={4} /> : <div className="w-3.5 h-3.5 rounded border border-current opacity-30" />}
                         {id}
@@ -130,13 +130,13 @@ const KioskSettings: React.FC = () => {
                      <div key={mode.l} className="flex items-center justify-between p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/5">
                         <div className="flex items-center gap-3">
                            <mode.i size={16} className="text-gray-500" />
-                           <span className="text-[11px] font-black uppercase text-gray-600 dark:text-gray-300">{mode.l}</span>
+                           <span className="text-[11px] font-bold uppercase text-gray-600 dark:text-gray-300">{mode.l}</span>
                         </div>
                         <input 
                            type="checkbox" 
                            checked={paymentModes.includes(mode.l)}
                            onChange={() => setPaymentModes(prev => prev.includes(mode.l) ? prev.filter(m => m !== mode.l) : [...prev, mode.l])}
-                           className="w-4 h-4 rounded-md border-white/10 bg-black text-orange-500" 
+                           className="w-4 h-4 rounded-md border-white/10 bg-black text-accent" 
                         />
                      </div>
                    ))}
@@ -148,7 +148,7 @@ const KioskSettings: React.FC = () => {
           {/* Section 2: Visual Customization */}
           <GlassCard className="border-l-4 border-l-orange-500">
             <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500"><Layout size={20} /></div>
+              <div className="p-2 rounded-xl bg-accent-muted text-accent"><Layout size={20} /></div>
               <h3 className="text-sm font-black uppercase tracking-[0.2em] dark:text-white">Brand & Visual Identity</h3>
             </div>
 
@@ -158,7 +158,7 @@ const KioskSettings: React.FC = () => {
                     <label className={labelClass}>Property Brand Logo</label>
                     <div className="aspect-video w-full rounded-[2rem] border-2 border-dashed border-white/10 flex flex-col items-center justify-center bg-black/5 dark:bg-white/[0.01] group hover:border-orange-500/30 transition-all cursor-pointer">
                        <ImageIcon size={32} className="text-gray-600 mb-3" />
-                       <span className="text-[10px] font-black uppercase text-gray-500">Upload SVG or PNG</span>
+                       <span className="text-[10px] font-bold uppercase text-gray-500">Upload SVG or PNG</span>
                        <span className="text-[8px] font-bold text-gray-600 mt-1">200x200px recommended</span>
                     </div>
                   </div>
@@ -169,7 +169,7 @@ const KioskSettings: React.FC = () => {
                          <button 
                            key={lang}
                            onClick={() => toggleLang(lang)}
-                           className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-[10px] font-bold uppercase transition-all ${activeLanguages.includes(lang) ? 'bg-orange-500/10 border-orange-500/30 text-orange-600' : 'bg-black/5 dark:bg-white/5 border-white/5 text-gray-500'}`}
+                           className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-[10px] font-bold uppercase transition-all ${activeLanguages.includes(lang) ? 'bg-accent-muted border-orange-500/30 text-accent-strong' : 'bg-black/5 dark:bg-white/5 border-white/5 text-gray-500'}`}
                          >
                            {lang}
                            {activeLanguages.includes(lang) && <Check size={12} strokeWidth={4} />}
@@ -186,14 +186,14 @@ const KioskSettings: React.FC = () => {
                        rows={4}
                        value={welcomeMsg}
                        onChange={(e) => setWelcomeMsg(e.target.value)}
-                       className="w-full bg-black/5 dark:bg-white/5 border border-white/10 rounded-3xl p-6 text-sm font-black dark:text-white focus:outline-none focus:border-orange-500/50 resize-none shadow-inner leading-relaxed"
+                       className="w-full bg-black/5 dark:bg-white/5 border border-white/10 rounded-3xl p-6 text-sm font-black dark:text-white focus:outline-none focus:border-accent/50 resize-none shadow-inner leading-relaxed"
                        placeholder="Enter message..."
                     />
                   </div>
                   <div className="p-6 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/20">
                      <div className="flex items-center gap-3 text-emerald-500 mb-2">
                         <Languages size={18} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">AI Translation Active</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">AI Translation Active</span>
                      </div>
                      <p className="text-[11px] font-medium text-gray-500 leading-relaxed">
                         Our AI engine will automatically translate your custom welcome greeting for all enabled languages.
@@ -226,7 +226,7 @@ const KioskSettings: React.FC = () => {
                           </div>
                           <p className="text-[10px] font-mono text-gray-500 font-bold uppercase tracking-widest">{k.id}</p>
                        </div>
-                       <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${k.status === 'online' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                       <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-widest border ${k.status === 'online' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
                           <div className={`w-1.5 h-1.5 rounded-full ${k.status === 'online' ? 'bg-emerald-500 shadow-[0_0_5px_currentColor]' : 'bg-red-500'}`}></div>
                           {k.status}
                        </div>
@@ -243,19 +243,19 @@ const KioskSettings: React.FC = () => {
                ))}
             </div>
 
-            <div className="p-5 rounded-3xl bg-orange-500/10 border border-orange-500/20 flex gap-4">
-                <ShieldCheck size={24} className="text-orange-600 shrink-0" />
-                <p className="text-[10px] font-medium text-orange-800 dark:text-orange-500 leading-relaxed">
+            <div className="p-5 rounded-3xl bg-accent-muted border border-accent/20 flex gap-4">
+                <ShieldCheck size={24} className="text-accent-strong shrink-0" />
+                <p className="text-[10px] font-medium text-orange-800 dark:text-accent leading-relaxed">
                    Hardware inventory is managed by the platform provider. To add or decommission a kiosk, please contact support.
                 </p>
             </div>
             
-            <button className="w-full mt-6 py-3 rounded-2xl border border-white/10 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
+            <button className="w-full mt-6 py-3 rounded-2xl border border-white/10 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
                Raise Hardware Ticket
             </button>
           </GlassCard>
 
-          <div className="p-8 rounded-[2.5rem] bg-blue-600 text-white shadow-2xl flex items-center gap-6">
+          <div className="p-8 rounded-[2.5rem] bg-accent-strong text-white shadow-2xl flex items-center gap-6">
               <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
                   <Zap size={28} fill="currentColor" />
               </div>
@@ -272,26 +272,5 @@ const KioskSettings: React.FC = () => {
     </div>
   );
 };
-
-const IndianRupee = ({ size, className }: any) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M6 3h12"/>
-    <path d="M6 8h12"/>
-    <path d="m6 13 8.5 8"/>
-    <path d="M6 13h3"/>
-    <path d="M9 13c6.667 0 6.667-10 0-10"/>
-  </svg>
-);
 
 export default KioskSettings;

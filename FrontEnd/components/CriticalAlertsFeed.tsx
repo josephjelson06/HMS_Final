@@ -26,7 +26,7 @@ const AlertItem = ({ type, message, time, onAction }: any) => {
 
       <button 
         onClick={onAction}
-        className="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-blue-600 dark:group-hover:text-orange-500 transition-colors flex items-center gap-1"
+        className="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-accent-strong transition-colors flex items-center gap-1"
       >
         View
         <ChevronRight size={12} />
@@ -41,7 +41,7 @@ const CriticalAlertsFeed: React.FC = () => {
       {/* UNIFIED CONTAINER: Full-bleed flush header */}
       <div className="px-8 py-6 border-b border-gray-100 dark:border-white/5 flex items-center justify-between bg-black/5 dark:bg-white/[0.02]">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-orange-500 text-white shadow-lg shadow-orange-500/30">
+          <div className="p-2.5 rounded-xl bg-accent text-white shadow-lg shadow-orange-500/30">
             <Zap size={18} fill="currentColor" />
           </div>
           <div>
@@ -49,7 +49,7 @@ const CriticalAlertsFeed: React.FC = () => {
             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Live Incident Feed</p>
           </div>
         </div>
-        <span className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-[9px] font-black uppercase tracking-widest animate-pulse shadow-lg shadow-red-500/20">
+        <span className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-[9px] font-bold uppercase tracking-widest animate-pulse shadow-lg shadow-red-500/20">
           3 Unresolved
         </span>
       </div>
@@ -82,7 +82,7 @@ const CriticalAlertsFeed: React.FC = () => {
       
       {/* UNIFIED CONTAINER: Full-bleed anchored footer bar */}
       <div className="border-t border-gray-100 dark:border-white/5 bg-gray-900 dark:bg-white mt-auto">
-        <button className="w-full py-5 text-[10px] font-black uppercase tracking-[0.25em] text-white dark:text-black hover:bg-blue-600 dark:hover:bg-orange-500 hover:text-white transition-all">
+        <button className="w-full py-5 text-[10px] font-bold uppercase tracking-[0.25em] text-white dark:text-black hover:bg-accent-strong hover:text-white transition-all">
           View All System Events
         </button>
       </div>

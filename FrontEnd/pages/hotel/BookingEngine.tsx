@@ -6,7 +6,8 @@ import {
   AlertCircle, Star, MoreHorizontal, UserCheck, Move
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
 import GuestDetailPanel from '../../modals/hotel/GuestDetailPanel';
 import NewBookingWizard from '../../modals/hotel/NewBookingWizard';
 import { Guest } from '../../data/guests';
@@ -17,7 +18,6 @@ import {
 } from '../../data/bookings';
 
 const BookingEngine: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const [viewDate, setViewDate] = useState(new Date('2026-02-10'));
   const [search, setSearch] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
@@ -45,7 +45,7 @@ const BookingEngine: React.FC = () => {
   const getStatusStyles = (status: BookingBlock['status']) => {
     switch (status) {
       case 'checked-in': return 'bg-emerald-500 border-emerald-600 text-white shadow-emerald-500/20';
-      case 'confirmed': return 'bg-blue-500 border-blue-600 text-white shadow-blue-500/20';
+      case 'confirmed': return 'bg-accent border-blue-600 text-white shadow-blue-500/20';
       case 'overdue': return 'bg-red-500 border-red-600 text-white shadow-red-500/20 animate-pulse';
       case 'pending': return 'bg-amber-500 border-amber-600 text-white shadow-amber-900/20';
       default: return 'bg-gray-500 border-gray-600 text-white';
@@ -70,32 +70,32 @@ const BookingEngine: React.FC = () => {
     <div className="p-4 md:p-8 space-y-6 h-[calc(100vh-120px)] flex flex-col overflow-hidden animate-in fade-in duration-500">
       
       {/* Header Context Strip */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 shrink-0">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">Booking Engine</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Tape Chart & Availability Flow</p>
-        </div>
-
+      <PageHeader
+        title="Booking Engine"
+        subtitle="Tape Chart & Availability Flow"
+      >
         <div className="flex items-center gap-4 w-full md:w-auto">
             <div className="relative flex-1 md:w-80 group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-accent-strong transition-colors" />
                 <input 
                     type="text" 
                     placeholder="Search guest name or room..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full bg-white/40 dark:bg-black/40 border border-white/10 rounded-[1.25rem] py-3 pl-10 pr-4 text-xs font-bold dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all backdrop-blur-md"
+                    className="w-full bg-white/40 dark:bg-black/40 border border-white/10 rounded-[1.25rem] py-3 pl-10 pr-4 text-xs font-bold dark:text-white focus:outline-none focus:ring-4 focus:ring-accent/10 transition-all backdrop-blur-md"
                 />
             </div>
-            <button 
+            <Button
+                variant="primary"
+                size="lg"
                 onClick={() => setIsWizardOpen(true)}
-                className="flex items-center gap-2 bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:scale-[1.02] active:scale-95 transition-all whitespace-nowrap"
+                icon={<Plus size={18} strokeWidth={3} />}
+                className="shadow-accent-strong/20"
             >
-                <Plus size={18} strokeWidth={3} />
                 Create Booking
-            </button>
+            </Button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Main Tape Chart Grid Container */}
       <GlassCard noPadding className="flex-1 flex flex-col overflow-hidden border-white/10 shadow-2xl relative bg-white/50 dark:bg-black/20">
@@ -108,7 +108,7 @@ const BookingEngine: React.FC = () => {
                         <ChevronLeft size={20} />
                     </button>
                     <div className="px-6 flex flex-col items-center min-w-[180px]">
-                        <span className="text-[9px] font-black uppercase text-gray-500">Inventory Window</span>
+                        <span className="text-[9px] font-bold uppercase text-gray-500">Inventory Window</span>
                         <span className="text-xs font-black dark:text-white uppercase tracking-tighter">
                             {dates[0].toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} — {dates[DAYS_TO_SHOW-1].toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                         </span>
@@ -119,7 +119,7 @@ const BookingEngine: React.FC = () => {
                 </div>
                 <button 
                   onClick={() => setViewDate(new Date('2026-02-10'))}
-                  className="px-5 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-[10px] font-black uppercase text-gray-500 hover:text-white transition-all border border-white/5"
+                  className="px-5 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-[10px] font-bold uppercase text-gray-500 hover:text-white transition-all border border-white/5"
                 >
                     Jump to Today
                 </button>
@@ -128,13 +128,13 @@ const BookingEngine: React.FC = () => {
             <div className="hidden xl:flex items-center gap-6">
                 {[
                     { label: 'Checked-In', color: 'bg-emerald-500' },
-                    { label: 'Confirmed', color: 'bg-blue-500' },
+                    { label: 'Confirmed', color: 'bg-accent' },
                     { label: 'Overdue', color: 'bg-red-500' },
                     { label: 'Pending', color: 'bg-amber-500' },
                 ].map(item => (
                     <div key={item.label} className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${item.color}`} />
-                        <span className="text-[10px] font-black uppercase text-gray-500 tracking-widest">{item.label}</span>
+                        <span className="text-[10px] font-bold uppercase text-gray-500 tracking-widest">{item.label}</span>
                     </div>
                 ))}
             </div>
@@ -146,7 +146,7 @@ const BookingEngine: React.FC = () => {
             {/* 1. Static Corner & Date Header */}
             <div className="flex shrink-0 z-30">
                 <div style={{ width: `${ROOM_LIST_WIDTH}px` }} className="border-r border-white/10 bg-black/10 p-5 flex items-center justify-between shrink-0 shadow-lg relative z-40">
-                    <span className="text-[11px] font-black uppercase tracking-widest text-gray-500">Room Units</span>
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-gray-500">Room Units</span>
                     <LayoutGrid size={16} className="text-gray-600" />
                 </div>
                 <div ref={headerRef} className="flex-1 overflow-hidden flex bg-black/5">
@@ -154,10 +154,10 @@ const BookingEngine: React.FC = () => {
                         <div 
                           key={i} 
                           style={{ width: `${CELL_WIDTH}px` }} 
-                          className={`shrink-0 border-r border-white/5 py-4 flex flex-col items-center justify-center text-center ${date.getDay() === 0 || date.getDay() === 6 ? 'bg-blue-500/5 dark:bg-orange-500/5' : ''}`}
+                          className={`shrink-0 border-r border-white/5 py-4 flex flex-col items-center justify-center text-center ${date.getDay() === 0 || date.getDay() === 6 ? 'bg-blue-500/5 dark:bg-accent/5' : ''}`}
                         >
                             <span className="text-[9px] font-bold text-gray-500 uppercase tracking-tighter mb-1">{date.toLocaleDateString('en-IN', { weekday: 'short' })}</span>
-                            <span className={`text-base font-black ${date.toISOString().split('T')[0] === '2026-02-10' ? 'text-blue-600 dark:text-orange-500 scale-110' : 'dark:text-white'}`}>{date.getDate()}</span>
+                            <span className={`text-base font-black ${date.toISOString().split('T')[0] === '2026-02-10' ? 'text-accent-strong scale-110' : 'dark:text-white'}`}>{date.getDate()}</span>
                         </div>
                     ))}
                 </div>
@@ -170,7 +170,7 @@ const BookingEngine: React.FC = () => {
                 <div ref={roomsSidebarRef} className="overflow-hidden border-r border-white/10 bg-black/5 shrink-0 z-20" style={{ width: `${ROOM_LIST_WIDTH}px` }}>
                     {ROOMS_DATA.map((room) => (
                         <div key={room.id} className="h-20 border-b border-white/5 p-5 flex items-center gap-4 group hover:bg-black/10 transition-all cursor-pointer">
-                            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors shadow-sm">
+                            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-accent transition-colors shadow-sm">
                                 <DoorOpen size={22} />
                             </div>
                             <div>
@@ -201,8 +201,8 @@ const BookingEngine: React.FC = () => {
                     </div>
 
                     {/* Today Marker */}
-                    <div className="absolute top-0 bottom-0 w-px bg-blue-500 dark:bg-orange-500/50 z-10 pointer-events-none" style={{ left: '0px' }}>
-                        <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-orange-500 absolute -left-[4.5px] top-0 shadow-[0_0_15px_currentColor]"></div>
+                    <div className="absolute top-0 bottom-0 w-px bg-accent/50 z-10 pointer-events-none" style={{ left: '0px' }}>
+                        <div className="w-2 h-2 rounded-full bg-accent-strong absolute -left-[4.5px] top-0 shadow-[0_0_15px_currentColor]"></div>
                     </div>
 
                     {/* Booking Blocks Layer */}
@@ -218,10 +218,10 @@ const BookingEngine: React.FC = () => {
                                           key={dateIdx} 
                                           onClick={() => !booking && setIsWizardOpen(true)}
                                           style={{ width: `${CELL_WIDTH}px` }} 
-                                          className={`shrink-0 flex items-center justify-center relative cursor-crosshair group/cell transition-colors ${!booking ? 'hover:bg-blue-600/5' : ''}`}
+                                          className={`shrink-0 flex items-center justify-center relative cursor-crosshair group/cell transition-colors ${!booking ? 'hover:bg-accent-strong/5' : ''}`}
                                         >
                                             {!booking && (
-                                                <div className="opacity-0 group-hover/cell:opacity-100 p-2 rounded-xl bg-blue-600/10 text-blue-500 transition-all scale-75">
+                                                <div className="opacity-0 group-hover/cell:opacity-100 p-2 rounded-xl bg-accent-strong/10 text-accent transition-all scale-75">
                                                     <Plus size={18} strokeWidth={3} />
                                                 </div>
                                             )}
@@ -253,7 +253,7 @@ const BookingEngine: React.FC = () => {
                                                   `}
                                                 >
                                                     <div className="flex justify-between items-center mb-0.5">
-                                                        <span className="text-[11px] font-black uppercase tracking-tighter truncate pr-2">{booking.guestName}</span>
+                                                        <span className="text-[11px] font-bold uppercase tracking-tighter truncate pr-2">{booking.guestName}</span>
                                                         <span className="text-[8px] font-bold opacity-80 whitespace-nowrap">{booking.nights}N</span>
                                                     </div>
                                                     <div className="flex items-center justify-between">
@@ -277,14 +277,14 @@ const BookingEngine: React.FC = () => {
              <div className="flex items-center gap-6">
                  <div className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-emerald-500" />
-                    <span className="text-[10px] font-black uppercase text-gray-500">Auto-Reconciled: 02m ago</span>
+                    <span className="text-[10px] font-bold uppercase text-gray-500">Auto-Reconciled: 02m ago</span>
                  </div>
              </div>
              <div className="flex gap-4">
-                 <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/5 text-[10px] font-black uppercase text-gray-500 hover:text-white transition-all">
+                 <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/5 text-[10px] font-bold uppercase text-gray-500 hover:text-white transition-all">
                     <Calendar size={14} /> Month View
                  </button>
-                 <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest shadow-lg">
+                 <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest shadow-lg">
                     Export Grid
                  </button>
              </div>

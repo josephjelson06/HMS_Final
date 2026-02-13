@@ -74,7 +74,7 @@ const GuestDetailPanel: React.FC<GuestDetailPanelProps> = ({ isOpen, guest, onCl
             <div className={`px-8 py-6 border-b shrink-0 flex items-center justify-between ${isDarkMode ? 'border-white/10' : 'border-gray-200/50'} bg-black/5`}>
                 <div className="flex items-center gap-6">
                     <div>
-                        <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">{guest?.refId}</p>
+                        <p className="text-[10px] font-black text-accent uppercase tracking-widest mb-1">{guest?.refId}</p>
                         <h2 className="text-2xl font-black dark:text-white tracking-tighter uppercase">{guest?.room} — {guest?.roomCategory}</h2>
                     </div>
                     <div className="h-10 w-px bg-white/10 hidden md:block"></div>
@@ -87,11 +87,11 @@ const GuestDetailPanel: React.FC<GuestDetailPanelProps> = ({ isOpen, guest, onCl
                 </div>
                 <div className="flex items-center gap-3">
                     {guest?.status === 'Reserved' && (
-                        <button className="bg-blue-600 text-white px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all">Check-In Now</button>
+                        <button className="bg-accent-strong text-white px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all">Check-In Now</button>
                     )}
                     {guest?.status === 'Checked-In' && (
                         <>
-                            <button className="bg-orange-600 text-white px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all">Complete Stay</button>
+                            <button className="bg-accent-strong text-white px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all">Complete Stay</button>
                             <button className="bg-white/5 border border-white/10 text-gray-400 p-3 rounded-2xl hover:text-white transition-all"><Clock size={20} /></button>
                         </>
                     )}
@@ -108,11 +108,11 @@ const GuestDetailPanel: React.FC<GuestDetailPanelProps> = ({ isOpen, guest, onCl
                         <section>
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500"><User size={20} /></div>
+                                    <div className="p-2 rounded-xl bg-blue-500/10 text-accent"><User size={20} /></div>
                                     <h3 className="text-xs font-black uppercase tracking-[0.2em] dark:text-white">Primary Guest Profile</h3>
                                 </div>
                                 {guest?.isReturning && (
-                                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-500 text-[10px] font-black uppercase tracking-widest hover:bg-blue-500/20 transition-all">
+                                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 text-accent text-[10px] font-bold uppercase tracking-widest hover:bg-blue-500/20 transition-all">
                                         <History size={12} /> View 3 Past Stays
                                     </button>
                                 )}
@@ -139,7 +139,7 @@ const GuestDetailPanel: React.FC<GuestDetailPanelProps> = ({ isOpen, guest, onCl
                                     <button 
                                         onClick={simulateKyc}
                                         disabled={isVerifying}
-                                        className="flex items-center gap-2 bg-white text-red-600 px-5 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg disabled:opacity-50"
+                                        className="flex items-center gap-2 bg-white text-red-600 px-5 py-2 rounded-xl text-[10px] font-bold uppercase shadow-lg disabled:opacity-50"
                                     >
                                         {isVerifying ? <RefreshCw size={14} className="animate-spin" /> : <Scan size={14} />}
                                         {isVerifying ? 'Scanning Docs...' : 'Perform Verification Now'}
@@ -157,7 +157,7 @@ const GuestDetailPanel: React.FC<GuestDetailPanelProps> = ({ isOpen, guest, onCl
                                                 <div className="flex gap-4">
                                                     <div className="aspect-[4/3] w-32 rounded-2xl bg-black/40 border border-white/10 flex flex-col items-center justify-center text-gray-600 hover:text-white transition-all cursor-pointer group relative">
                                                         <FileText size={28} className="group-hover:scale-110 transition-transform mb-2" />
-                                                        <span className="text-[8px] font-black uppercase">ID Front</span>
+                                                        <span className="text-[8px] font-bold uppercase">ID Front</span>
                                                         {localKycStatus === 'Verified' && <CheckCircle2 size={16} className="absolute top-2 right-2 text-emerald-500" />}
                                                     </div>
                                                 </div>
@@ -184,18 +184,18 @@ const GuestDetailPanel: React.FC<GuestDetailPanelProps> = ({ isOpen, guest, onCl
                                     <div className="space-y-10">
                                         <div className="flex items-center justify-between pb-6 border-b border-white/5">
                                             <div className="flex items-center gap-3">
-                                                <Globe size={20} className="text-blue-500" />
+                                                <Globe size={20} className="text-accent" />
                                                 <h4 className="text-sm font-black uppercase tracking-[0.2em] dark:text-white">C-Form FRRO Registry</h4>
                                             </div>
                                             {isCFormOverdue ? (
                                                 <div className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20">
                                                     <Clock size={14} className="animate-pulse" />
-                                                    <span className="text-[10px] font-black uppercase tracking-widest">Timer Active: 08:22:11 Left</span>
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest">Timer Active: 08:22:11 Left</span>
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                                                     <CheckCircle2 size={14} />
-                                                    <span className="text-[10px] font-black uppercase tracking-tighter">ID: FRRO-MH-2026-00891</span>
+                                                    <span className="text-[10px] font-bold uppercase tracking-tighter">ID: FRRO-MH-2026-00891</span>
                                                 </div>
                                             )}
                                         </div>
@@ -207,7 +207,7 @@ const GuestDetailPanel: React.FC<GuestDetailPanelProps> = ({ isOpen, guest, onCl
                                             <InfoField label="Visa Type" value="Tourist" />
                                         </div>
 
-                                        <button className="w-full py-4 rounded-2xl bg-blue-600 text-white text-xs font-black uppercase tracking-widest shadow-2xl hover:scale-[1.01] transition-all flex items-center justify-center gap-3">
+                                        <button className="w-full py-4 rounded-2xl bg-accent-strong text-white text-xs font-black uppercase tracking-widest shadow-2xl hover:scale-[1.01] transition-all flex items-center justify-center gap-3">
                                             <FileText size={18} /> Re-Submit C-Form to Portal
                                         </button>
                                     </div>
@@ -220,7 +220,7 @@ const GuestDetailPanel: React.FC<GuestDetailPanelProps> = ({ isOpen, guest, onCl
                     <div className="lg:col-span-4 space-y-10">
                         
                         <section>
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">Stay Context</h3>
+                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-6">Stay Context</h3>
                             <GlassCard className="border-white/5 bg-black/10 dark:bg-white/[0.01]">
                                 <div className="space-y-4 mb-8">
                                     <div className="flex justify-between text-xs font-bold">
@@ -228,7 +228,7 @@ const GuestDetailPanel: React.FC<GuestDetailPanelProps> = ({ isOpen, guest, onCl
                                         <span className="dark:text-white">{guest?.roomCategory}</span>
                                     </div>
                                     <div className="flex justify-between items-end pt-4 border-t border-white/5">
-                                        <span className="text-[10px] font-black uppercase text-gray-400">Source Channel</span>
+                                        <span className="text-[10px] font-bold uppercase text-gray-400">Source Channel</span>
                                         <span className="text-sm font-black dark:text-white uppercase">{guest?.source}</span>
                                     </div>
                                 </div>
@@ -236,7 +236,7 @@ const GuestDetailPanel: React.FC<GuestDetailPanelProps> = ({ isOpen, guest, onCl
                         </section>
 
                         <div className="pt-10 border-t border-white/5 flex flex-col gap-4">
-                             <button className="w-full py-5 rounded-3xl bg-blue-600 text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/20">
+                             <button className="w-full py-5 rounded-3xl bg-accent-strong text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-accent-strong/20">
                                 <History size={18} /> Full Stay History Report
                              </button>
                         </div>

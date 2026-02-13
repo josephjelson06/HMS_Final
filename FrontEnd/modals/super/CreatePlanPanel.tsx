@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
-// Fix: Removed 'Sparkles' from lucide-react import to resolve conflict with local declaration
-import { X, Check, ChevronDown, Layout, Monitor, Headphones } from 'lucide-react';
+import { X, Check, ChevronDown, Layout, Monitor, Headphones, Sparkles } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useModalVisibility } from '../../hooks/useModalVisibility';
 import GlassDropdown from '../../components/ui/GlassDropdown';
@@ -36,8 +35,8 @@ const CreatePlanPanel: React.FC<CreatePlanPanelProps> = ({ isOpen, onClose }) =>
 
   const inputClass = `w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border
     ${isDarkMode 
-      ? 'bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-orange-500/50' 
-      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500/50'
+      ? 'bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-accent/50' 
+      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-accent/50'
     }`;
     
   const labelClass = `block text-[11px] font-bold uppercase tracking-wider mb-3 ${isDarkMode ? 'text-gray-400' : 'text-slate-500'}`;
@@ -81,7 +80,7 @@ const CreatePlanPanel: React.FC<CreatePlanPanelProps> = ({ isOpen, onClose }) =>
                 {/* Identity & Price */}
                 <section>
                     <div className={screenshotHeaderClass}>
-                        <Sparkles size={16} className="text-orange-500" />
+                        <Sparkles size={16} className="text-accent" />
                         <span>Identity & Price</span>
                     </div>
                     <div className="grid grid-cols-2 gap-6">
@@ -102,7 +101,7 @@ const CreatePlanPanel: React.FC<CreatePlanPanelProps> = ({ isOpen, onClose }) =>
                 {/* Unit Limits */}
                 <section>
                     <div className={screenshotHeaderClass}>
-                        <Layout size={16} className="text-blue-500" />
+                        <Layout size={16} className="text-accent" />
                         <span>Unit Limits</span>
                     </div>
                     <div className="grid grid-cols-2 gap-6">
@@ -132,7 +131,7 @@ const CreatePlanPanel: React.FC<CreatePlanPanelProps> = ({ isOpen, onClose }) =>
                                 className={`
                                     flex items-center justify-between px-5 py-4 rounded-xl transition-all text-[11px] font-bold uppercase tracking-wider
                                     ${selectedModules.includes(module) 
-                                        ? 'bg-blue-600 text-white shadow-md' 
+                                        ? 'bg-accent-strong text-white shadow-md' 
                                         : 'bg-[#f1f5f9] dark:bg-white/5 text-slate-500 hover:bg-[#e2e8f0] dark:hover:bg-white/10'
                                     }
                                 `}
@@ -181,12 +180,12 @@ const CreatePlanPanel: React.FC<CreatePlanPanelProps> = ({ isOpen, onClose }) =>
 
             {/* Footer */}
             <div className={`px-8 py-6 border-t shrink-0 flex justify-end gap-3 ${isDarkMode ? 'border-white/10 bg-black/20' : 'border-gray-200/50 bg-white/50'}`}>
-                <button onClick={onClose} className="px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
+                <button onClick={onClose} className="px-8 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
                     Discard Draft
                 </button>
                 <button 
                   onClick={onClose}
-                  className="px-10 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-gray-900 dark:bg-white text-white dark:text-black shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                  className="px-10 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest bg-gray-900 dark:bg-white text-white dark:text-black shadow-2xl hover:scale-105 active:scale-95 transition-all"
                 >
                     Save & Publish Plan
                 </button>
@@ -197,9 +196,5 @@ const CreatePlanPanel: React.FC<CreatePlanPanelProps> = ({ isOpen, onClose }) =>
     </>
   , document.body);
 };
-
-const Sparkles = ({ size, className }: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
-);
 
 export default CreatePlanPanel;

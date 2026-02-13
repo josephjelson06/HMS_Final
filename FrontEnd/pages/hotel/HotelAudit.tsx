@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import Pagination from '../../components/ui/Pagination';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
 import { HotelActionType, HotelModule, HotelAuditEntry, mockHotelLogs } from '../../data/hotelAudit';
 
 const ActionBadge = ({ action }: { action: HotelActionType }) => {
@@ -17,23 +18,22 @@ const ActionBadge = ({ action }: { action: HotelActionType }) => {
     CREATE: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
     UPDATE: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
     DELETE: 'text-red-500 bg-red-500/10 border-red-500/20',
-    LOGIN: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+    LOGIN: 'text-accent bg-blue-500/10 border-accent/20',
     CHECKOUT: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
     VOID: 'text-red-600 bg-red-600/10 border-red-600/20 font-black',
     REFUND: 'text-pink-500 bg-pink-500/10 border-pink-500/20',
     SHIFT_CLOSE: 'text-gray-500 bg-gray-500/10 border-gray-500/20',
-    NIGHT_AUDIT: 'text-white bg-blue-600 border-transparent shadow-lg shadow-blue-900/20'
+    NIGHT_AUDIT: 'text-white bg-accent-strong border-transparent shadow-lg shadow-accent-strong/20'
   };
 
   return (
-    <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md border w-fit text-[9px] font-black uppercase tracking-widest ${styles[action]}`}>
+    <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md border w-fit text-[9px] font-bold uppercase tracking-widest ${styles[action]}`}>
       <span>{action.replace('_', ' ')}</span>
     </div>
   );
 };
 
 const HotelAudit: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const [search, setSearch] = useState('');
   const [userFilter, setUserFilter] = useState('All Staff');
   const [moduleFilter, setModuleFilter] = useState('All Modules');
@@ -64,27 +64,24 @@ const HotelAudit: React.FC = () => {
     <div className="p-4 md:p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
       
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase">Audit Forensic</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Immutable Accountability Ledger</p>
+      <PageHeader title="Audit Forensic" subtitle="Immutable Accountability Ledger">
+        <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600">
+          <ShieldCheck size={18} strokeWidth={3} />
+          <span className="text-[10px] font-bold uppercase tracking-widest">Logs Cryptographically Signed</span>
         </div>
-        <div className="flex gap-3">
-          <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600">
-            <ShieldCheck size={18} strokeWidth={3} />
-            <span className="text-[10px] font-black uppercase tracking-widest">Logs Cryptographically Signed</span>
-          </div>
-          <button className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all">
-            <Download size={16} strokeWidth={3} /> Export CAR
-          </button>
-        </div>
-      </div>
+        <Button
+          size="md"
+          icon={<Download size={16} strokeWidth={3} />}
+        >
+          Export CAR
+        </Button>
+      </PageHeader>
 
       {/* Filter Bar */}
       <GlassCard className="flex flex-col lg:flex-row gap-4 items-center justify-between" noPadding>
         <div className="p-2 w-full flex-1 flex flex-col md:flex-row gap-2">
             <div className="relative group flex-1">
-                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-accent transition-colors" />
                 <input
                   type="text"
                   value={search}
@@ -99,7 +96,7 @@ const HotelAudit: React.FC = () => {
                     <select 
                       value={userFilter}
                       onChange={(e) => setUserFilter(e.target.value)}
-                      className="appearance-none bg-black/5 dark:bg-white/5 border-none rounded-xl px-4 py-2.5 pr-8 text-[10px] font-black uppercase text-gray-700 dark:text-gray-300 outline-none cursor-pointer"
+                      className="appearance-none bg-black/5 dark:bg-white/5 border-none rounded-xl px-4 py-2.5 pr-8 text-[10px] font-bold uppercase text-gray-700 dark:text-gray-300 outline-none cursor-pointer"
                     >
                         <option>All Staff</option>
                         <option>Arjun V.</option>
@@ -109,7 +106,7 @@ const HotelAudit: React.FC = () => {
                     </select>
                     <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-all">
+                <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-all">
                     <Calendar size={14} /> Range
                 </button>
             </div>
@@ -122,7 +119,7 @@ const HotelAudit: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-black/10 dark:bg-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 border-b border-white/5">
+                <tr className="bg-black/10 dark:bg-white/5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 border-b border-white/5">
                   <th className="px-8 py-6 w-48">Timestamp</th>
                   <th className="px-8 py-6 w-56">User Identity</th>
                   <th className="px-8 py-6 w-32">Action</th>
@@ -135,7 +132,7 @@ const HotelAudit: React.FC = () => {
                 {paginatedLogs.map((log) => (
                   <tr 
                     key={log.id} 
-                    className={`hover:bg-white/5 transition-all group border-l-4 border-transparent hover:border-orange-500 ${log.action === 'NIGHT_AUDIT' ? 'bg-blue-600/[0.03] border-l-blue-600' : ''}`}
+                    className={`hover:bg-white/5 transition-all group border-l-4 border-transparent hover:border-orange-500 ${log.action === 'NIGHT_AUDIT' ? 'bg-accent-strong/[0.03] border-l-accent-strong' : ''}`}
                   >
                     <td className="px-8 py-5 text-xs font-mono font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       {log.timestamp}
@@ -149,7 +146,7 @@ const HotelAudit: React.FC = () => {
                          {log.isImpersonated && (
                            <div className="flex items-center gap-1.5 w-fit px-2 py-0.5 rounded bg-purple-500/10 text-purple-500 border border-purple-500/20">
                               <ArrowRightLeft size={10} strokeWidth={3} />
-                              <span className="text-[8px] font-black uppercase tracking-tighter">Impersonated</span>
+                              <span className="text-[8px] font-bold uppercase tracking-tighter">Impersonated</span>
                            </div>
                          )}
                       </div>
@@ -158,13 +155,13 @@ const HotelAudit: React.FC = () => {
                       <ActionBadge action={log.action} />
                     </td>
                     <td className="px-8 py-5">
-                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
-                        <Zap size={12} className="text-orange-500" />
+                      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                        <Zap size={12} className="text-accent" />
                         {log.module}
                       </div>
                     </td>
                     <td className="px-8 py-5">
-                      <p className={`text-sm font-medium leading-relaxed italic ${log.action === 'NIGHT_AUDIT' ? 'text-blue-500 font-bold not-italic' : 'dark:text-gray-300'}`}>
+                      <p className={`text-sm font-medium leading-relaxed italic ${log.action === 'NIGHT_AUDIT' ? 'text-accent font-bold not-italic' : 'dark:text-gray-300'}`}>
                         "{log.description}"
                       </p>
                     </td>

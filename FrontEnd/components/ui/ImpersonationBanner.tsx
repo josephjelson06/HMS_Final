@@ -14,7 +14,7 @@ const ImpersonationBanner: React.FC<ImpersonationBannerProps> = ({ hotelName, on
         <div className="flex items-center gap-4">
            <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-white/20 text-white animate-pulse">
               <ShieldAlert size={14} strokeWidth={3} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Security Alert</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest">Security Alert</span>
            </div>
            <p className="text-[11px] font-black text-white uppercase tracking-wider">
               ⚠ IMPERSONATION MODE — You are viewing <span className="underline decoration-white/40 decoration-2 underline-offset-2">{hotelName}</span> as Hotel Manager. All actions are logged.
@@ -23,7 +23,7 @@ const ImpersonationBanner: React.FC<ImpersonationBannerProps> = ({ hotelName, on
 
         <button 
           onClick={onExit}
-          className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white text-red-600 text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-105 active:scale-95 transition-all"
+          className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white text-red-600 text-[10px] font-bold uppercase tracking-widest shadow-lg hover:scale-105 active:scale-95 transition-all"
         >
           <LogOut size={14} strokeWidth={3} />
           Exit Impersonation

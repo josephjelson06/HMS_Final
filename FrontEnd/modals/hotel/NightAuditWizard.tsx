@@ -49,17 +49,17 @@ const NightAuditWizard: React.FC<NightAuditWizardProps> = ({ isOpen, onClose }) 
                   { id: 2, label: 'Revenue Settlement', icon: IndianRupee },
                 ].map((s) => (
                   <div key={s.id} className={`flex items-center gap-4 transition-all ${step === s.id ? 'opacity-100 scale-105' : 'opacity-40 grayscale'}`}>
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${step === s.id ? 'bg-orange-500 text-white shadow-lg shadow-orange-900/40' : 'bg-white/5 text-gray-400'}`}>
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${step === s.id ? 'bg-accent text-white shadow-lg shadow-orange-900/40' : 'bg-white/5 text-gray-400'}`}>
                       <s.icon size={16} />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest dark:text-gray-300">{s.label}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest dark:text-gray-300">{s.label}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-orange-500/5 border border-orange-500/20 text-center">
-              <p className="text-[9px] font-black text-orange-500 uppercase">Shift Lock Active</p>
+            <div className="p-4 rounded-2xl bg-accent/5 border border-accent/20 text-center">
+              <p className="text-[9px] font-black text-accent uppercase">Shift Lock Active</p>
               <p className="text-[8px] font-medium text-gray-500 mt-1 uppercase tracking-tighter">Terminal ID: DESK-AUDIT-01</p>
             </div>
           </div>
@@ -70,7 +70,7 @@ const NightAuditWizard: React.FC<NightAuditWizardProps> = ({ isOpen, onClose }) 
             {/* Header */}
             <div className="px-10 py-6 border-b border-white/5 flex justify-between items-center bg-black/5">
                 <div className="flex items-center gap-3">
-                   <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                   <div className="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Cross-referencing databases...</span>
                 </div>
                 <button onClick={onClose} className="p-2.5 rounded-full hover:bg-white/10 transition-colors text-gray-500"><X size={20} /></button>
@@ -80,9 +80,9 @@ const NightAuditWizard: React.FC<NightAuditWizardProps> = ({ isOpen, onClose }) 
             {isScanning && (
               <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
                 <div className="relative w-48 h-48 mb-8">
-                   <div className="absolute inset-0 border-4 border-orange-500/20 rounded-full animate-[ping_2s_infinite]"></div>
+                   <div className="absolute inset-0 border-4 border-accent/20 rounded-full animate-[ping_2s_infinite]"></div>
                    <div className="absolute inset-0 border-4 border-orange-500 rounded-full animate-pulse flex items-center justify-center">
-                      <Scan size={48} className="text-orange-500" />
+                      <Scan size={48} className="text-accent" />
                    </div>
                 </div>
                 <h4 className="text-sm font-black dark:text-white uppercase tracking-widest animate-pulse">Analyzing Transaction Signatures</h4>
@@ -109,7 +109,7 @@ const NightAuditWizard: React.FC<NightAuditWizardProps> = ({ isOpen, onClose }) 
                     <div className="p-6 rounded-[2rem] bg-black/20 border border-white/5 space-y-4">
                        <div className="flex justify-between items-center text-[10px] font-black text-gray-500 uppercase tracking-widest">
                           <span>Logical Registry</span>
-                          <span className="text-blue-500">System Book</span>
+                          <span className="text-accent">System Book</span>
                        </div>
                        <div className="text-3xl font-black dark:text-white">94 Check-Ins</div>
                     </div>
@@ -175,15 +175,15 @@ const NightAuditWizard: React.FC<NightAuditWizardProps> = ({ isOpen, onClose }) 
                 <button 
                   disabled={step === 1} 
                   onClick={() => setStep(step - 1)} 
-                  className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white disabled:opacity-0 transition-all"
+                  className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white disabled:opacity-0 transition-all"
                 >
                   <ChevronLeft size={16} strokeWidth={3} /> Re-Check
                 </button>
                 <div className="flex gap-4">
-                  <button onClick={onClose} className="px-8 py-3 rounded-xl text-[10px] font-black uppercase text-gray-500 hover:text-white">Discard Audit</button>
+                  <button onClick={onClose} className="px-8 py-3 rounded-xl text-[10px] font-bold uppercase text-gray-500 hover:text-white">Discard Audit</button>
                   <button 
                     onClick={step === totalSteps ? onClose : handleNext} 
-                    className="flex items-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-black px-12 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                    className="flex items-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-black px-12 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
                   >
                     {step === totalSteps ? 'Final Commitment: Close Day' : 'Proceed to next check'}
                     <ArrowRight size={16} strokeWidth={3} />

@@ -47,17 +47,17 @@ const NewBookingWizard: React.FC<NewBookingWizardProps> = ({ isOpen, onClose }) 
 
   const inputClass = `w-full px-4 py-4 rounded-2xl outline-none transition-all duration-200 text-sm font-bold border
     ${isDarkMode 
-      ? 'bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-orange-500/50' 
-      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500/50'
+      ? 'bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-accent/50' 
+      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-accent/50'
     }`;
     
-  const labelClass = `block text-[10px] font-black uppercase tracking-widest mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
+  const labelClass = `block text-[10px] font-bold uppercase tracking-widest mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
 
   const StepIndicator = () => (
     <div className="flex items-center gap-2 mb-10">
       {[1, 2, 3, 4, 5, 6].map((s) => (
         <React.Fragment key={s}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black transition-all ${s === step ? 'bg-orange-500 text-white scale-110 shadow-lg' : s < step ? 'bg-emerald-500 text-white' : 'bg-black/5 dark:bg-white/5 text-gray-500'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black transition-all ${s === step ? 'bg-accent text-white scale-110 shadow-lg' : s < step ? 'bg-emerald-500 text-white' : 'bg-black/5 dark:bg-white/5 text-gray-500'}`}>
             {s < step ? <CheckCircle2 size={14} /> : s}
           </div>
           {s < totalSteps && <div className={`flex-1 h-0.5 rounded-full ${s < step ? 'bg-emerald-500' : 'bg-black/5 dark:bg-white/5'}`}></div>}
@@ -88,7 +88,7 @@ const NewBookingWizard: React.FC<NewBookingWizardProps> = ({ isOpen, onClose }) 
               {step === 1 && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="flex items-center gap-3">
-                        <Phone size={20} className="text-orange-500" />
+                        <Phone size={20} className="text-accent" />
                         <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Guest Identification</h3>
                     </div>
                     <div>
@@ -103,13 +103,13 @@ const NewBookingWizard: React.FC<NewBookingWizardProps> = ({ isOpen, onClose }) 
                                 setFormData({...formData, mobile: e.target.value});
                               }} 
                             />
-                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-orange-500" size={24} />
+                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent" size={24} />
                         </div>
                         {isReturning && (
-                            <div className="mt-6 p-5 rounded-[2rem] bg-blue-500/5 border border-blue-500/20 flex items-center gap-4 animate-in slide-in-from-top-4">
-                                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500"><UserCheck size={28} /></div>
+                            <div className="mt-6 p-5 rounded-[2rem] bg-blue-500/5 border border-accent/20 flex items-center gap-4 animate-in slide-in-from-top-4">
+                                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-accent"><UserCheck size={28} /></div>
                                 <div>
-                                    <h4 className="text-sm font-black text-blue-600 uppercase">Repeat Guest Identified</h4>
+                                    <h4 className="text-sm font-black text-accent-strong uppercase">Repeat Guest Identified</h4>
                                     <p className="text-xs text-gray-500 font-medium">Vikram Patel • Bangalore, India • 3 Past Stays</p>
                                 </div>
                             </div>
@@ -127,7 +127,7 @@ const NewBookingWizard: React.FC<NewBookingWizardProps> = ({ isOpen, onClose }) 
               {step === 2 && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="flex items-center gap-3">
-                        <Package size={20} className="text-orange-500" />
+                        <Package size={20} className="text-accent" />
                         <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Inventory Selection</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -140,17 +140,17 @@ const NewBookingWizard: React.FC<NewBookingWizardProps> = ({ isOpen, onClose }) 
                             <button 
                               key={room.id} 
                               onClick={() => setFormData({...formData, room})}
-                              className={`text-left p-6 rounded-[2rem] border transition-all group flex flex-col justify-between h-36 ${formData.room?.id === room.id ? 'border-orange-500 bg-orange-500/5 shadow-lg' : 'bg-black/5 dark:bg-white/5 border-white/5 hover:border-orange-500/30'}`}
+                              className={`text-left p-6 rounded-[2rem] border transition-all group flex flex-col justify-between h-36 ${formData.room?.id === room.id ? 'border-orange-500 bg-accent/5 shadow-lg' : 'bg-black/5 dark:bg-white/5 border-white/5 hover:border-orange-500/30'}`}
                             >
                                 <div className="flex justify-between items-start mb-1">
                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
                                    <span className="text-[8px] font-black text-emerald-500 uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">{room.status}</span>
                                 </div>
                                 <div className="space-y-1">
-                                    <h4 className={`text-xl font-black uppercase tracking-tighter leading-tight ${formData.room?.id === room.id ? 'text-orange-500' : 'dark:text-white'}`}>{room.cat}</h4>
+                                    <h4 className={`text-xl font-black uppercase tracking-tighter leading-tight ${formData.room?.id === room.id ? 'text-accent' : 'dark:text-white'}`}>{room.cat}</h4>
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-black text-gray-500">₹{room.price.toLocaleString()}</span>
-                                        <ArrowRight size={14} className={`transition-transform duration-300 ${formData.room?.id === room.id ? 'translate-x-1 text-orange-500' : 'text-gray-600'}`} />
+                                        <ArrowRight size={14} className={`transition-transform duration-300 ${formData.room?.id === room.id ? 'translate-x-1 text-accent' : 'text-gray-600'}`} />
                                     </div>
                                 </div>
                             </button>
@@ -162,7 +162,7 @@ const NewBookingWizard: React.FC<NewBookingWizardProps> = ({ isOpen, onClose }) 
               {step === 3 && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="flex items-center gap-3">
-                        <Calendar size={20} className="text-orange-500" />
+                        <Calendar size={20} className="text-accent" />
                         <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Stay Parameters</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-6">
@@ -199,7 +199,7 @@ const NewBookingWizard: React.FC<NewBookingWizardProps> = ({ isOpen, onClose }) 
 
               {step === 4 && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300 text-center">
-                    <div className="w-20 h-20 rounded-full bg-orange-500/10 flex items-center justify-center mx-auto text-orange-500 mb-6 border-4 border-orange-500/20 shadow-xl">
+                    <div className="w-20 h-20 rounded-full bg-accent-muted flex items-center justify-center mx-auto text-accent mb-6 border-4 border-accent/20 shadow-xl">
                         <Scan size={32} />
                     </div>
                     <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">Identity Digitization</h3>
@@ -207,12 +207,12 @@ const NewBookingWizard: React.FC<NewBookingWizardProps> = ({ isOpen, onClose }) 
                     <div className="grid grid-cols-2 gap-4 mt-8">
                         <div className="p-6 rounded-[2rem] bg-black/5 dark:bg-white/5 border border-white/5 flex flex-col items-center">
                            <FileText size={24} className="text-gray-500 mb-3" />
-                           <span className="text-[10px] font-black uppercase text-gray-500">ID Scan Status</span>
+                           <span className="text-[10px] font-bold uppercase text-gray-500">ID Scan Status</span>
                            <span className="text-xs font-bold text-emerald-500">Document Detected</span>
                         </div>
                         <div className="p-6 rounded-[2rem] bg-black/5 dark:bg-white/5 border border-white/5 flex flex-col items-center">
                            <Camera size={24} className="text-gray-500 mb-3" />
-                           <span className="text-[10px] font-black uppercase text-gray-500">Face Recognition</span>
+                           <span className="text-[10px] font-bold uppercase text-gray-500">Face Recognition</span>
                            <span className="text-xs font-bold text-gray-500">Waiting for Stream</span>
                         </div>
                     </div>
@@ -225,19 +225,19 @@ const NewBookingWizard: React.FC<NewBookingWizardProps> = ({ isOpen, onClose }) 
               {step === 5 && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="flex items-center gap-3">
-                        <IndianRupee size={20} className="text-orange-500" />
+                        <IndianRupee size={20} className="text-accent" />
                         <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Payment & Settlement</h3>
                     </div>
-                    <div className="p-6 rounded-[2rem] bg-orange-500/10 border border-orange-500/20">
+                    <div className="p-6 rounded-[2rem] bg-accent-muted border border-accent/20">
                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-[10px] font-black text-orange-600 uppercase">Estimated Bill (incl Tax)</span>
-                          <span className="text-2xl font-black text-orange-600">₹12,400</span>
+                          <span className="text-[10px] font-black text-accent-strong uppercase">Estimated Bill (incl Tax)</span>
+                          <span className="text-2xl font-black text-accent-strong">₹12,400</span>
                        </div>
                        <p className="text-[9px] font-bold text-orange-700/60 uppercase">2 Nights • {formData.room?.cat || 'Deluxe Double'} • CP Plan</p>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                        {['UPI', 'Cash', 'Credit Card'].map(mode => (
-                          <button key={mode} className={`p-4 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${formData.paymentMode === mode ? 'bg-blue-600 border-blue-600 text-white' : 'bg-black/5 dark:bg-white/5 border-white/5 text-gray-500'}`} onClick={() => setFormData({...formData, paymentMode: mode})}>
+                          <button key={mode} className={`p-4 rounded-2xl border text-[10px] font-bold uppercase tracking-widest transition-all ${formData.paymentMode === mode ? 'bg-accent-strong border-blue-600 text-white' : 'bg-black/5 dark:bg-white/5 border-white/5 text-gray-500'}`} onClick={() => setFormData({...formData, paymentMode: mode})}>
                              {mode}
                           </button>
                        ))}
@@ -283,13 +283,13 @@ const NewBookingWizard: React.FC<NewBookingWizardProps> = ({ isOpen, onClose }) 
               <button 
                 disabled={step === 1} 
                 onClick={() => setStep(step - 1)} 
-                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white disabled:opacity-0 transition-all px-6 py-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/5"
+                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white disabled:opacity-0 transition-all px-6 py-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/5"
               >
                 <ChevronLeft size={16} /> BACK
               </button>
               <button 
                 onClick={() => step === totalSteps ? onClose() : setStep(step + 1)} 
-                className="flex items-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-black px-12 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                className="flex items-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-black px-12 py-4 rounded-[1.5rem] text-[10px] font-bold uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
               >
                 {step === totalSteps ? 'Activate Check-In' : 'Next Stage'}
                 <ChevronRight size={16} strokeWidth={3} />

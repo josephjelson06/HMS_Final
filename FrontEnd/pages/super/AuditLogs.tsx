@@ -7,12 +7,13 @@ import {
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import Pagination from '../../components/ui/Pagination';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
 import { AuditEntry, mockLogs } from '../../data/auditLogs';
 
 const ActionBadge = ({ action }: { action: AuditEntry['action'] }) => {
   const styles = {
-    LOGIN: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+    LOGIN: 'text-accent bg-blue-500/10 border-accent/20',
     CREATE: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
     UPDATE: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
     DELETE: 'text-red-500 bg-red-500/10 border-red-500/20',
@@ -40,7 +41,6 @@ const ActionBadge = ({ action }: { action: AuditEntry['action'] }) => {
 };
 
 const AuditLogs: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const [search, setSearch] = useState('');
   const [moduleFilter, setModuleFilter] = useState('All Modules');
   const [userFilter, setUserFilter] = useState('All Users');
@@ -71,22 +71,18 @@ const AuditLogs: React.FC = () => {
     <div className="p-4 md:p-8 space-y-8 min-h-screen pb-20 animate-in fade-in duration-500">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">The Source of Truth</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Immutable System Audit Trail</p>
+      <PageHeader title="The Source of Truth" subtitle="Immutable System Audit Trail">
+        <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600">
+          <ShieldCheck size={18} />
+          <span className="text-xs font-black uppercase tracking-widest">Verified</span>
         </div>
-        <div className="flex gap-3">
-          <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600">
-            <ShieldCheck size={18} />
-            <span className="text-xs font-black uppercase tracking-widest">Verified</span>
-          </div>
-          <button className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] transition-all">
-            <Download size={16} />
-            Export Archive
-          </button>
-        </div>
-      </div>
+        <Button
+          size="md"
+          icon={<Download size={16} />}
+        >
+          Export Archive
+        </Button>
+      </PageHeader>
 
       {/* Filter Bar */}
       <GlassCard className="flex flex-col lg:flex-row gap-4 items-center justify-between" noPadding>
@@ -107,7 +103,7 @@ const AuditLogs: React.FC = () => {
                     <select 
                       value={userFilter}
                       onChange={(e) => setUserFilter(e.target.value)}
-                      className="appearance-none bg-black/5 dark:bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase text-gray-700 dark:text-gray-300 outline-none cursor-pointer pr-8"
+                      className="appearance-none bg-black/5 dark:bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold uppercase text-gray-700 dark:text-gray-300 outline-none cursor-pointer pr-8"
                     >
                         <option>All Users</option>
                         {Array.from(new Set(mockLogs.map(l => l.user))).map(u => <option key={u}>{u}</option>)}
@@ -118,7 +114,7 @@ const AuditLogs: React.FC = () => {
                     <select 
                       value={moduleFilter}
                       onChange={(e) => setModuleFilter(e.target.value)}
-                      className="appearance-none bg-black/5 dark:bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase text-gray-700 dark:text-gray-300 outline-none cursor-pointer pr-8"
+                      className="appearance-none bg-black/5 dark:bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold uppercase text-gray-700 dark:text-gray-300 outline-none cursor-pointer pr-8"
                     >
                         <option>All Modules</option>
                         {Array.from(new Set(mockLogs.map(l => l.module))).map(m => <option key={m}>{m}</option>)}
@@ -134,7 +130,7 @@ const AuditLogs: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-white/[0.03] text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border-b border-white/10">
+              <tr className="bg-slate-50 dark:bg-white/[0.03] text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 border-b border-white/10">
                 <th className="px-6 py-3.5">Timestamp</th>
                 <th className="px-6 py-3.5">User</th>
                 <th className="px-6 py-3.5">Action</th>
@@ -159,7 +155,7 @@ const AuditLogs: React.FC = () => {
                     <ActionBadge action={log.action} />
                   </td>
                   <td className="px-6 py-2.5">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{log.module}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{log.module}</span>
                   </td>
                   <td className="px-6 py-2.5">
                     <div className="space-y-1">
@@ -167,7 +163,7 @@ const AuditLogs: React.FC = () => {
                         {log.description}
                       </p>
                       {log.isImpersonated && (
-                        <div className="text-[9px] font-black uppercase tracking-tighter text-orange-500">
+                        <div className="text-[9px] font-bold uppercase tracking-tighter text-accent">
                           Impersonating {log.impersonationDetail}
                         </div>
                       )}

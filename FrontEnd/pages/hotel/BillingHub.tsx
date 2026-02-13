@@ -8,13 +8,13 @@ import {
   Info
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
 import InvoiceDetail from '../../modals/hotel/InvoiceDetail';
 import NewPOSBillModal from '../../modals/hotel/NewPOSBillModal';
 import { InvoiceStatus, InvoiceRecord, mockInvoices } from '../../data/billingHub';
 
 const BillingHub: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const [view, setView] = useState<'list' | 'detail'>('list');
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRecord | null>(null);
   const [isPOSOpen, setIsPOSOpen] = useState(false);
@@ -40,7 +40,7 @@ const BillingHub: React.FC = () => {
       Void: 'bg-red-500/10 text-red-500 border-red-500/20 line-through'
     };
     return (
-      <span className={`px-3 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest ${styles[status]}`}>
+      <span className={`px-3 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-widest ${styles[status]}`}>
         {status}
       </span>
     );
@@ -59,35 +59,34 @@ const BillingHub: React.FC = () => {
     <div className="p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
       
       {/* Header Context */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div className="mb-4 flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-500 w-fit animate-pulse">
-            <Info size={14} strokeWidth={3} />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dummy Data Page</span>
-          </div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">Account Receivables</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-2">Centralized Billing Hub • GST GSTR-1 Automation</p>
+      <PageHeader
+        title="Account Receivables"
+        subtitle="Centralized Billing Hub • GST GSTR-1 Automation"
+        badge="Dummy Data Page"
+      >
+        <div className="hidden xl:flex items-center gap-3 px-6 py-3 rounded-2xl bg-accent-strong/10 border border-accent-strong/20 text-accent shadow-sm">
+          <ShieldCheck size={20} strokeWidth={3} />
+          <span className="text-[10px] font-bold uppercase tracking-widest">Rate Reconciliation Active</span>
         </div>
-        <div className="flex gap-3">
-            <div className="hidden xl:flex items-center gap-3 px-6 py-3 rounded-2xl bg-blue-600/10 border border-blue-600/20 text-blue-500 shadow-sm">
-                <ShieldCheck size={20} strokeWidth={3} />
-                <span className="text-[10px] font-black uppercase tracking-widest">Rate Reconciliation Active</span>
-            </div>
-            <button className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-black px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-[1.02] active:scale-95 transition-all">
-                <FileOutput size={18} strokeWidth={3} /> Export GSTR-1
-            </button>
-            <button 
-              onClick={() => setIsPOSOpen(true)}
-              className="flex items-center gap-2 bg-blue-600 text-white px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
-            >
-                <Plus size={20} strokeWidth={4} /> New POS Bill
-            </button>
-        </div>
-      </div>
+        <Button
+          size="md"
+          icon={<FileOutput size={18} strokeWidth={3} />}
+        >
+          Export GSTR-1
+        </Button>
+        <Button
+          variant="primary"
+          size="md"
+          onClick={() => setIsPOSOpen(true)}
+          icon={<Plus size={20} strokeWidth={4} />}
+        >
+          New POS Bill
+        </Button>
+      </PageHeader>
 
       {/* Analytics Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <SummaryCard title="Gross Yield" value="₹2,84,550" subtext="Month-to-date performance" icon={IndianRupee} color="text-blue-500" />
+          <SummaryCard title="Gross Yield" value="₹2,84,550" subtext="Month-to-date performance" icon={IndianRupee} color="text-accent" />
           <SummaryCard title="Actual Collections" value="₹2,06,557" subtext="Settled & Reconciled" icon={CheckCircle2} color="text-emerald-500" trend="up" />
           <SummaryCard title="Ledger Receivables" value="₹77,993" subtext="Outstanding B2B/Guest" icon={AlertCircle} color="text-red-500" trend="down" />
           <SummaryCard title="Draft Entries" value="08" subtext="Awaiting finalization" icon={FileText} color="text-amber-500" />
@@ -97,12 +96,12 @@ const BillingHub: React.FC = () => {
       <GlassCard className="flex flex-col md:flex-row gap-4 items-center justify-between" noPadding>
         <div className="p-3 w-full flex-1 flex flex-col md:flex-row gap-3">
             <div className="relative group flex-1">
-                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 dark:group-focus-within:text-orange-500 transition-colors" />
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-accent transition-colors" />
                 <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="block w-full pl-16 pr-6 py-5 border border-white/10 rounded-[1.5rem] bg-white/40 dark:bg-black/40 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-orange-500/10 sm:text-sm shadow-sm backdrop-blur-md font-bold uppercase tracking-widest"
+                    className="block w-full pl-16 pr-6 py-5 border border-white/10 rounded-[1.5rem] bg-white/40 dark:bg-black/40 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-accent/10 sm:text-sm shadow-sm backdrop-blur-md font-bold uppercase tracking-widest"
                     placeholder="Search Invoice #, Guest or Corporate Client..."
                 />
             </div>
@@ -111,7 +110,7 @@ const BillingHub: React.FC = () => {
                     <button 
                         key={f}
                         onClick={() => setFilterStatus(f as any)}
-                        className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterStatus === f ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-lg' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'}`}
+                        className={`px-8 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${filterStatus === f ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-lg' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'}`}
                     >
                         {f}
                     </button>
@@ -125,7 +124,7 @@ const BillingHub: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-black/10 dark:bg-white/[0.03] text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border-b border-white/10">
+              <tr className="bg-black/10 dark:bg-white/[0.03] text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 border-b border-white/10">
                 <th className="px-10 py-6">Ledger Number</th>
                 <th className="px-8 py-6">Customer Identity</th>
                 <th className="px-6 py-6 text-center">Unit</th>
@@ -143,10 +142,10 @@ const BillingHub: React.FC = () => {
                 <tr 
                   key={inv.id} 
                   onClick={() => handleOpenInvoice(inv)}
-                  className="hover:bg-white/5 transition-all group cursor-pointer border-l-4 border-transparent hover:border-blue-600"
+                  className="hover:bg-white/5 transition-all group cursor-pointer border-l-4 border-transparent hover:border-accent-strong"
                 >
                   <td className="px-10 py-6">
-                    <span className="text-xs font-mono font-black text-blue-600 dark:text-orange-500 group-hover:underline">
+                    <span className="text-xs font-mono font-black text-accent-strong group-hover:underline">
                       {inv.id}
                     </span>
                   </td>
@@ -181,8 +180,8 @@ const BillingHub: React.FC = () => {
                   </td>
                   <td className="px-8 py-6 text-right pr-12">
                     <div className="flex justify-end gap-3">
-                        <button className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 hover:text-white hover:bg-blue-600 transition-all shadow-sm"><Printer size={18} /></button>
-                        <button className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 hover:text-white hover:bg-orange-500 transition-all shadow-sm"><Download size={18} /></button>
+                        <button className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 hover:text-white hover:bg-accent-strong transition-all shadow-sm"><Printer size={18} /></button>
+                        <button className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-gray-500 hover:text-white hover:bg-accent transition-all shadow-sm"><Download size={18} /></button>
                     </div>
                   </td>
                 </tr>
@@ -206,7 +205,7 @@ const SummaryCard = ({ title, value, subtext, icon: Icon, color = 'text-gray-400
           <div className="flex items-center gap-3">
              <h3 className="text-3xl font-black dark:text-white tracking-tighter leading-none">{value}</h3>
              {trend && (
-                <div className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase flex items-center gap-1 ${trend === 'up' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                <div className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase flex items-center gap-1 ${trend === 'up' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
                    {trend === 'up' ? <TrendingUp size={10} /> : <TrendingUp size={10} className="rotate-180" />} 12%
                 </div>
              )}

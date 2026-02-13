@@ -1,7 +1,9 @@
 
 import React, { useState } from 'react';
-import { Mail, Lock, Moon, Sun, Zap } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import GlassCard from '../components/ui/GlassCard';
+import GlassInput from '../components/ui/GlassInput';
+import Button from '../components/ui/Button';
 import { useTheme } from '../hooks/useTheme';
 
 interface LoginProps {
@@ -15,21 +17,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // For demo purposes, if email contains 'hotel' it goes to hotel view, else super admin
     const role = email.toLowerCase().includes('hotel') ? 'hotel' : 'super';
     onLogin(role);
   };
 
-  const inputClass = `w-full px-5 py-4 rounded-2xl outline-none transition-all duration-300 text-sm font-medium border
-    ${isDarkMode 
-      ? 'bg-[#121212]/40 border-white/5 text-white placeholder-gray-600 focus:border-orange-500/50 focus:ring-4 focus:ring-orange-500/10' 
-      : 'bg-gray-50 border-gray-100 text-slate-900 placeholder-gray-400 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10'
-    }`;
-    
-  const labelClass = `block text-[10px] font-black uppercase tracking-[0.2em] mb-3 ${isDarkMode ? 'text-gray-400' : 'text-slate-500'}`;
-
   return (
-    <div className={`fixed inset-0 z-[10000] flex items-center justify-center transition-colors duration-700 ${isDarkMode ? 'bg-black' : 'bg-[#f8fafc]'}`}>
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center transition-colors duration-700 bg-[#f8fafc] dark:bg-black">
       
       {/* Top Right Theme Toggle */}
       <button 
@@ -46,7 +39,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             
             {/* Header Section */}
             <div className="text-center md:text-left space-y-4">
-              <div className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'bg-orange-500/10 text-orange-500' : 'bg-blue-100 text-blue-600'}`}>
+              <div className="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-accent-muted text-accent dark:bg-accent-muted dark:text-accent">
                 HMS Foundation
               </div>
               <div className="space-y-1">
@@ -57,39 +50,32 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-8">
-              <div>
-                <label className={labelClass}>Email</label>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com" 
-                  className={inputClass}
-                  required
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Password</label>
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="********" 
-                  className={inputClass}
-                  required
-                />
-              </div>
+              <GlassInput
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@company.com"
+                required
+              />
+              <GlassInput
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="********"
+                required
+              />
 
-              <button 
+              <Button
                 type="submit"
-                className={`w-full py-5 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl transition-all hover:scale-[1.02] active:scale-95
-                  ${isDarkMode 
-                    ? 'bg-orange-500 text-white shadow-orange-900/20 hover:bg-orange-600' 
-                    : 'bg-blue-600 text-white shadow-blue-900/10 hover:bg-blue-700'
-                  }`}
+                variant="action"
+                size="lg"
+                fullWidth
+                className="py-5 shadow-xl"
               >
                 Sign in
-              </button>
+              </Button>
             </form>
           </div>
         </GlassCard>

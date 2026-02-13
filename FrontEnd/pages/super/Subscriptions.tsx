@@ -6,13 +6,12 @@ import {
 import GlassCard from '../../components/ui/GlassCard';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import Pagination from '../../components/ui/Pagination';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
 import ChangePlanModal from '../../modals/super/ChangePlanModal';
 import ExtendSubscriptionModal from '../../modals/super/ExtendSubscriptionModal';
 import { Subscription, mockSubscriptions } from '../../data/subscriptions';
 
 const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onNavigate }) => {
-  const { isDarkMode } = useTheme();
   const [filterPlan, setFilterPlan] = useState('All Plans');
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -54,17 +53,12 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
   return (
     <div className="p-4 md:p-8 space-y-8 min-h-screen pb-20 animate-in fade-in duration-500">
       
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">Subscription Hub</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-2">Active Entitlements Ledger</p>
-        </div>
-      </div>
+      <PageHeader title="Subscription Hub" subtitle="Active Entitlements Ledger" />
 
       <GlassCard noPadding clipContent className="overflow-hidden border-white/10 shadow-2xl">
         <div className="px-8 py-4 border-b border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-black/5 dark:bg-white/[0.01]">
             <div className="relative group w-full sm:max-w-md">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-accent transition-colors" />
                 <input
                   type="text"
                   value={search}
@@ -77,7 +71,7 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
                 <GlassDropdown 
                     trigger={
                         <button className="flex items-center justify-between gap-3 px-5 py-2.5 bg-black/10 dark:bg-white/5 border border-white/10 rounded-xl hover:bg-black/20 dark:hover:bg-white/10 transition-all min-w-[140px]">
-                            <span className="text-[10px] font-black uppercase text-gray-700 dark:text-gray-300 tracking-widest">{filterPlan}</span>
+                            <span className="text-[10px] font-bold uppercase text-gray-700 dark:text-gray-300 tracking-widest">{filterPlan}</span>
                             <ChevronDown size={14} className="text-gray-400" />
                         </button>
                     }
@@ -94,7 +88,7 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-white/[0.03] text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border-b border-white/10">
+              <tr className="bg-slate-50 dark:bg-white/[0.03] text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 border-b border-white/10">
                 <th className="px-8 py-3.5">Hotel Name</th>
                 <th className="px-8 py-3.5">Plan</th>
                 <th className="px-8 py-3.5">Start Date</th>
@@ -110,12 +104,12 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
                 <tr key={sub.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
                   <td className="px-8 py-3 text-xs font-black dark:text-white uppercase truncate">{sub.hotel}</td>
                   <td className="px-8 py-3">
-                    <span className="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded bg-black/5 dark:bg-white/5 border border-white/5 text-gray-400">{sub.plan}</span>
+                    <span className="text-[9px] font-bold uppercase tracking-tighter px-2 py-0.5 rounded bg-black/5 dark:bg-white/5 border border-white/5 text-gray-400">{sub.plan}</span>
                   </td>
                   <td className="px-8 py-3 text-[10px] font-mono font-medium text-gray-500">{sub.startDate}</td>
                   <td className="px-8 py-3 text-[10px] font-mono font-black dark:text-gray-300">{sub.renewalDate}</td>
                   <td className="px-8 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${getStatusStyle(sub.status)}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-widest ${getStatusStyle(sub.status)}`}>
                       {sub.status}
                     </span>
                   </td>

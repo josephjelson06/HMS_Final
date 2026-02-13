@@ -58,7 +58,7 @@ const PeripheralItem = ({ icon: Icon, name, status, detail }: any) => {
       </div>
       <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${statusStyles[status as keyof typeof statusStyles]}`}>
         <StatusIcon size={12} />
-        <span className="text-[9px] font-black uppercase tracking-wider">{status}</span>
+        <span className="text-[9px] font-bold uppercase tracking-wider">{status}</span>
       </div>
     </div>
   );
@@ -74,7 +74,7 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
     { t: '07:41 AM', type: 'SYNC', msg: 'Guest check-in #GR-8891 synced', color: 'text-emerald-500' },
     { t: '07:38 AM', type: 'HEARTBEAT', msg: 'All systems normal', color: 'text-gray-500' },
     { t: '06:15 AM', type: 'PERIPHERAL', msg: 'Paper roll below 20%', color: 'text-amber-500' },
-    { t: '02:00 AM', type: 'SYSTEM', msg: 'Auto-maintenance cycle complete', color: 'text-blue-500' },
+    { t: '02:00 AM', type: 'SYSTEM', msg: 'Auto-maintenance cycle complete', color: 'text-accent' },
   ]);
 
   const handleUnmapConfirm = () => {
@@ -93,11 +93,11 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
           EXIT COMMAND CENTER
         </button>
         <div className="flex gap-2">
-           <button className="px-4 py-2.5 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all flex items-center gap-2 border border-red-500/20">
+           <button className="px-4 py-2.5 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 transition-all flex items-center gap-2 border border-red-500/20">
             <Power size={14} />
             Force Restart
           </button>
-          <button className="px-4 py-2.5 rounded-xl bg-blue-500 text-white dark:bg-orange-500 text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-105 transition-all flex items-center gap-2">
+          <button className="px-4 py-2.5 rounded-xl bg-accent text-white text-[10px] font-bold uppercase tracking-widest shadow-lg hover:scale-105 transition-all flex items-center gap-2">
             <RefreshCw size={14} />
             Push Firmware
           </button>
@@ -119,7 +119,7 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
               <div>
                 <div className="flex items-center gap-3 mb-1">
                   <h1 className="text-3xl font-black dark:text-white tracking-tighter">{kioskId}</h1>
-                  <span className="px-3 py-1 rounded-lg bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">Online</span>
+                  <span className="px-3 py-1 rounded-lg bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/20">Online</span>
                 </div>
                 <p className="text-sm text-gray-500 font-bold uppercase tracking-widest">Hotel Sapphire • Main Lobby</p>
               </div>
@@ -174,7 +174,7 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
                 <Terminal size={16} className="text-gray-400" />
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] dark:text-white">Forensic System Events</h3>
               </div>
-              <button className="text-[10px] font-black text-blue-600 dark:text-orange-500 uppercase tracking-widest hover:underline">Download full log</button>
+              <button className="text-[10px] font-black text-accent-strong uppercase tracking-widest hover:underline">Download full log</button>
             </div>
             <div className="flex-1 bg-[#0a0a0b] p-6 font-mono text-[11px] leading-relaxed overflow-y-auto custom-scrollbar">
               {logs.map((log, i) => (
@@ -213,7 +213,7 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
                      </button>
                      <button 
                        onClick={() => setIsTicketModalOpen(true)}
-                       className="w-full flex items-center justify-between p-4 rounded-2xl bg-black/5 hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-orange-500 transition-all text-sm font-bold border border-white/5 group"
+                       className="w-full flex items-center justify-between p-4 rounded-2xl bg-black/5 hover:bg-accent-muted hover:text-accent transition-all text-sm font-bold border border-white/5 group"
                      >
                         <span className="flex items-center gap-2"><FileQuestion size={16} className="opacity-50 group-hover:opacity-100" /> Raise Support Ticket</span>
                         <ChevronRight size={14} className="opacity-30" />

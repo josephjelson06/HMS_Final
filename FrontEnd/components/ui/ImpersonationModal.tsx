@@ -46,7 +46,7 @@ const ImpersonationModal: React.FC<ImpersonationModalProps> = ({ isOpen, onClose
             <div className="p-10 space-y-8">
               <div className="space-y-4">
                 <p className="text-sm font-bold dark:text-gray-200 leading-relaxed">
-                  You are about to impersonate <span className="text-blue-500 dark:text-orange-500 font-black">{hotelName}</span> as Hotel Manager.
+                  You are about to impersonate <span className="text-accent font-black">{hotelName}</span> as Hotel Manager.
                 </p>
                 <div className="space-y-3">
                    <div className="flex items-start gap-3">

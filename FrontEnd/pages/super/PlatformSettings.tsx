@@ -16,18 +16,18 @@ const PlatformSettings: React.FC = () => {
 
   const inputClass = `w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border
     ${isDarkMode 
-      ? 'bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-orange-500/50' 
-      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10'
+      ? 'bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-accent/50' 
+      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-accent/50 focus:ring-2 focus:ring-accent/10'
     }`;
     
-  const labelClass = `block text-[10px] font-black uppercase tracking-widest mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
+  const labelClass = `block text-[10px] font-bold uppercase tracking-widest mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
 
   const NavItem = ({ section, label, icon: Icon }: { section: Section, label: string, icon: any }) => (
     <button
       onClick={() => setActiveSection(section)}
       className={`w-full flex items-center justify-between p-5 rounded-[1.5rem] transition-all duration-300 group
         ${activeSection === section 
-          ? 'bg-blue-600 dark:bg-orange-500 text-white shadow-[0_20px_40px_-10px_rgba(37,99,235,0.4)] dark:shadow-[0_20px_40px_-10px_rgba(249,115,22,0.3)] translate-x-1' 
+          ? 'bg-accent-strong text-white shadow-accent-strong/40 dark:shadow-accent-strong/30 translate-x-1' 
           : 'text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'
         }
       `}
@@ -38,7 +38,7 @@ const PlatformSettings: React.FC = () => {
           className={`transition-colors duration-300 ${
             activeSection === section 
               ? 'text-white' 
-              : 'group-hover:text-blue-600 dark:group-hover:text-orange-500'
+              : 'group-hover:text-accent-strong'
           }`} 
         />
         <span className="text-sm font-black uppercase tracking-widest">{label}</span>
@@ -80,7 +80,7 @@ const PlatformSettings: React.FC = () => {
              <div className="p-5 rounded-3xl bg-black/5 dark:bg-white/5 border border-dashed border-white/10">
                 <div className="flex items-center gap-2 mb-2 text-emerald-500">
                    <Shield size={14} />
-                   <span className="text-[10px] font-black uppercase">Data Sovereignty</span>
+                   <span className="text-[10px] font-bold uppercase">Data Sovereignty</span>
                 </div>
                 <p className="text-[10px] text-gray-500 font-medium leading-relaxed">Changes made here propagate to the CDN and Edge nodes within 60 seconds.</p>
              </div>
@@ -89,7 +89,7 @@ const PlatformSettings: React.FC = () => {
 
         {/* Content Area */}
         <div className="lg:col-span-9">
-          <GlassCard className="min-h-[600px] border-l-4 border-l-blue-600 dark:border-l-orange-500">
+          <GlassCard className="min-h-[600px] border-l-4 border-l-accent-strong">
             {activeSection === 'COMPANY' && (
               <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="flex items-center justify-between">
@@ -154,7 +154,7 @@ const PlatformSettings: React.FC = () => {
                     </div>
                   </div>
                   <div className="col-span-2 p-6 rounded-3xl bg-black/5 dark:bg-white/5 border border-white/5 space-y-4">
-                     <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-500">Bank Settlement Details (Appears on Invoices)</h4>
+                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Bank Settlement Details (Appears on Invoices)</h4>
                      <div className="grid grid-cols-2 gap-4">
                         <input type="text" placeholder="Account Name" className={inputClass} />
                         <input type="text" placeholder="Account Number" className={inputClass} />
@@ -210,21 +210,21 @@ const PlatformSettings: React.FC = () => {
                   ].map((temp) => (
                     <div key={temp.id} className="flex items-center justify-between p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/5 group hover:border-blue-500/30 transition-all">
                        <div className="flex items-center gap-4">
-                          <div className={`px-2 py-1 rounded text-[8px] font-black tracking-widest ${temp.type === 'SMS' ? 'bg-orange-500 text-white' : 'bg-blue-600 text-white'}`}>{temp.type}</div>
+                          <div className={`px-2 py-1 rounded text-[8px] font-black tracking-widest ${temp.type === 'SMS' ? 'bg-accent text-white' : 'bg-accent-strong text-white'}`}>{temp.type}</div>
                           <div>
                              <h4 className="text-sm font-bold dark:text-white">{temp.label}</h4>
                              <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tight">ID: TPL_{temp.id.toUpperCase()}</p>
                           </div>
                        </div>
-                       <button className="p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-gray-500 hover:text-blue-500 transition-all">
+                       <button className="p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-gray-500 hover:text-accent transition-all">
                           <Edit2 size={18} />
                        </button>
                     </div>
                   ))}
                 </div>
                 
-                <div className="p-6 rounded-3xl bg-blue-600/10 border border-blue-600/20">
-                   <h4 className="text-xs font-black uppercase text-blue-600 mb-3 flex items-center gap-2">
+                <div className="p-6 rounded-3xl bg-accent-strong/10 border border-accent-strong/20">
+                   <h4 className="text-xs font-black uppercase text-accent-strong mb-3 flex items-center gap-2">
                       <Database size={14} /> Available Variables
                    </h4>
                    <div className="flex flex-wrap gap-2">

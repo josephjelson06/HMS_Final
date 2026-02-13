@@ -9,14 +9,14 @@ import { useTheme } from '../../hooks/useTheme';
 // --- SUB-COMPONENTS ---
 
 const FormatBadge: React.FC<{ label: string }> = ({ label }) => (
-  <span className="px-3 py-1 rounded-full bg-black/5 dark:bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
+  <span className="px-3 py-1 rounded-full bg-black/5 dark:bg-white/5 border border-white/10 text-[9px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
     {label}
   </span>
 );
 
 const ReportSummaryCard = ({ icon: Icon, title, preview, formats, color, onClick }: any) => {
   const colorStyles: Record<string, string> = {
-    blue: 'text-blue-500 bg-blue-500/10 dark:bg-blue-500/20',
+    blue: 'text-accent bg-blue-500/10 dark:bg-blue-500/20',
     cyan: 'text-cyan-500 bg-cyan-500/10 dark:bg-cyan-500/20',
     emerald: 'text-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20',
     purple: 'text-purple-500 bg-purple-500/10 dark:bg-purple-500/20',
@@ -27,7 +27,7 @@ const ReportSummaryCard = ({ icon: Icon, title, preview, formats, color, onClick
       onClick={onClick}
       className="group text-center h-full transition-all w-full outline-none"
     >
-      <GlassCard className="h-full flex flex-col items-center hover:border-blue-500/30 dark:hover:border-orange-500/30 transition-all relative overflow-hidden p-8">
+      <GlassCard className="h-full flex flex-col items-center hover:border-accent/30 transition-all relative overflow-hidden p-8">
         {/* Icon Container */}
         <div className={`p-5 rounded-2xl ${colorStyles[color]} mb-6 group-hover:scale-110 transition-transform duration-500 shadow-inner`}>
           <Icon size={32} />
@@ -47,7 +47,7 @@ const ReportSummaryCard = ({ icon: Icon, title, preview, formats, color, onClick
         </div>
         
         {/* Export Link */}
-        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-orange-500 transition-colors">
+        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-900 dark:text-white group-hover:text-accent-strong transition-colors">
           Export <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
         </div>
       </GlassCard>
@@ -107,7 +107,7 @@ const Reports: React.FC = () => {
        <div className="p-4 md:p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
           <button 
             onClick={() => setActiveReport(null)}
-            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors group"
+            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors group"
           >
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
             Back to Registry
@@ -115,7 +115,7 @@ const Reports: React.FC = () => {
           <HeaderSection title={reports.find(r => r.id === activeReport)?.title} sub="Comprehensive Data Analysis" />
           <GlassCard className="h-96 flex flex-col items-center justify-center text-gray-500 border-dashed border-2 border-white/10">
              <div className="text-center space-y-4">
-                <FileOutput size={64} className="mx-auto opacity-10 animate-pulse text-blue-500" />
+                <FileOutput size={64} className="mx-auto opacity-10 animate-pulse text-accent" />
                 <div>
                     <p className="text-sm font-black uppercase tracking-[0.2em] dark:text-white">Compiling Archive...</p>
                     <p className="text-[10px] font-bold uppercase tracking-widest mt-1">Aggregating real-time data from platform nodes</p>

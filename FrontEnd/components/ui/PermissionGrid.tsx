@@ -6,7 +6,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import GlassCard from './GlassCard';
-import { useTheme } from '../../hooks/useTheme';
+
 
 interface PermissionAction {
   id: string;
@@ -29,7 +29,7 @@ interface PermissionGridProps {
 }
 
 const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type }) => {
-  const { isDarkMode } = useTheme();
+
   const [search, setSearch] = useState('');
 
   // 1. Define available actions (X-Axis)
@@ -106,18 +106,18 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type 
         <div className="space-y-1">
           <button 
             onClick={onBack}
-            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-blue-600 dark:hover:text-orange-500 transition-colors group mb-3"
+            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-accent-strong transition-colors group mb-3"
           >
             <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
             Back to Role Registry
           </button>
           <div className="flex items-center gap-4">
-             <div className="w-12 h-12 rounded-2xl bg-blue-600 dark:bg-orange-500 flex items-center justify-center text-white shadow-xl">
+             <div className="w-12 h-12 rounded-2xl bg-accent-strong flex items-center justify-center text-white shadow-xl">
                 <Shield size={24} />
              </div>
              <div>
                 <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">RBAC Matrix</h1>
-                <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Configuring Role: <span className="text-blue-600 dark:text-orange-500">{roleName}</span></p>
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Configuring Role: <span className="text-accent-strong">{roleName}</span></p>
              </div>
           </div>
         </div>
@@ -126,7 +126,7 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type 
           <button className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/10 text-gray-500 hover:text-white transition-all text-xs font-black uppercase tracking-widest">
             <RotateCcw size={16} /> Reset Default
           </button>
-          <button className="flex items-center gap-2 px-10 py-3 rounded-2xl bg-blue-600 text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:scale-105 active:scale-95 transition-all">
+          <button className="flex items-center gap-2 px-10 py-3 rounded-2xl bg-accent-strong text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-accent-strong/20 hover:scale-105 active:scale-95 transition-all">
             <Save size={18} /> Commit Changes
           </button>
         </div>
@@ -135,7 +135,7 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type 
       {/* Control Bar */}
       <GlassCard className="flex flex-col md:flex-row items-center justify-between gap-4 border-white/10" noPadding>
           <div className="relative w-full md:flex-1 group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 dark:group-focus-within:text-orange-500 transition-colors" />
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-accent transition-colors" />
             <input
               type="text"
               value={search}
@@ -161,7 +161,7 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type 
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-black/10 dark:bg-white/[0.03] text-[10px] font-black uppercase tracking-widest text-gray-500 border-b border-white/10">
+              <tr className="bg-black/10 dark:bg-white/[0.03] text-[10px] font-bold uppercase tracking-widest text-gray-500 border-b border-white/10">
                 <th className="px-8 py-6 w-[350px] sticky left-0 z-20 bg-gray-100 dark:bg-[#121212] border-r border-white/5">
                    Module Identity
                 </th>
@@ -208,7 +208,7 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type 
                             className={`
                               w-10 h-10 rounded-2xl mx-auto flex items-center justify-center transition-all duration-300
                               ${isEnabled 
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30 scale-110' 
+                                ? 'bg-accent-strong text-white shadow-lg shadow-accent-strong/30 scale-110' 
                                 : 'bg-black/10 dark:bg-white/5 text-gray-600 hover:bg-black/20 dark:hover:bg-white/10'
                               }
                               ${action.isHighRisk && isEnabled ? 'bg-red-600 shadow-red-900/40' : ''}
@@ -226,12 +226,12 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type 
                   })}
                   <td className="px-8 py-6 text-right pr-10">
                      <div className="flex justify-end">
-                        <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter border ${
+                        <div className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-tighter border ${
                           permissions[module.id].size === module.actions.length 
                             ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
                             : permissions[module.id].size === 0
                             ? 'bg-red-500/10 text-red-500 border-red-500/20'
-                            : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                            : 'bg-blue-500/10 text-accent border-accent/20'
                         }`}>
                            {permissions[module.id].size === module.actions.length ? 'FULL ACCESS' : permissions[module.id].size === 0 ? 'RESTRICTED' : 'PARTIAL'}
                         </div>
@@ -245,7 +245,7 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type 
       </GlassCard>
 
       {/* Safety Banner */}
-      <div className="p-8 rounded-[2.5rem] bg-orange-600 text-white shadow-2xl flex flex-col md:flex-row items-center gap-8 animate-in slide-in-from-bottom-6 duration-1000">
+      <div className="p-8 rounded-[2.5rem] bg-accent-strong text-white shadow-2xl flex flex-col md:flex-row items-center gap-8 animate-in slide-in-from-bottom-6 duration-1000">
           <div className="w-20 h-20 rounded-3xl bg-white/20 flex items-center justify-center shrink-0 border border-white/20">
               <ShieldAlert size={40} strokeWidth={2.5} />
           </div>
@@ -258,7 +258,7 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type 
           <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 border border-white/20">
              {/* Fix: Added missing ShieldCheck import and used it here */}
              <ShieldCheck size={20} />
-             <span className="text-[10px] font-black uppercase tracking-widest">MFA Required for Write</span>
+             <span className="text-[10px] font-bold uppercase tracking-widest">MFA Required for Write</span>
           </div>
       </div>
 

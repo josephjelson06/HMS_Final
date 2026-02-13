@@ -82,11 +82,11 @@ const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose
 
   const inputClass = `w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border
     ${isDarkMode 
-      ? 'bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-orange-500/50' 
-      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10'
+      ? 'bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-accent/50' 
+      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-accent/50 focus:ring-2 focus:ring-accent/10'
     }`;
     
-  const labelClass = `block text-[10px] font-black uppercase tracking-widest mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
+  const labelClass = `block text-[10px] font-bold uppercase tracking-widest mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
 
   return ReactDOM.createPortal(
     <>
@@ -109,12 +109,12 @@ const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose
             {/* Header */}
             <div className={`px-8 py-6 border-b shrink-0 flex items-center justify-between ${isDarkMode ? 'border-white/10' : 'border-gray-200/50'}`}>
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-900/20">
+                    <div className="w-12 h-12 rounded-2xl bg-accent-strong text-white flex items-center justify-center shadow-lg shadow-accent-strong/20">
                         <Zap size={24} fill="currentColor" />
                     </div>
                     <div>
                         <h2 className="text-xl font-black dark:text-white tracking-tighter uppercase leading-none">Generate Invoice</h2>
-                        <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mt-1">Platform Billing Engine</p>
+                        <p className="text-[10px] font-bold text-accent-strong dark:text-blue-400 uppercase tracking-widest mt-1">Platform Billing Engine</p>
                     </div>
                 </div>
                 <button onClick={onClose} className="p-2.5 rounded-full hover:bg-white/10 transition-colors text-gray-400"><X size={24} /></button>
@@ -127,7 +127,7 @@ const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose
                 <section className="space-y-6">
                     <div className="flex items-center gap-2 text-gray-500">
                         <Building2 size={16} />
-                        <h3 className="text-[10px] font-black uppercase tracking-widest">Billing Context</h3>
+                        <h3 className="text-[10px] font-bold uppercase tracking-widest">Billing Context</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-6">
                         <div className="col-span-2">
@@ -176,11 +176,11 @@ const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-gray-500">
                             <FileText size={16} />
-                            <h3 className="text-[10px] font-black uppercase tracking-widest">Revenue Items</h3>
+                            <h3 className="text-[10px] font-bold uppercase tracking-widest">Revenue Items</h3>
                         </div>
                         <button 
                             onClick={addLineItem}
-                            className="text-[10px] font-black text-blue-600 dark:text-orange-500 uppercase tracking-widest hover:underline flex items-center gap-1"
+                            className="text-[10px] font-black text-accent-strong uppercase tracking-widest hover:underline flex items-center gap-1"
                         >
                             <Plus size={12} strokeWidth={4} /> Add Line
                         </button>
@@ -228,12 +228,12 @@ const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose
                             <span className="font-mono">₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                         </div>
                         <div className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-widest">
-                            <span className="flex items-center gap-2">IGST Logic (18%) <ShieldCheck size={12} className="text-blue-500" /></span>
+                            <span className="flex items-center gap-2">IGST Logic (18%) <ShieldCheck size={12} className="text-accent" /></span>
                             <span className="font-mono">₹{gst.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                         </div>
                         <div className="pt-4 border-t border-white/5 flex justify-between items-end">
                             <span className="text-sm font-black dark:text-white uppercase tracking-tighter">Grand Total</span>
-                            <span className="text-3xl font-black text-blue-600 dark:text-orange-500 tracking-tighter font-mono">
+                            <span className="text-3xl font-black text-accent-strong tracking-tighter font-mono">
                                 ₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                             </span>
                         </div>
@@ -252,13 +252,13 @@ const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose
 
             {/* Footer */}
             <div className={`px-8 py-6 border-t shrink-0 flex justify-end gap-3 ${isDarkMode ? 'border-white/10 bg-black/20' : 'border-gray-200/50 bg-white/50'}`}>
-                <button onClick={onClose} className="px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
+                <button onClick={onClose} className="px-8 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
                     Discard Draft
                 </button>
                 <button 
                   onClick={handleConfirm}
                   disabled={!selectedHotel || total <= 0}
-                  className="px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest bg-blue-600 text-white shadow-xl shadow-blue-900/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-30 disabled:grayscale"
+                  className="px-10 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest bg-accent-strong text-white shadow-xl shadow-accent-strong/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-30 disabled:grayscale"
                 >
                     <Save size={16} /> Confirm & Publish
                 </button>

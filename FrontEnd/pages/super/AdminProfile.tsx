@@ -10,11 +10,11 @@ const AdminProfile: React.FC = () => {
 
   const inputClass = `w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border
     ${isDarkMode 
-      ? 'bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-orange-500/50' 
-      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10'
+      ? 'bg-black/40 border-white/10 text-white placeholder-gray-500 focus:border-accent/50' 
+      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-accent/50 focus:ring-2 focus:ring-accent/10'
     }`;
     
-  const labelClass = `block text-[10px] font-black uppercase tracking-widest mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
+  const labelClass = `block text-[10px] font-bold uppercase tracking-widest mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
 
   return (
     <div className="p-8 space-y-8 min-h-screen pb-20 animate-in fade-in duration-500">
@@ -24,7 +24,7 @@ const AdminProfile: React.FC = () => {
           <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">Account Settings</h1>
           <p className="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Manage your personal profile & preferences</p>
         </div>
-        <button className="flex items-center gap-2 bg-blue-600 dark:bg-orange-500 text-white px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
+        <button className="flex items-center gap-2 bg-accent-strong text-white px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
           <Save size={18} />
           Save Changes
         </button>
@@ -35,7 +35,7 @@ const AdminProfile: React.FC = () => {
         <div className="space-y-8">
           <GlassCard className="flex flex-col items-center text-center p-10">
             <div className="relative mb-6">
-              <div className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-tr from-blue-100 to-blue-200 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center text-blue-600 dark:text-gray-300 shadow-inner overflow-hidden border-4 border-white dark:border-white/10">
+              <div className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-tr from-blue-100 to-blue-200 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center text-accent-strong dark:text-gray-300 shadow-inner overflow-hidden border-4 border-white dark:border-white/10">
                 <img src="https://ui-avatars.com/api/?name=Vikram+Patel&background=0D8ABC&color=fff&size=128" alt="Profile" />
               </div>
               <button className="absolute -bottom-2 -right-2 p-3 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black shadow-xl hover:scale-110 transition-transform">
@@ -43,7 +43,7 @@ const AdminProfile: React.FC = () => {
               </button>
             </div>
             <h3 className="text-xl font-black dark:text-white mb-1">Vikram Patel</h3>
-            <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-orange-500">Super Admin (Root Access)</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent-strong">Super Admin (Root Access)</p>
             <div className="mt-6 pt-6 border-t border-white/10 w-full">
                <div className="flex items-center justify-center gap-2 text-emerald-500">
                   <ShieldCheck size={16} />
@@ -53,7 +53,7 @@ const AdminProfile: React.FC = () => {
           </GlassCard>
 
           <GlassCard>
-            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">Language & Region</h3>
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-6">Language & Region</h3>
             <div className="space-y-4">
               <div>
                 <label className={labelClass}>Preferred Language</label>
@@ -74,7 +74,7 @@ const AdminProfile: React.FC = () => {
           {/* Personal Info */}
           <GlassCard>
             <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500"><User size={20} /></div>
+              <div className="p-2 rounded-xl bg-blue-500/10 text-accent"><User size={20} /></div>
               <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Personal Information</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -102,7 +102,7 @@ const AdminProfile: React.FC = () => {
           {/* Security & 2FA */}
           <GlassCard>
             <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500"><Lock size={20} /></div>
+              <div className="p-2 rounded-xl bg-accent-muted text-accent"><Lock size={20} /></div>
               <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Security Controls</h3>
             </div>
             <div className="space-y-8">
@@ -115,7 +115,7 @@ const AdminProfile: React.FC = () => {
                   <label className={labelClass}>Confirm New Password</label>
                   <input type="password" placeholder="••••••••••••" className={inputClass} />
                 </div>
-                <button className="px-6 py-3 rounded-xl border border-gray-200 dark:border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-black/5 dark:hover:bg-white/5 transition-all">
+                <button className="px-6 py-3 rounded-xl border border-gray-200 dark:border-white/10 text-[10px] font-bold uppercase tracking-widest hover:bg-black/5 dark:hover:bg-white/5 transition-all">
                   Update Password
                 </button>
               </div>
@@ -158,7 +158,7 @@ const AdminProfile: React.FC = () => {
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" className="sr-only peer" defaultChecked={notif.default} />
-                    <div className={`w-9 h-5 bg-gray-200 dark:bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all`}></div>
+                    <div className={`w-9 h-5 bg-gray-200 dark:bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-accent-strong after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all`}></div>
                   </label>
                 </div>
               ))}

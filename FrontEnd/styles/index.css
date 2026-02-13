@@ -1,7 +1,64 @@
 @import "tailwindcss";
 
+/* Tell Tailwind v4 to use the .dark class (set by ThemeProvider) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Design System Tokens ─── */
+@theme {
+  /* Typography Scale */
+  --font-size-micro: 9px;
+  --font-size-caption: 10px;
+  --font-size-label: 11px;
+  --font-size-body-sm: 14px;
+
+  /* Border Radius Scale */
+  --radius-button: 0.75rem;
+  --radius-input: 1rem;
+  --radius-card: 1.5rem;
+  --radius-card-lg: 2rem;
+  --radius-card-xl: 2.5rem;
+  --radius-sidebar-item: 1.25rem;
+
+  /* Letter Spacing */
+  --tracking-label: 0.2em;
+  --tracking-label-wide: 0.25em;
+
+  /* ── Accent Color Tokens ──
+     These resolve automatically per mode via :root / .dark custom properties.
+     To change the entire app's accent, edit ONLY :root and .dark below. */
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-muted: var(--accent-muted);
+  --color-accent-ring: var(--accent-ring);
+}
+
+/* ─── Global Focus-Visible Styles ─── */
+*:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
 :root {
-  /* LIGHT MODE - Updated for a flatter, modern look */
+  /* ── Accent Palette: BLUE (Light Mode) ── */
+  --accent: #3b82f6;               /* blue-500 */
+  --accent-strong: #2563eb;        /* blue-600 */
+  --accent-muted: rgba(59, 130, 246, 0.1);
+  --accent-ring: rgba(59, 130, 246, 0.3);
+
+  /* LIGHT MODE surfaces */
   --bg-primary: #fcfcfc;
   --text-primary: #1e293b;
 
@@ -17,6 +74,12 @@
 
 /* DARK MODE - Clean, Flat Glass */
 .dark {
+  /* ── Accent Palette: ORANGE (Dark Mode) ── */
+  --accent: #f97316;               /* orange-500 */
+  --accent-strong: #ea580c;        /* orange-600 */
+  --accent-muted: rgba(249, 115, 22, 0.1);
+  --accent-ring: rgba(249, 115, 22, 0.3);
+
   --bg-primary: #050505;
   --text-primary: #ffffff;
 

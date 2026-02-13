@@ -39,7 +39,7 @@ const Header: React.FC<HeaderProps> = ({
         {isSidebarCollapsed && (
           <button 
             onClick={onToggleSidebar}
-            className="hidden lg:flex p-2.5 rounded-xl text-orange-500 bg-orange-500/10 border border-orange-500/20 hover:scale-105 transition-all animate-in zoom-in duration-300"
+            className="hidden lg:flex p-2.5 rounded-xl text-accent bg-accent-muted border border-accent/20 hover:scale-105 transition-all animate-in zoom-in duration-300"
           >
             <PanelLeft size={20} />
           </button>
@@ -48,11 +48,11 @@ const Header: React.FC<HeaderProps> = ({
         {/* Search Bar - hidden on small mobile */}
         <div className="relative w-64 xl:w-96 hidden md:block group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 dark:group-focus-within:text-orange-500 transition-colors" />
+            <Search className="h-5 w-5 text-gray-400 group-focus-within:text-accent transition-colors" />
           </div>
           <input
             type="text"
-            className="block w-full pl-11 pr-4 py-2.5 border border-white/60 rounded-2xl leading-5 bg-white/60 dark:bg-black/40 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-orange-500/10 sm:text-sm transition-all shadow-sm backdrop-blur-md font-medium"
+            className="block w-full pl-11 pr-4 py-2.5 border border-white/60 rounded-2xl leading-5 bg-white/60 dark:bg-black/40 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-accent/10 sm:text-sm transition-all shadow-sm backdrop-blur-md font-medium"
             placeholder="Search command..."
           />
         </div>
@@ -89,7 +89,7 @@ const Header: React.FC<HeaderProps> = ({
         <GlassDropdown 
           trigger={
             <div className="flex items-center gap-2 md:gap-3 pl-1 md:pl-2 cursor-pointer group">
-                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden border-2 shadow-sm transition-all group-hover:scale-105 ${viewMode === 'hotel' ? 'border-orange-500' : 'border-white dark:border-gray-600'}`}>
+                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden border-2 shadow-sm transition-all group-hover:scale-105 ${viewMode === 'hotel' ? 'border-accent' : 'border-white dark:border-gray-600'}`}>
                      <img src={viewMode === 'hotel' ? "https://ui-avatars.com/api/?name=Riya+Mehta&background=f97316&color=fff" : "https://ui-avatars.com/api/?name=Vikram+Patel&background=0D8ABC&color=fff"} alt="Profile" />
                 </div>
                 <div className="hidden lg:block">

@@ -23,7 +23,7 @@ const Access: React.FC = () => {
         <div className="space-y-6">
           <GlassCard>
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500"><Lock size={20} /></div>
+              <div className="p-2 rounded-lg bg-accent-muted text-accent"><Lock size={20} /></div>
               <h3 className="font-bold dark:text-white">Authentication Settings</h3>
             </div>
             
@@ -35,7 +35,7 @@ const Access: React.FC = () => {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className={`w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all`}></div>
+                  <div className={`w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-accent after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all`}></div>
                 </label>
               </div>
               <div className="flex items-center justify-between">
@@ -45,7 +45,7 @@ const Access: React.FC = () => {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" />
-                  <div className={`w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all`}></div>
+                  <div className={`w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-accent after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all`}></div>
                 </label>
               </div>
             </div>
@@ -53,7 +53,7 @@ const Access: React.FC = () => {
 
           <GlassCard>
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500"><Key size={20} /></div>
+              <div className="p-2 rounded-lg bg-blue-500/10 text-accent"><Key size={20} /></div>
               <h3 className="font-bold dark:text-white">API Keys</h3>
             </div>
             <div className="space-y-4">
@@ -71,12 +71,12 @@ const Access: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-          <GlassCard className="bg-blue-600/5 border-blue-600/20">
+          <GlassCard className="bg-blue-600/5 border-accent-strong/20">
             <h3 className="text-lg font-black dark:text-white uppercase mb-4">Identity Verification</h3>
             <p className="text-sm text-gray-500 leading-relaxed mb-6">
               All administrative sessions are verified against your registered device signature. Unauthorized access attempts trigger a platform-wide lockdown of your individual node.
             </p>
-            <button className="w-full py-3 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg">Verify Current Node</button>
+            <button className="w-full py-3 bg-accent-strong text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg">Verify Current Node</button>
           </GlassCard>
         </div>
       </div>

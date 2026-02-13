@@ -37,14 +37,14 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
   const FeatureChip = ({ icon: Icon, label }: any) => (
     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-white/5">
         <Icon size={14} className="text-gray-500" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-300">{label}</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-300">{label}</span>
     </div>
   );
 
   const inputClass = `w-full px-5 py-4 rounded-2xl outline-none transition-all duration-200 text-sm font-black border
     ${isDarkMode 
-      ? 'bg-black/5 border-white/10 text-white focus:border-blue-500/50' 
-      : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-blue-500/50'
+      ? 'bg-black/5 border-white/10 text-white focus:border-accent/50' 
+      : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-accent/50'
     }`;
 
   return ReactDOM.createPortal(
@@ -68,7 +68,7 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
             {/* 1. Header Area */}
             <div className={`px-8 py-8 border-b shrink-0 flex items-center justify-between ${isDarkMode ? 'border-white/10' : 'border-gray-200/50'} bg-black/5`}>
                 <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-[1.5rem] bg-blue-600 dark:bg-orange-500 flex items-center justify-center text-white shadow-2xl">
+                    <div className="w-16 h-16 rounded-[1.5rem] bg-accent-strong flex items-center justify-center text-white shadow-2xl">
                         <DoorOpen size={32} />
                     </div>
                     <div>
@@ -122,7 +122,7 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Housekeeping Dropdown */}
                         <div className="space-y-4">
-                            <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Housekeeping Status</label>
+                            <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest">Housekeeping Status</label>
                             <GlassDropdown 
                                 align="left"
                                 className="w-full"
@@ -143,7 +143,7 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
 
                         {/* Staff Assignment Dropdown */}
                         <div className="space-y-4">
-                            <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Assigned Housekeeper</label>
+                            <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest">Assigned Housekeeper</label>
                             <GlassDropdown 
                                 align="left"
                                 className="w-full"
@@ -171,7 +171,7 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
                         <button className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${room?.isDND ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-black/5 border-white/5 text-gray-500'}`}>
                             <div className="flex items-center gap-3">
                                 <Ban size={18} />
-                                <span className="text-[10px] font-black uppercase tracking-widest">DND Active</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest">DND Active</span>
                             </div>
                             <div className={`w-9 h-5 rounded-full relative transition-colors ${room?.isDND ? 'bg-red-500' : 'bg-gray-300 dark:bg-white/10'}`}>
                                 <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${room?.isDND ? 'left-5' : 'left-1'}`}></div>
@@ -180,7 +180,7 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
                         <button className="flex items-center justify-between p-5 rounded-2xl border bg-black/5 border-white/5 text-gray-500 hover:text-white hover:border-orange-500/30 transition-all">
                             <div className="flex items-center gap-3">
                                 <ShieldAlert size={18} />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Report Incident</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest">Report Incident</span>
                             </div>
                             <ChevronRight size={16} className="opacity-30" />
                         </button>
@@ -196,9 +196,9 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
                                 <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Maintenance Deck</h3>
                             </div>
                             {room?.status === 'MAINTENANCE' ? (
-                                <span className="px-3 py-1 rounded-lg bg-red-600 text-white text-[9px] font-black uppercase tracking-widest animate-pulse">Out of Order</span>
+                                <span className="px-3 py-1 rounded-lg bg-red-600 text-white text-[9px] font-bold uppercase tracking-widest animate-pulse">Out of Order</span>
                             ) : (
-                                <button className="text-[10px] font-black text-blue-600 dark:text-orange-500 uppercase tracking-[0.2em] hover:underline">Mark for maintenance</button>
+                                <button className="text-[10px] font-black text-accent-strong uppercase tracking-[0.2em] hover:underline">Mark for maintenance</button>
                             )}
                         </div>
                         
@@ -211,7 +211,7 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
                                     </div>
                                     <div>
                                         <p className="text-[9px] font-black text-gray-500 uppercase mb-1">Estimated Resolution</p>
-                                        <p className="text-sm font-bold text-orange-500">{room.maintenanceETA}</p>
+                                        <p className="text-sm font-bold text-accent">{room.maintenanceETA}</p>
                                     </div>
                                 </div>
                                 <div className="flex justify-between items-center p-4 rounded-2xl bg-black/20 border border-white/5">
@@ -222,7 +222,7 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
                                              <p className="text-xs font-black dark:text-white leading-none">Suresh Kumar (Lead)</p>
                                          </div>
                                      </div>
-                                     <button className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg">Resolve Issue</button>
+                                     <button className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest shadow-lg">Resolve Issue</button>
                                 </div>
                             </div>
                         )}
@@ -232,10 +232,10 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
 
             {/* Bottom Actions */}
             <div className={`px-8 py-6 border-t shrink-0 flex gap-3 ${isDarkMode ? 'border-white/10 bg-black/20' : 'border-gray-200/50 bg-white/50'}`}>
-                <button className="flex-1 py-4 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                <button className="flex-1 py-4 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
                     Update Room Blueprint
                 </button>
-                <button className="px-6 py-4 rounded-2xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] transition-all">
+                <button className="px-6 py-4 rounded-2xl bg-accent-strong text-white text-[10px] font-bold uppercase tracking-widest shadow-xl hover:scale-[1.02] transition-all">
                     Commit Changes
                 </button>
             </div>

@@ -7,7 +7,8 @@ import {
   CheckSquare, Square, Pencil
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
 import BulkRateModal from '../../modals/hotel/BulkRateModal';
 
 interface RoomType {
@@ -32,7 +33,6 @@ const ROOM_TYPES: RoomType[] = [
 ];
 
 const RateInventoryManager: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const [startDate, setStartDate] = useState(new Date('2026-02-10'));
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [selectedRoomTypes, setSelectedRoomTypes] = useState<string[]>([]);
@@ -93,46 +93,49 @@ const RateInventoryManager: React.FC = () => {
     <div className="p-8 space-y-6 min-h-screen pb-24 animate-in fade-in duration-500">
       
       {/* Header Context */}
-      <div className="flex flex-col xl:flex-row justify-between xl:items-end gap-6">
-        <div>
-          <div className="mb-4 flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-500 w-fit">
-            <Info size={14} strokeWidth={3} />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dummy Data Page</span>
-          </div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase">Revenue Control</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Rate & Inventory Management Engine</p>
-        </div>
+      <PageHeader
+        title="Revenue Control"
+        subtitle="Rate & Inventory Management Engine"
+        badge="Dummy Data Page"
+      >
         <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-white/10 text-xs font-black uppercase tracking-widest hover:bg-white/5 transition-all">
-                <RefreshCcw size={16} /> Sync Channel Manager
-            </button>
-            <button 
-              onClick={() => setIsBulkModalOpen(true)}
-              className="flex items-center gap-2 bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
-            >
-                <Zap size={18} strokeWidth={3} fill="currentColor" /> Bulk Yield Update
-            </button>
+          <Button
+            variant="ghost"
+            size="md"
+            icon={<RefreshCcw size={16} />}
+            className="border-white/10 hover:bg-white/5"
+          >
+            Sync Channel Manager
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => setIsBulkModalOpen(true)}
+            icon={<Zap size={18} strokeWidth={3} fill="currentColor" />}
+          >
+            Bulk Yield Update
+          </Button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Navigation & Integrated Legend Bar */}
       <div className="flex flex-col xl:flex-row items-center gap-6 p-2 rounded-3xl bg-black/5 dark:bg-white/[0.02] border border-white/5">
           <div className="flex items-center p-1 rounded-2xl bg-white dark:bg-white/5 border border-white/5 shadow-sm">
               <button 
                 onClick={() => setStartDate(new Date(startDate.setDate(startDate.getDate() - 7)))}
-                className="p-2 rounded-xl text-gray-500 hover:text-blue-600 dark:hover:text-orange-500 transition-all"
+                className="p-2 rounded-xl text-gray-500 hover:text-accent-strong transition-all"
               >
                   <ChevronLeft size={20} />
               </button>
               <div className="px-6 flex flex-col items-center">
-                  <span className="text-[10px] font-black uppercase text-gray-400">View Window</span>
+                  <span className="text-[10px] font-bold uppercase text-gray-400">View Window</span>
                   <span className="text-sm font-black dark:text-white uppercase tracking-tighter">
                       {dates[0].toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} — {dates[6].toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                   </span>
               </div>
               <button 
                 onClick={() => setStartDate(new Date(startDate.setDate(startDate.getDate() + 7)))}
-                className="p-2 rounded-xl text-gray-500 hover:text-blue-600 dark:hover:text-orange-500 transition-all"
+                className="p-2 rounded-xl text-gray-500 hover:text-accent-strong transition-all"
               >
                   <ChevronRight size={20} />
               </button>
@@ -159,10 +162,10 @@ const RateInventoryManager: React.FC = () => {
           </div>
 
           <div className="hidden xl:flex gap-3">
-             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
+             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-500 text-[9px] font-bold uppercase tracking-widest border border-emerald-500/20">
                 <ArrowUpRight size={14} /> Peak Season Active
              </div>
-             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500/10 text-orange-500 text-[9px] font-black uppercase tracking-widest border border-orange-500/20">
+             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent-muted text-accent text-[9px] font-bold uppercase tracking-widest border border-accent/20">
                 <Lock size={14} /> 12 Blocked
              </div>
           </div>
@@ -175,13 +178,13 @@ const RateInventoryManager: React.FC = () => {
             <thead>
               <tr className="bg-black/10 dark:bg-white/5">
                 <th className="sticky left-0 z-30 bg-gray-100 dark:bg-[#1a1a1a] p-6 text-left border-r border-white/10 w-[280px]">
-                  <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                  <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-gray-500">
                     <CheckSquare size={14} className="opacity-30" />
                     <span>Room Categories (INR)</span>
                   </div>
                 </th>
                 {dates.slice(0, 10).map((date, i) => (
-                  <th key={i} className={`p-4 min-w-[120px] text-center border-r border-white/5 ${date.getDay() === 0 || date.getDay() === 6 ? 'bg-blue-600/5 dark:bg-orange-500/5' : ''}`}>
+                  <th key={i} className={`p-4 min-w-[120px] text-center border-r border-white/5 ${date.getDay() === 0 || date.getDay() === 6 ? 'bg-accent-strong/5 dark:bg-accent/5' : ''}`}>
                     <p className="text-[10px] font-black text-gray-500 uppercase">{date.toLocaleDateString('en-IN', { weekday: 'short' })}</p>
                     <p className="text-lg font-black dark:text-white leading-none">{date.getDate()}</p>
                     <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">{date.toLocaleDateString('en-IN', { month: 'short' })}</p>
@@ -196,7 +199,7 @@ const RateInventoryManager: React.FC = () => {
                     <div className="flex items-center gap-4">
                         <button onClick={() => toggleRowSelection(rt.id)} className="shrink-0 transition-colors">
                             {selectedRoomTypes.includes(rt.id) ? (
-                                <CheckSquare size={18} className="text-blue-600 dark:text-orange-500" />
+                                <CheckSquare size={18} className="text-accent-strong" />
                             ) : (
                                 <Square size={18} className="text-gray-400" />
                             )}
@@ -206,7 +209,7 @@ const RateInventoryManager: React.FC = () => {
                             <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-tight">
                                 <span>{rt.totalRooms} Rooms</span>
                                 <span className="w-1 h-1 rounded-full bg-gray-600"></span>
-                                <span className="text-blue-500">Rack: {rt.rackRate.toLocaleString()}</span>
+                                <span className="text-accent">Rack: {rt.rackRate.toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
@@ -250,7 +253,7 @@ const RateInventoryManager: React.FC = () => {
 
                            {cell.available === 0 && (
                              <div className="absolute inset-0 flex items-center justify-center bg-red-600/10 backdrop-blur-[1px]">
-                                <span className="text-[8px] font-black uppercase text-red-600 bg-white dark:bg-black px-2 py-0.5 rounded-md border border-red-600/20 shadow-sm">Sold Out</span>
+                                <span className="text-[8px] font-bold uppercase text-red-600 bg-white dark:bg-black px-2 py-0.5 rounded-md border border-red-600/20 shadow-sm">Sold Out</span>
                              </div>
                            )}
                         </div>
@@ -265,7 +268,7 @@ const RateInventoryManager: React.FC = () => {
       </GlassCard>
 
       {/* Seasonal Warning Card */}
-      <div className="p-8 rounded-[2.5rem] bg-blue-600 dark:bg-orange-500 text-white shadow-2xl flex flex-col md:flex-row items-center gap-8 animate-in slide-in-from-bottom-6 duration-700">
+      <div className="p-8 rounded-[2.5rem] bg-accent-strong text-white shadow-2xl flex flex-col md:flex-row items-center gap-8 animate-in slide-in-from-bottom-6 duration-700">
           <div className="w-24 h-24 rounded-3xl bg-white/20 flex items-center justify-center shrink-0 border border-white/20">
               <Info size={48} strokeWidth={2.5} />
           </div>

@@ -9,16 +9,10 @@ import {
   Globe, MessageSquare, AlertCircle
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
-import { useTheme } from '../../hooks/useTheme';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
 
 // --- Sub-Components for Modular Structure ---
-
-const DummyTag = () => (
-  <div className="mb-6 flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-500 w-fit animate-pulse">
-    <Info size={14} strokeWidth={3} />
-    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dummy Data Page</span>
-  </div>
-);
 
 const UsageGauge = ({ label, current, max, icon: Icon, colorClass }: any) => {
   const percentage = Math.min((current / max) * 100, 100);
@@ -29,7 +23,7 @@ const UsageGauge = ({ label, current, max, icon: Icon, colorClass }: any) => {
           <div className={`p-1.5 rounded-lg bg-black/5 dark:bg-white/5 ${colorClass}`}>
             <Icon size={14} />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{label}</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{label}</span>
         </div>
         <div className="text-right leading-none">
           <span className="text-sm font-black dark:text-white">{current}</span>
@@ -47,9 +41,9 @@ const UsageGauge = ({ label, current, max, icon: Icon, colorClass }: any) => {
 };
 
 const AddonCard = ({ title, price, icon: Icon }: any) => (
-  <button className="group flex items-center justify-between p-4 rounded-2xl bg-black/5 dark:bg-white/[0.02] border border-white/5 hover:border-orange-500/30 transition-all text-left">
+  <button className="group flex items-center justify-between p-4 rounded-2xl bg-black/5 dark:bg-white/[0.02] border border-white/5 hover:border-accent/30 transition-all text-left">
     <div className="flex items-center gap-3">
-      <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500 group-hover:scale-110 transition-transform">
+      <div className="p-2 rounded-xl bg-accent-muted text-accent group-hover:scale-110 transition-transform">
         <Icon size={16} />
       </div>
       <div>
@@ -57,12 +51,11 @@ const AddonCard = ({ title, price, icon: Icon }: any) => (
         <p className="text-[9px] font-bold text-gray-500 uppercase">₹{price} / mo</p>
       </div>
     </div>
-    <Plus size={16} className="text-gray-600 group-hover:text-orange-500 transition-colors" />
+    <Plus size={16} className="text-gray-600 group-hover:text-accent transition-colors" />
   </button>
 );
 
 const SubscriptionBilling: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const [autoRenew, setAutoRenew] = useState(true);
 
   const invoices = [
@@ -75,21 +68,30 @@ const SubscriptionBilling: React.FC = () => {
     <div className="p-4 md:p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-700">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div>
-          <DummyTag />
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">Subscription Hub</h1>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-2">Manage Property License & Billing Operations</p>
-        </div>
+      <PageHeader
+        title="Subscription Hub"
+        subtitle="Manage Property License & Billing Operations"
+        badge="Dummy Data Page"
+      >
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-black/5 dark:bg-white/10 border border-white/5 text-gray-500 dark:text-gray-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest">
-            <History size={16} /> Update History
-          </button>
-          <button className="flex items-center gap-3 bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-blue-900/20 hover:scale-[1.02] active:scale-95 transition-all">
-            <ArrowRightLeft size={16} strokeWidth={3} /> Change Plan
-          </button>
+          <Button
+            variant="ghost"
+            size="md"
+            icon={<History size={16} />}
+            className="border-white/5 bg-black/5 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:text-white"
+          >
+            Update History
+          </Button>
+          <Button
+            variant="primary"
+            size="lg"
+            icon={<ArrowRightLeft size={16} strokeWidth={3} />}
+            className="shadow-accent-strong/20"
+          >
+            Change Plan
+          </Button>
         </div>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
         
@@ -105,7 +107,7 @@ const SubscriptionBilling: React.FC = () => {
             <div className="p-10 flex flex-col md:flex-row justify-between gap-10 relative z-10">
               <div className="flex-1 space-y-10">
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 rounded-[2rem] bg-orange-500/10 text-orange-500 flex items-center justify-center shadow-inner border border-orange-500/20">
+                  <div className="w-20 h-20 rounded-[2rem] bg-accent-muted text-accent flex items-center justify-center shadow-inner border border-accent/20">
                     <Package size={40} />
                   </div>
                   <div>
@@ -128,7 +130,7 @@ const SubscriptionBilling: React.FC = () => {
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Term Expiry</p>
                     <div className="flex items-center gap-3">
-                      <Calendar size={20} className="text-blue-500" />
+                      <Calendar size={20} className="text-accent" />
                       <span className="text-xl font-black dark:text-white uppercase tracking-tighter">28 Feb 2026</span>
                     </div>
                     <p className="text-[9px] font-bold text-gray-500 uppercase italic">Next auto-settlement in 18 days</p>
@@ -140,7 +142,7 @@ const SubscriptionBilling: React.FC = () => {
               <div className="md:w-64 space-y-6">
                  <div className="p-6 rounded-[2rem] bg-black/5 dark:bg-white/[0.02] border border-white/5 space-y-6">
                     <div className="flex justify-between items-center">
-                       <span className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Auto-Renewal</span>
+                       <span className="text-[10px] font-bold uppercase text-gray-500 tracking-widest">Auto-Renewal</span>
                        <button 
                           onClick={() => setAutoRenew(!autoRenew)}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${autoRenew ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-gray-700'}`}
@@ -151,7 +153,7 @@ const SubscriptionBilling: React.FC = () => {
                     <div className="space-y-3">
                       <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Settlement Node</p>
                       <div className="flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-black/40 border border-white/10 shadow-sm">
-                         <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500"><CreditCard size={18} /></div>
+                         <div className="p-2 rounded-xl bg-blue-500/10 text-accent"><CreditCard size={18} /></div>
                          <div className="min-w-0">
                             <p className="text-xs font-black dark:text-white leading-none mb-1">•••• 4412</p>
                             <p className="text-[8px] font-bold text-gray-500 uppercase">Visa • Exp 08/28</p>
@@ -166,11 +168,11 @@ const SubscriptionBilling: React.FC = () => {
             <div className="px-10 py-8 bg-black/5 dark:bg-white/[0.01] border-t border-white/5">
                 <div className="flex items-center gap-3 mb-8">
                    <PieChartIcon size={16} className="text-gray-500" />
-                   <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Resource Consumption Analytics</h3>
+                   <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Resource Consumption Analytics</h3>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-10">
-                   <UsageGauge label="Room Capacity" current={120} max={250} icon={Layout} colorClass="text-blue-500" />
-                   <UsageGauge label="Kiosk Nodes" current={2} max={15} icon={Monitor} colorClass="text-orange-500" />
+                   <UsageGauge label="Room Capacity" current={120} max={250} icon={Layout} colorClass="text-accent" />
+                   <UsageGauge label="Kiosk Nodes" current={2} max={15} icon={Monitor} colorClass="text-accent" />
                    <UsageGauge label="Admin Accounts" current={19} max={50} icon={Users} colorClass="text-emerald-500" />
                    <UsageGauge label="Support Tickets" current={1} max={10} icon={HelpCircle} colorClass="text-purple-500" />
                 </div>
@@ -182,15 +184,15 @@ const SubscriptionBilling: React.FC = () => {
              <div className="px-10 py-6 border-b border-white/5 bg-black/5 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                    <History size={18} className="text-gray-500" />
-                   <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Commercial History Ledger</h3>
+                   <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Commercial History Ledger</h3>
                 </div>
-                <button className="text-[10px] font-black text-blue-600 dark:text-orange-500 uppercase tracking-widest hover:underline flex items-center gap-1.5 group">
+                <button className="text-[10px] font-black text-accent-strong uppercase tracking-widest hover:underline flex items-center gap-1.5 group">
                    Full Audit Download <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </button>
              </div>
              <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                   <thead className="bg-black/10 dark:bg-white/[0.01] text-[9px] font-black uppercase tracking-widest text-gray-500">
+                   <thead className="bg-black/10 dark:bg-white/[0.01] text-[9px] font-bold uppercase tracking-widest text-gray-500">
                       <tr>
                          <th className="px-10 py-4">Auth Reference</th>
                          <th className="px-8 py-4">Period</th>
@@ -207,7 +209,7 @@ const SubscriptionBilling: React.FC = () => {
                            <td className="px-8 py-6 text-sm font-bold dark:text-gray-400 uppercase tracking-tight">{inv.period}</td>
                            <td className="px-8 py-6 text-right text-sm font-black dark:text-white tracking-tighter">₹{inv.amount.toLocaleString()}</td>
                            <td className="px-8 py-6 text-center">
-                              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-black uppercase">
+                              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-bold uppercase">
                                  <CheckCircle2 size={10} strokeWidth={4} /> {inv.status}
                               </div>
                            </td>
@@ -232,7 +234,7 @@ const SubscriptionBilling: React.FC = () => {
           <GlassCard className="border-white/5 bg-black/5 dark:bg-white/[0.01]">
             <div className="flex items-center justify-between mb-8">
                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500 shadow-inner"><Plus size={20} /></div>
+                  <div className="p-2 rounded-xl bg-accent-muted text-accent shadow-inner"><Plus size={20} /></div>
                   <h3 className="text-xs font-black uppercase tracking-[0.2em] dark:text-white">Capacity Add-ons</h3>
                </div>
                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Active Store</span>
@@ -244,7 +246,7 @@ const SubscriptionBilling: React.FC = () => {
                <AddonCard title="GSTR-1 Automation" price="999" icon={FileText} />
             </div>
             <div className="mt-8 pt-6 border-t border-white/5">
-                <button className="w-full flex items-center justify-between p-5 rounded-[1.5rem] bg-orange-600 text-white shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
+                <button className="w-full flex items-center justify-between p-5 rounded-[1.5rem] bg-accent-strong text-white shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
                   <span className="text-xs font-black uppercase tracking-widest">Open Marketplace</span>
                   <ChevronRight size={18} />
                 </button>
@@ -252,7 +254,7 @@ const SubscriptionBilling: React.FC = () => {
           </GlassCard>
 
           {/* Tax Benefit High-Vis Card */}
-          <div className="p-10 rounded-[3rem] bg-blue-600 text-white shadow-2xl relative overflow-hidden group hover:scale-[1.01] transition-transform">
+          <div className="p-10 rounded-[3rem] bg-accent-strong text-white shadow-2xl relative overflow-hidden group hover:scale-[1.01] transition-transform">
              <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
              <div className="flex items-center gap-6 mb-6">
                 <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center border border-white/20 shadow-lg">
@@ -266,26 +268,26 @@ const SubscriptionBilling: React.FC = () => {
              <p className="text-sm font-medium leading-relaxed mb-8">
                You are eligible for up to <span className="font-black underline decoration-2">₹2,700</span> monthly in Input Tax Credit (ITC) for this property using your verified GSTIN.
              </p>
-             <button className="w-full py-4 rounded-2xl bg-white text-blue-600 text-[10px] font-black uppercase tracking-widest hover:shadow-2xl transition-all">
+             <button className="w-full py-4 rounded-2xl bg-white text-accent-strong text-[10px] font-bold uppercase tracking-widest hover:shadow-2xl transition-all">
                 Validate Gstin Status
              </button>
           </div>
 
           {/* Billing Help/Support */}
-          <GlassCard className="border-l-4 border-l-blue-600 bg-blue-600/5">
+          <GlassCard className="border-l-4 border-l-accent-strong bg-accent-strong/5">
              <div className="flex items-center gap-3 mb-6">
-                <ShieldCheck size={18} className="text-blue-500" />
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-blue-600">Commercial Lock</h3>
+                <ShieldCheck size={18} className="text-accent" />
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-accent-strong">Commercial Lock</h3>
              </div>
              <p className="text-[11px] font-medium text-gray-500 leading-relaxed mb-6">
                 Financial data is encrypted using AES-256 protocols. ATC Platform complies with all local GST regulations and B2B settlement standards.
              </p>
              <div className="space-y-2">
-                <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all text-[10px] font-black uppercase text-gray-500 group">
+                <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all text-[10px] font-bold uppercase text-gray-500 group">
                    <span>Contact Billing Dept</span>
                    <MessageSquare size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
                 </button>
-                <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all text-[10px] font-black uppercase text-gray-500 group">
+                <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all text-[10px] font-bold uppercase text-gray-500 group">
                    <span>Platform Policy FAQ</span>
                    <Globe size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
                 </button>

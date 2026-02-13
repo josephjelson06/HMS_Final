@@ -14,8 +14,8 @@ const teamMembers = [
 const RoleBadge = ({ role }: { role: string }) => {
   const styles = {
     'Super Admin': 'bg-purple-500/10 text-purple-600',
-    'Account Manager': 'bg-blue-500/10 text-blue-600',
-    'Maintenance': 'bg-orange-500/10 text-orange-600',
+    'Account Manager': 'bg-blue-500/10 text-accent-strong',
+    'Maintenance': 'bg-accent-muted text-accent-strong',
     'Viewer': 'bg-gray-500/10 text-gray-600',
   };
   return (
@@ -80,7 +80,7 @@ const Team: React.FC = () => {
           {[1, 2, 3].map((_, i) => (
             <div key={i} className="px-6 py-4 flex items-center justify-between text-xs">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500"><Mail size={14} /></div>
+                <div className="p-2 rounded-lg bg-blue-500/10 text-accent"><Mail size={14} /></div>
                 <div>
                   <p className="font-bold dark:text-white">sarah.j@atc.com</p>
                   <p className="text-gray-500">Chrome on macOS • Mumbai, IN</p>
