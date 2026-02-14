@@ -14,6 +14,9 @@ import OccupancyGauge from '../../components/hotel/OccupancyGauge';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import NightAuditWizard from '../../modals/hotel/NightAuditWizard';
+import { useGuests } from '../../../application/hooks/useGuests';
+import { useBookings } from '../../../application/hooks/useBookings';
+import { useRooms } from '../../../application/hooks/useRooms';
 
 const CheckInRow = ({ refId, name, room, kyc, source, isOverdue }: any) => (
   <div className={`group flex items-center justify-between p-4 rounded-2xl border-y border-r border-white/5 transition-all cursor-pointer bg-black/10 hover:bg-white/5 ${isOverdue ? 'border-l-4 border-l-red-600' : 'border-l-4 border-l-transparent'}`}>
@@ -76,6 +79,42 @@ const InlineAlert = ({ type, message }: { type: 'critical' | 'warning', message:
 
 const HotelDashboard: React.FC = () => {
   const [isAuditOpen, setIsAuditOpen] = useState(false);
+  const { guests, loading: guestsLoading } = useGuests();
+  const { bookings, loading: bookingsLoading } = useBookings();
+  const { rooms, loading: roomsLoading } = useRooms();
+
+  const isLoading = guestsLoading || bookingsLoading || roomsLoading;
+  const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  const arrivalsToday = bookings.filter((booking) => booking.status === 'confirmed' || booking.status === 'pending').length;
+  const expectedArrivals = bookings.filter((booking) => booking.status === 'confirmed').length;
+  const departuresToday = guests.filter((guest) => guest.status === 'Checked-Out').length;
+  const pendingBalanceCount = guests.filter((guest) => guest.balance > 0).length;
+  const inHouseGuests = guests.filter((guest) => guest.status === 'Checked-In').length;
+
+  const cleanVacantCount = rooms.filter((room) => room.status === 'CLEAN_VACANT').length;
+  const dirtyVacantCount = rooms.filter((room) => room.status === 'DIRTY_VACANT').length;
+  const cleanOccupiedCount = rooms.filter((room) => room.status === 'CLEAN_OCCUPIED').length;
+  const dirtyOccupiedCount = rooms.filter((room) => room.status === 'DIRTY_OCCUPIED').length;
+  const maintenanceCount = rooms.filter((room) => room.status === 'MAINTENANCE').length;
+  const occupiedRooms = cleanOccupiedCount + dirtyOccupiedCount;
+  const totalRooms = rooms.length;
+  const occupancyPercent = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+
+  const queueGuests = guests.slice(0, 7);
+  const queueOverdueCount = queueGuests.filter((guest) => guest.balance > 0 || guest.kycStatus !== 'Verified').length;
+
+  const reservationsCount = bookings.length;
+  const preCheckinDoneCount = guests.filter((guest) => guest.status === 'Reserved' || guest.status === 'Checked-In').length;
+  const verifiedKycCount = guests.filter((guest) => guest.kycStatus === 'Verified').length;
+  const keyIssuedCount = guests.filter((guest) => guest.status === 'Checked-In').length;
+  const funnelBase = reservationsCount > 0 ? reservationsCount : 1;
+  const funnelSteps = [
+    { label: 'Reservations', count: reservationsCount, pct: 100, color: 'bg-gray-500' },
+    { label: 'Pre-checkin done', count: preCheckinDoneCount, pct: Math.round((preCheckinDoneCount / funnelBase) * 100), color: 'bg-accent' },
+    { label: 'KYC Verified', count: verifiedKycCount, pct: Math.round((verifiedKycCount / funnelBase) * 100), color: 'bg-emerald-500' },
+    { label: 'Key Issued', count: keyIssuedCount, pct: Math.round((keyIssuedCount / funnelBase) * 100), color: 'bg-accent' },
+  ];
 
   return (
     <div className="p-4 md:p-8 space-y-8 min-h-screen pb-32 animate-in fade-in duration-500">
@@ -83,8 +122,8 @@ const HotelDashboard: React.FC = () => {
       {/* Header Context */}
       <PageHeader
         title="Shift Overview"
-        subtitle="Property Status • Feb 10, 2026"
-        badge="Dummy Data Page"
+        subtitle={`Property Status | ${todayLabel}`}
+        badge={isLoading ? 'Syncing Data' : 'Live Repository Data'}
       >
         <div className="flex flex-wrap gap-3">
           <Button
@@ -115,12 +154,12 @@ const HotelDashboard: React.FC = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Arrivals Today</p>
-              <h3 className="text-4xl font-black text-accent-strong tracking-tighter">38</h3>
+              <h3 className="text-4xl font-black text-accent-strong tracking-tighter">{isLoading ? '--' : arrivalsToday}</h3>
             </div>
             <div className="p-2 rounded-xl bg-blue-500/10 text-accent-strong"><ArrowDownRight size={24} /></div>
           </div>
           <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-500 uppercase bg-emerald-500/5 w-fit px-2 py-1 rounded-lg border border-emerald-500/10">
-            26 Expected Arrival
+            {isLoading ? '--' : expectedArrivals} Expected Arrival
           </div>
         </GlassCard>
 
@@ -128,12 +167,12 @@ const HotelDashboard: React.FC = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Departures Today</p>
-              <h3 className="text-4xl font-black text-accent tracking-tighter">22</h3>
+              <h3 className="text-4xl font-black text-accent tracking-tighter">{isLoading ? '--' : departuresToday}</h3>
             </div>
             <div className="p-2 rounded-xl bg-accent-muted text-accent"><ArrowUpRight size={24} /></div>
           </div>
           <div className="flex items-center gap-2 text-[10px] font-bold text-red-500 uppercase bg-red-500/5 w-fit px-2 py-1 rounded-lg border border-red-500/10 animate-pulse">
-            8 with pending balance
+            {isLoading ? '--' : pendingBalanceCount} with pending balance
           </div>
         </GlassCard>
 
@@ -141,7 +180,7 @@ const HotelDashboard: React.FC = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">In-House Guests</p>
-              <h3 className="text-4xl font-black text-emerald-500 tracking-tighter">104</h3>
+              <h3 className="text-4xl font-black text-emerald-500 tracking-tighter">{isLoading ? '--' : inHouseGuests}</h3>
             </div>
             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500"><Users size={24} /></div>
           </div>
@@ -151,20 +190,20 @@ const HotelDashboard: React.FC = () => {
                     <div key={i} className="w-6 h-6 rounded-full border-2 border-white dark:border-black bg-zinc-700"></div>
                   ))}
               </div>
-              <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">+101 More</p>
+              <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">+{Math.max(inHouseGuests - 3, 0)} More</p>
           </div>
         </GlassCard>
 
         <GlassCard className="flex items-center justify-between h-44 border-l-4 border-l-amber-500 bg-amber-500/[0.02]">
           <div className="flex-1">
              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Occupancy %</p>
-             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">94 of 120 rooms sold</p>
+             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{occupiedRooms} of {totalRooms} rooms sold</p>
              <div className="mt-4 flex items-center gap-2 text-emerald-500">
                 <TrendingUp size={14} />
                 <span className="text-[10px] font-bold uppercase">+12% vs LW</span>
              </div>
           </div>
-          <OccupancyGauge percentage={78} />
+          <OccupancyGauge percentage={occupancyPercent} />
         </GlassCard>
       </div>
 
@@ -176,12 +215,7 @@ const HotelDashboard: React.FC = () => {
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Arrival Process Stream</p>
               </div>
               <div className="flex-1 p-8 flex flex-col justify-between">
-                  {[
-                    { label: 'Reservations', count: 38, pct: 100, color: 'bg-gray-500' },
-                    { label: 'Pre-checkin done', count: 24, pct: 63, color: 'bg-accent' },
-                    { label: 'KYC Verified', count: 18, pct: 47, color: 'bg-emerald-500' },
-                    { label: 'Key Issued', count: 12, pct: 31, color: 'bg-accent' }
-                  ].map((step, i) => (
+                  {funnelSteps.map((step, i) => (
                     <div key={i} className="space-y-2">
                         <div className="flex justify-between items-end">
                             <span className="text-[10px] font-bold uppercase text-gray-500">{step.label}</span>
@@ -207,18 +241,27 @@ const HotelDashboard: React.FC = () => {
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Real-time Task Prioritization</p>
             </div>
             <div className="flex gap-2">
-                <span className="px-4 py-2 rounded-xl bg-red-600/10 text-red-600 border border-red-600/20 text-[9px] font-bold uppercase tracking-widest shadow-sm">3 Overdue</span>
-                <span className="px-4 py-2 rounded-xl bg-accent-strong/10 text-accent-strong border border-accent-strong/20 text-[9px] font-bold uppercase tracking-widest shadow-sm">26 Expected</span>
+                <span className="px-4 py-2 rounded-xl bg-red-600/10 text-red-600 border border-red-600/20 text-[9px] font-bold uppercase tracking-widest shadow-sm">{queueOverdueCount} Overdue</span>
+                <span className="px-4 py-2 rounded-xl bg-accent-strong/10 text-accent-strong border border-accent-strong/20 text-[9px] font-bold uppercase tracking-widest shadow-sm">{expectedArrivals} Expected</span>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-            <CheckInRow refId="BK-9827" name="Johnathan Doe" room="402" kyc="verified" source="MakeMyTrip" isOverdue={true} />
-            <CheckInRow refId="BK-1102" name="Sarah Jenkins" room="204" kyc="pending" source="Goibibo" isOverdue={true} />
-            <CheckInRow refId="BK-5541" name="Michael Chen" room="105" kyc="pending" source="Direct Website" />
-            <CheckInRow refId="BK-8891" name="Priya Kapoor" room="312" kyc="verified" source="Booking.com" />
-            <CheckInRow refId="BK-2231" name="Robert Vance" room="501" kyc="pending" source="Walk-in" />
-            <CheckInRow refId="BK-7742" name="Elena Petrova" room="215" kyc="verified" source="Agoda" />
-            <CheckInRow refId="BK-0912" name="Aman Sharma" room="408" kyc="pending" source="MakeMyTrip" />
+            {queueGuests.map((guest) => (
+              <CheckInRow
+                key={guest.id}
+                refId={guest.refId}
+                name={guest.name}
+                room={guest.room}
+                kyc={guest.kycStatus === 'Verified' ? 'verified' : 'pending'}
+                source={guest.source}
+                isOverdue={guest.balance > 0 || guest.kycStatus !== 'Verified'}
+              />
+            ))}
+            {queueGuests.length === 0 && (
+              <div className="p-6 rounded-2xl border border-dashed border-white/10 text-center text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                No live queue entries found
+              </div>
+            )}
           </div>
         </GlassCard>
 
@@ -229,15 +272,15 @@ const HotelDashboard: React.FC = () => {
             <div className="p-2 rounded-xl bg-accent-strong/10 text-accent-strong"><ShieldCheck size={20} /></div>
           </div>
 
-          <div className="p-6 space-y-6">
-              <div className="space-y-2">
-                 <ReadinessItem label="Clean & Vacant" count={26} color="bg-emerald-500" />
-                 <ReadinessItem label="Dirty & Vacant" count={14} color="bg-red-500" />
-                 <ReadinessItem label="Clean & Occupied" count={68} color="bg-accent" />
-                 <ReadinessItem label="Dirty & Occupied" count={10} color="bg-accent" />
-                 <ReadinessItem label="Maintenance" count={2} color="bg-gray-500" />
-              </div>
-          </div>
+           <div className="p-6 space-y-6">
+               <div className="space-y-2">
+                 <ReadinessItem label="Clean & Vacant" count={cleanVacantCount} color="bg-emerald-500" />
+                 <ReadinessItem label="Dirty & Vacant" count={dirtyVacantCount} color="bg-red-500" />
+                 <ReadinessItem label="Clean & Occupied" count={cleanOccupiedCount} color="bg-accent" />
+                 <ReadinessItem label="Dirty & Occupied" count={dirtyOccupiedCount} color="bg-accent" />
+                 <ReadinessItem label="Maintenance" count={maintenanceCount} color="bg-gray-500" />
+               </div>
+           </div>
         </GlassCard>
       </div>
 

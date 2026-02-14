@@ -6,6 +6,9 @@ import TenantOnboardingTrend from '../../components/charts/TenantOnboardingTrend
 import CriticalAlertsFeed from '../../components/CriticalAlertsFeed';
 import GlassDatePicker from '../../components/ui/GlassDatePicker';
 import { useTheme } from '../../hooks/useTheme';
+import { useHotels } from '../../../application/hooks/useHotels';
+import { useKiosks } from '../../../application/hooks/useKiosks';
+import { useInvoices } from '../../../application/hooks/useInvoices';
 
 const KPIBadge = ({ value, trend }: { value: string, trend: 'up' | 'down' }) => (
   <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${trend === 'up' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
@@ -56,15 +59,37 @@ const WarRoomCard = ({ title, value, subtext, icon: Icon, state = 'normal', badg
 };
 
 const Dashboard: React.FC = () => {
+  const { hotels, loading: hotelsLoading } = useHotels();
+  const { kiosks, loading: kiosksLoading } = useKiosks();
+  const { invoices, loading: invoicesLoading } = useInvoices();
+
+  const activeHotels = hotels.filter((hotel) => hotel.status === 'Active').length;
+  const onboardingHotels = hotels.filter((hotel) => hotel.status === 'Onboarding').length;
+  const monthlyRevenue = hotels.reduce((sum, hotel) => sum + hotel.mrr, 0);
+  const avgRevenuePerActiveHotel = activeHotels > 0 ? Math.round(monthlyRevenue / activeHotels) : 0;
+
+  const onlineKiosks = kiosks.filter((kiosk) => kiosk.status === 'ONLINE').length;
+  const nonOnlineKiosks = kiosks.filter((kiosk) => kiosk.status !== 'ONLINE').length;
+  const criticalKiosks = kiosks.filter((kiosk) => kiosk.status === 'CRITICAL').length;
+
+  const overdueInvoiceCount = invoices.filter((invoice) => invoice.status.toLowerCase() === 'overdue').length;
+  const unpaidReceivables = invoices
+    .filter((invoice) => invoice.status.toLowerCase() !== 'paid')
+    .reduce((sum, invoice) => sum + (invoice.total ?? invoice.amount ?? 0), 0);
+
+  const isLoading = hotelsLoading || kiosksLoading || invoicesLoading;
+  const formatINR = (value: number) => `INR ${new Intl.NumberFormat('en-IN').format(value)}`;
+  const platformStatus = criticalKiosks > 0 ? 'Attention Required' : 'Nominal';
+
   return (
     <div className="p-8 space-y-8 min-h-screen pb-20 animate-in fade-in duration-700">
       <PageHeader 
         title="Business Overview" 
-        subtitle="Platform Status: Nominal"
+        subtitle={`Platform Status: ${platformStatus}`}
         badge={
           <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-500 w-fit">
             <Info size={14} strokeWidth={3} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Dummy Data Page</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">{isLoading ? 'Syncing Data' : 'Live Repository Data'}</span>
           </div>
         }
       >
@@ -74,37 +99,37 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <WarRoomCard 
           title="Active Hotels" 
-          value="47" 
+          value={isLoading ? '--' : String(activeHotels)} 
           subtext="Customer base health"
           icon={Building}
           colorVariant="blue"
-          badge={<KPIBadge value="3 new" trend="up" />}
+          badge={<KPIBadge value={`${onboardingHotels} onboarding`} trend={onboardingHotels > 0 ? 'up' : 'down'} />}
         />
         <WarRoomCard 
           title="MRR (Revenue)" 
-          value="₹4,72,000" 
+          value={isLoading ? '--' : formatINR(monthlyRevenue)} 
           subtext="Projected monthly yield"
           icon={IndianRupee}
           colorVariant="emerald"
-          badge={<KPIBadge value="₹45k" trend="up" />}
+          badge={<KPIBadge value={formatINR(avgRevenuePerActiveHotel)} trend={avgRevenuePerActiveHotel > 0 ? 'up' : 'down'} />}
         />
         <WarRoomCard 
           title="Kiosk Fleet" 
-          value="62/3" 
+          value={isLoading ? '--' : `${onlineKiosks}/${nonOnlineKiosks}`} 
           subtext="Online / Offline Ratio"
           icon={Monitor}
           colorVariant="red"
           state="red"
           badge={
             <span className="px-2 py-0.5 rounded-lg bg-red-500 text-white text-[9px] font-bold uppercase tracking-tighter animate-pulse shadow-lg shadow-red-900/40">
-              1 Critical
+              {criticalKiosks} Critical
             </span>
           }
         />
         <WarRoomCard 
           title="Overdue Invoices" 
-          value="5" 
-          subtext="₹1,23,500 Unpaid Receivables"
+          value={isLoading ? '--' : String(overdueInvoiceCount)} 
+          subtext={`${formatINR(unpaidReceivables)} Unpaid Receivables`}
           icon={TrendingUp}
           colorVariant="amber"
           state="amber"

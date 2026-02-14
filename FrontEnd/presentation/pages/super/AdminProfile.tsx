@@ -3,10 +3,18 @@ import React, { useState } from 'react';
 import { User, Mail, Phone, Lock, Bell, Globe, Camera, ShieldCheck, Check, Save } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
+import { useUsers } from '../../../application/hooks/useUsers';
 
 const AdminProfile: React.FC = () => {
   const { isDarkMode } = useTheme();
+  const { users } = useUsers();
   const [is2FAEnabled, setIs2FAEnabled] = useState(true);
+  const primaryAdmin = users.find((u) => u.role.toLowerCase().includes('super')) ?? users[0];
+  const fullName = primaryAdmin?.name ?? 'Vikram Patel';
+  const email = primaryAdmin?.email ?? 'vikram@atc.com';
+  const mobile = primaryAdmin?.mobile ?? primaryAdmin?.phone ?? '+91 99988 77766';
+  const roleLabel = primaryAdmin?.role ?? 'Super Admin';
+  const avatarUrl = primaryAdmin?.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=0D8ABC&color=fff&size=128`;
 
   const inputClass = `w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border
     ${isDarkMode 
@@ -36,14 +44,14 @@ const AdminProfile: React.FC = () => {
           <GlassCard className="flex flex-col items-center text-center p-10">
             <div className="relative mb-6">
               <div className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-tr from-blue-100 to-blue-200 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center text-accent-strong dark:text-gray-300 shadow-inner overflow-hidden border-4 border-white dark:border-white/10">
-                <img src="https://ui-avatars.com/api/?name=Vikram+Patel&background=0D8ABC&color=fff&size=128" alt="Profile" />
+                <img src={avatarUrl} alt="Profile" />
               </div>
               <button className="absolute -bottom-2 -right-2 p-3 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black shadow-xl hover:scale-110 transition-transform">
                 <Camera size={18} />
               </button>
             </div>
-            <h3 className="text-xl font-black dark:text-white mb-1">Vikram Patel</h3>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-accent-strong">Super Admin (Root Access)</p>
+            <h3 className="text-xl font-black dark:text-white mb-1">{fullName}</h3>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent-strong">{roleLabel} (Root Access)</p>
             <div className="mt-6 pt-6 border-t border-white/10 w-full">
                <div className="flex items-center justify-center gap-2 text-emerald-500">
                   <ShieldCheck size={16} />
@@ -80,20 +88,20 @@ const AdminProfile: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="col-span-2 md:col-span-1">
                 <label className={labelClass}>Full Legal Name</label>
-                <input type="text" defaultValue="Vikram Patel" className={inputClass} />
+                <input type="text" defaultValue={fullName} className={inputClass} />
               </div>
               <div className="col-span-2 md:col-span-1">
                 <label className={labelClass}>Email Address</label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input type="email" defaultValue="vikram@atc.com" className={`${inputClass} pl-11`} readOnly />
+                  <input type="email" defaultValue={email} className={`${inputClass} pl-11`} readOnly />
                 </div>
               </div>
               <div className="col-span-2 md:col-span-1">
                 <label className={labelClass}>Mobile Number</label>
                 <div className="relative">
                   <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input type="tel" defaultValue="+91 99988 77766" className={`${inputClass} pl-11`} />
+                  <input type="tel" defaultValue={mobile} className={`${inputClass} pl-11`} />
                 </div>
               </div>
             </div>
@@ -109,11 +117,11 @@ const AdminProfile: React.FC = () => {
               <div className="flex flex-col md:flex-row gap-6 md:items-end">
                 <div className="flex-1">
                   <label className={labelClass}>New Password</label>
-                  <input type="password" placeholder="••••••••••••" className={inputClass} />
+                  <input type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" className={inputClass} />
                 </div>
                 <div className="flex-1">
                   <label className={labelClass}>Confirm New Password</label>
-                  <input type="password" placeholder="••••••••••••" className={inputClass} />
+                  <input type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" className={inputClass} />
                 </div>
                 <button className="px-6 py-3 rounded-xl border border-gray-200 dark:border-white/10 text-[10px] font-bold uppercase tracking-widest hover:bg-black/5 dark:hover:bg-white/5 transition-all">
                   Update Password
