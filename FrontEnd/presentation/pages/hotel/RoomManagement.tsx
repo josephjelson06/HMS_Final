@@ -19,9 +19,11 @@ import AddRoomModal from '../../modals/hotel/AddRoomModal';
 import AddBuildingModal from '../../modals/hotel/AddBuildingModal';
 import ManageRoomTypeModal from '../../modals/hotel/ManageRoomTypeModal';
 import type { RoomStatus, RoomViewMode as ViewMode, Room } from '@/domain/entities/Room';
-import { mockRooms, INITIAL_BOOKINGS, CELL_WIDTH, ROOM_LIST_WIDTH, DAYS_TO_SHOW } from '../../../data/rooms';
+import { ROOM_CELL_WIDTH as CELL_WIDTH, ROOM_LIST_WIDTH, ROOM_DAYS_TO_SHOW as DAYS_TO_SHOW } from '@/domain/entities/Room';
+import { useRooms } from '@/application/hooks/useRooms';
 
 const RoomManagement: React.FC = () => {
+  const { rooms: allRooms, bookings: allBookings } = useRooms();
   const [viewMode, setViewMode] = useState<ViewMode>('GRID');
   const [activeBuilding, setActiveBuilding] = useState('Building 01');
   const [activeFloor, setActiveFloor] = useState<number | 'All'>('All');
@@ -61,13 +63,13 @@ const RoomManagement: React.FC = () => {
   };
 
   const filteredRooms = useMemo(() => {
-    return mockRooms.filter(r => {
+    return allRooms.filter(r => {
       const matchesBuilding = r.building === activeBuilding;
       const matchesFloor = activeFloor === 'All' || r.floor === activeFloor;
       const matchesSearch = r.id.includes(search) || r.category.toLowerCase().includes(search.toLowerCase());
       return matchesBuilding && matchesFloor && matchesSearch;
     });
-  }, [activeBuilding, activeFloor, search]);
+  }, [allRooms, activeBuilding, activeFloor, search]);
 
   const dates = useMemo(() => {
     return Array.from({ length: DAYS_TO_SHOW }).map((_, i) => {
@@ -318,7 +320,7 @@ const RoomManagement: React.FC = () => {
 
                     <div className="flex-1 flex overflow-hidden relative">
                         <div ref={roomsSidebarRef} className="overflow-hidden border-r border-white/10 bg-black/10 shrink-0 z-20" style={{ width: `${ROOM_LIST_WIDTH}px` }}>
-                            {mockRooms.filter(r => r.building === activeBuilding).map((room) => (
+                            {allRooms.filter(r => r.building === activeBuilding).map((room) => (
                                 <div key={room.id} className="h-20 border-b border-white/5 p-6 flex items-center gap-5 group hover:bg-black/20 transition-all cursor-pointer">
                                     <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 group-hover:text-accent-strong transition-colors shadow-inner">
                                         <DoorOpen size={24} />
@@ -341,7 +343,7 @@ const RoomManagement: React.FC = () => {
                         >
                             {/* Grid Lines */}
                             <div className="absolute inset-0 pointer-events-none opacity-20">
-                                {mockRooms.filter(r => r.building === activeBuilding).map((_, i) => (
+                                {allRooms.filter(r => r.building === activeBuilding).map((_, i) => (
                                     <div key={i} className="h-20 border-b border-white/10 w-full"></div>
                                 ))}
                                 {dates.map((_, i) => (
@@ -355,11 +357,11 @@ const RoomManagement: React.FC = () => {
                             </div>
 
                             <div className="relative min-w-max">
-                                {mockRooms.filter(r => r.building === activeBuilding).map((room) => (
+                                {allRooms.filter(r => r.building === activeBuilding).map((room) => (
                                     <div key={room.id} className="h-20 flex">
                                         {dates.map((date, dateIdx) => {
                                             const dStr = date.toISOString().split('T')[0];
-                                            const booking = INITIAL_BOOKINGS.find(b => b.roomId === room.id && b.startDate === dStr);
+                                            const booking = allBookings.find(b => b.roomId === room.id && b.startDate === dStr);
                                             
                                             return (
                                                 <div 

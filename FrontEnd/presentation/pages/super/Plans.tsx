@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Plus, Edit3, Archive, Check, 
   Monitor, Layout, IndianRupee, HelpCircle, 
@@ -12,7 +12,7 @@ import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import { useTheme } from '../../hooks/useTheme';
 import type { PlanData } from '@/domain/entities/Plan';
-import { INITIAL_PLANS } from '../../../data/plans';
+import { usePlans } from '@/application/hooks/usePlans';
 
 const PlanCard: React.FC<{ 
   plan: PlanData; 
@@ -146,10 +146,15 @@ const PlanCard: React.FC<{
 };
 
 const Plans: React.FC = () => {
-  const [plans, setPlans] = useState<PlanData[]>(INITIAL_PLANS);
+  const { plans: hookPlans } = usePlans();
+  const [plans, setPlans] = useState<PlanData[]>([]);
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const [isUpdatePanelOpen, setIsUpdatePanelOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanData | null>(null);
+
+  useEffect(() => {
+    if (hookPlans.length > 0) setPlans(hookPlans);
+  }, [hookPlans]);
 
   const handleArchivePlan = (id: string) => {
     setPlans(prev => prev.map(p => 

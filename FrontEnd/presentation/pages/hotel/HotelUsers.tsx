@@ -12,12 +12,13 @@ import AddHotelUserModal from '../../modals/hotel/AddHotelUserModal';
 import CreateHotelRoleModal from '../../modals/hotel/CreateHotelRoleModal';
 import RoleDetailView from '../../modals/super/RoleDetailView';
 import type { HotelStaffMember as StaffMember } from '@/domain/entities/HotelStaff';
-import { mockStaff, rolesData } from '../../../data/hotelUsers';
+import { useHotelStaff } from '@/application/hooks/useHotelStaff';
 
 type Tab = 'STAFF' | 'ROLES' | 'VIEW_ROLE';
 
 const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) => {
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+  const { staff: allStaff, roles: allRoles } = useHotelStaff();
   const [selectedRoleForView, setSelectedRoleForView] = useState<any | null>(null);
   const [search, setSearch] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -26,19 +27,19 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const filteredStaff = useMemo(() => {
-    return mockStaff.filter(s => 
+    return allStaff.filter(s => 
       s.name.toLowerCase().includes(search.toLowerCase()) || 
       s.email.toLowerCase().includes(search.toLowerCase()) ||
       s.mobile.includes(search)
     );
-  }, [search]);
+  }, [allStaff, search]);
 
   const filteredRoles = useMemo(() => {
-    return rolesData.filter(r => 
+    return allRoles.filter(r => 
       r.name.toLowerCase().includes(search.toLowerCase()) ||
       r.desc.toLowerCase().includes(search.toLowerCase())
     );
-  }, [search]);
+  }, [allRoles, search]);
 
   const currentDataLength = activeTab === 'STAFF' ? filteredStaff.length : filteredRoles.length;
   const totalPages = Math.max(1, Math.ceil(currentDataLength / itemsPerPage));
@@ -74,7 +75,7 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
   }, [filteredRoles, currentPage, itemsPerPage]);
 
   if (activeTab === 'VIEW_ROLE' && selectedRoleForView) {
-    const roleStaff = mockStaff.filter(s => s.role === selectedRoleForView.name);
+    const roleStaff = allStaff.filter(s => s.role === selectedRoleForView.name);
     return (
       <RoleDetailView 
         role={selectedRoleForView} 

@@ -10,7 +10,7 @@ import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import type { AuditLog as AuditEntry } from '@/domain/entities/AuditLog';
-import { mockLogs } from '../../../data/auditLogs';
+import { useAuditLogs } from '@/application/hooks/useAuditLogs';
 
 const ActionBadge = ({ action }: { action: AuditEntry['action'] }) => {
   const styles = {
@@ -42,6 +42,7 @@ const ActionBadge = ({ action }: { action: AuditEntry['action'] }) => {
 };
 
 const AuditLogs: React.FC = () => {
+  const { logs: allLogs } = useAuditLogs();
   const [search, setSearch] = useState('');
   const [moduleFilter, setModuleFilter] = useState('All Modules');
   const [userFilter, setUserFilter] = useState('All Users');
@@ -49,13 +50,13 @@ const AuditLogs: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const filteredLogs = useMemo(() => {
-    return mockLogs.filter(log => {
+    return allLogs.filter(log => {
       const matchesSearch = log.description.toLowerCase().includes(search.toLowerCase()) || log.id.toLowerCase().includes(search.toLowerCase());
       const matchesModule = moduleFilter === 'All Modules' || log.module === moduleFilter;
       const matchesUser = userFilter === 'All Users' || log.user === userFilter;
       return matchesSearch && matchesModule && matchesUser;
     });
-  }, [search, moduleFilter, userFilter]);
+  }, [allLogs, search, moduleFilter, userFilter]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -107,7 +108,7 @@ const AuditLogs: React.FC = () => {
                       className="appearance-none bg-black/5 dark:bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold uppercase text-gray-700 dark:text-gray-300 outline-none cursor-pointer pr-8"
                     >
                         <option>All Users</option>
-                        {Array.from(new Set(mockLogs.map(l => l.user))).map(u => <option key={u}>{u}</option>)}
+                        {Array.from(new Set(allLogs.map(l => l.user))).map(u => <option key={u}>{u}</option>)}
                     </select>
                     <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
@@ -118,7 +119,7 @@ const AuditLogs: React.FC = () => {
                       className="appearance-none bg-black/5 dark:bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold uppercase text-gray-700 dark:text-gray-300 outline-none cursor-pointer pr-8"
                     >
                         <option>All Modules</option>
-                        {Array.from(new Set(mockLogs.map(l => l.module))).map(m => <option key={m}>{m}</option>)}
+                        {Array.from(new Set(allLogs.map(l => l.module))).map(m => <option key={m}>{m}</option>)}
                     </select>
                     <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>

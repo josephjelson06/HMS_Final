@@ -13,9 +13,10 @@ import Button from '../../components/ui/Button';
 import InvoiceDetail from '../../modals/hotel/InvoiceDetail';
 import NewPOSBillModal from '../../modals/hotel/NewPOSBillModal';
 import type { InvoiceStatus, BillingInvoice as InvoiceRecord } from '@/domain/entities/BillingInvoice';
-import { mockInvoices } from '../../../data/billingHub';
+import { useBilling } from '@/application/hooks/useBilling';
 
 const BillingHub: React.FC = () => {
+  const { invoices: allInvoices } = useBilling();
   const [view, setView] = useState<'list' | 'detail'>('list');
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRecord | null>(null);
   const [isPOSOpen, setIsPOSOpen] = useState(false);
@@ -23,7 +24,7 @@ const BillingHub: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<InvoiceStatus | 'All'>('All');
 
   const filteredInvoices = useMemo(() => {
-    return mockInvoices.filter(inv => {
+    return allInvoices.filter(inv => {
       const searchStr = search.toLowerCase();
       const matchesSearch = inv.guestName.toLowerCase().includes(searchStr) || 
                            inv.id.toLowerCase().includes(searchStr) ||
@@ -31,7 +32,7 @@ const BillingHub: React.FC = () => {
       const matchesFilter = filterStatus === 'All' || inv.status === filterStatus;
       return matchesSearch && matchesFilter;
     });
-  }, [search, filterStatus]);
+  }, [allInvoices, search, filterStatus]);
 
   const StatusBadge = ({ status }: { status: InvoiceStatus }) => {
     const styles = {

@@ -12,20 +12,25 @@ import SharedStatusBadge, { statusToVariant } from '../../components/ui/StatusBa
 import InvoiceDetailModal from '../../modals/super/InvoiceDetailModal';
 import InvoiceCreateModal from '../../modals/super/InvoiceCreateModal';
 import type { Invoice } from '@/domain/entities/Invoice';
-import { INITIAL_INVOICES } from '../../../data/invoices';
+import { useInvoices } from '@/application/hooks/useInvoices';
 
 const StatusBadge = ({ status }: { status: string }) => (
   <SharedStatusBadge label={status} variant={statusToVariant(status.charAt(0).toUpperCase() + status.slice(1))} />
 );
 
 const Invoices: React.FC = () => {
-  const [invoices, setInvoices] = useState<Invoice[]>(INITIAL_INVOICES);
+  const { invoices: hookInvoices } = useInvoices();
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  useEffect(() => {
+    if (hookInvoices.length > 0) setInvoices(hookInvoices);
+  }, [hookInvoices]);
 
   const handleAddInvoice = (newInv: Invoice) => {
     setInvoices(prev => [newInv, ...prev]);

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Users, Shield, Search, UserPlus, MoreHorizontal, Mail, Phone, 
   ChevronDown, ChevronRight, Lock, Edit2, Trash2, 
@@ -13,15 +13,24 @@ import RoleDetailView from '../../modals/super/RoleDetailView';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import type { User, Role } from '@/domain/entities/User';
-import { INITIAL_USERS, INITIAL_ROLES } from '../../../data/users';
+import { useUsers } from '@/application/hooks/useUsers';
 
 type Tab = 'USERS' | 'ROLES' | 'VIEW_ROLE';
 
 const UsersManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('USERS');
-  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
-  const [roles, setRoles] = useState<Role[]>(INITIAL_ROLES);
+  const { users: hookUsers, roles: hookRoles } = useUsers();
+  const [users, setUsers] = useState<User[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRoleForView, setSelectedRoleForView] = useState<Role | null>(null);
+
+  useEffect(() => {
+    if (hookUsers.length > 0) setUsers(hookUsers);
+  }, [hookUsers]);
+
+  useEffect(() => {
+    if (hookRoles.length > 0) setRoles(hookRoles);
+  }, [hookRoles]);
   
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);

@@ -13,9 +13,10 @@ import NewBookingWizard from '../../modals/hotel/NewBookingWizard';
 import type { Guest } from '@/domain/entities/Guest';
 import type { BookingBlock } from '@/domain/entities/Booking';
 import { BOOKING_CELL_WIDTH as CELL_WIDTH, BOOKING_ROOM_LIST_WIDTH as ROOM_LIST_WIDTH, BOOKING_DAYS_TO_SHOW as DAYS_TO_SHOW, BOOKING_ROW_HEIGHT as ROW_HEIGHT } from '@/domain/entities/Booking';
-import { ROOMS_DATA, BOOKING_ENGINE_BOOKINGS as INITIAL_BOOKINGS } from '../../../data/bookings';
+import { useBookings } from '@/application/hooks/useBookings';
 
 const BookingEngine: React.FC = () => {
+  const { bookings: allBookings, rooms: allRooms } = useBookings();
   const [viewDate, setViewDate] = useState(new Date('2026-02-10'));
   const [search, setSearch] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
@@ -57,8 +58,8 @@ const BookingEngine: React.FC = () => {
   };
 
   const filteredBookings = useMemo(() => {
-    if (!search) return INITIAL_BOOKINGS;
-    return INITIAL_BOOKINGS.filter(b => 
+    if (!search) return allBookings;
+    return allBookings.filter(b => 
       b.guestName.toLowerCase().includes(search.toLowerCase()) || 
       b.roomId.includes(search)
     );
@@ -166,7 +167,7 @@ const BookingEngine: React.FC = () => {
                 
                 {/* Rooms Sidebar (Y-Axis) */}
                 <div ref={roomsSidebarRef} className="overflow-hidden border-r border-white/10 bg-black/5 shrink-0 z-20" style={{ width: `${ROOM_LIST_WIDTH}px` }}>
-                    {ROOMS_DATA.map((room) => (
+                    {allRooms.map((room) => (
                         <div key={room.id} className="h-20 border-b border-white/5 p-5 flex items-center gap-4 group hover:bg-black/10 transition-all cursor-pointer">
                             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-accent transition-colors shadow-sm">
                                 <DoorOpen size={22} />
@@ -190,7 +191,7 @@ const BookingEngine: React.FC = () => {
                 >
                     {/* Grid Background Lines */}
                     <div className="absolute inset-0 pointer-events-none opacity-20">
-                        {ROOMS_DATA.map((_, i) => (
+                        {allRooms.map((_, i) => (
                             <div key={i} className="h-20 border-b border-white/10 w-full"></div>
                         ))}
                         {dates.map((_, i) => (
@@ -205,7 +206,7 @@ const BookingEngine: React.FC = () => {
 
                     {/* Booking Blocks Layer */}
                     <div className="relative min-w-max">
-                        {ROOMS_DATA.map((room) => (
+                        {allRooms.map((room) => (
                             <div key={room.id} className="h-20 flex">
                                 {dates.map((date, dateIdx) => {
                                     const dStr = date.toISOString().split('T')[0];

@@ -10,9 +10,10 @@ import PageHeader from '../../components/ui/PageHeader';
 import ChangePlanModal from '../../modals/super/ChangePlanModal';
 import ExtendSubscriptionModal from '../../modals/super/ExtendSubscriptionModal';
 import type { Subscription } from '@/domain/entities/Subscription';
-import { mockSubscriptions } from '../../../data/subscriptions';
+import { useSubscriptions } from '@/application/hooks/useSubscriptions';
 
 const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onNavigate }) => {
+  const { subscriptions: allSubscriptions } = useSubscriptions();
   const [filterPlan, setFilterPlan] = useState('All Plans');
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,12 +25,12 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
   const [isExtendOpen, setIsExtendOpen] = useState(false);
 
   const filteredData = useMemo(() => {
-    return mockSubscriptions.filter(sub => {
+    return allSubscriptions.filter(sub => {
       const matchesSearch = sub.hotel.toLowerCase().includes(search.toLowerCase());
       const matchesPlan = filterPlan === 'All Plans' || sub.plan === filterPlan;
       return matchesSearch && matchesPlan;
     }).sort((a, b) => new Date(a.renewalDate).getTime() - new Date(b.renewalDate).getTime());
-  }, [search, filterPlan]);
+  }, [allSubscriptions, search, filterPlan]);
 
   useEffect(() => {
     setCurrentPage(1);

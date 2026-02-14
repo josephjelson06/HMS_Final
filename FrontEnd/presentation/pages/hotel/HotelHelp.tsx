@@ -11,19 +11,20 @@ import Button from '../../components/ui/Button';
 import NewTicketModal from '../../modals/hotel/NewTicketModal';
 import HotelTicketDetailModal from '../../modals/hotel/HotelTicketDetailModal';
 import type { HotelTicketCategory as TicketCategory, HotelTicketPriority as TicketPriority, HotelTicketStatus as TicketStatus, HotelTicket as Ticket } from '@/domain/entities/HotelTicket';
-import { mockHotelTickets as mockTickets } from '../../../data/hotelHelp';
+import { useHotelHelp } from '@/application/hooks/useHotelHelp';
 
 const HotelHelp: React.FC = () => {
+  const { tickets: allTickets } = useHotelHelp();
   const [search, setSearch] = useState('');
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
   const filteredTickets = useMemo(() => {
-    return mockTickets.filter(t => 
+    return allTickets.filter(t => 
       t.subject.toLowerCase().includes(search.toLowerCase()) || 
       t.id.toLowerCase().includes(search.toLowerCase())
     );
-  }, [search]);
+  }, [allTickets, search]);
 
   const PriorityBadge = ({ level }: { level: TicketPriority }) => {
     const styles = {

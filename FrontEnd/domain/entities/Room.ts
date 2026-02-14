@@ -38,3 +38,8 @@ export interface Booking {
   balance: number;
   source: string;
 }
+
+/** Layout constants for the room management timeline */
+export const ROOM_CELL_WIDTH = 140;
+export const ROOM_LIST_WIDTH = 300;
+export const ROOM_DAYS_TO_SHOW = 21;

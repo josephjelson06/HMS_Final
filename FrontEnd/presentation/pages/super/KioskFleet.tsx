@@ -13,7 +13,7 @@ import Button from '../../components/ui/Button';
 import { useTheme } from '../../hooks/useTheme';
 import AddKioskModal from '../../modals/super/AddKioskModal';
 import KioskFirmware from '../../modals/super/KioskFirmware';
-import { kioskData } from '../../../data/kiosks';
+import { useKiosks } from '@/application/hooks/useKiosks';
 
 interface KioskFleetProps {
   onNavigateDetail?: (id: string) => void;
@@ -53,6 +53,7 @@ const PaperLevel = ({ level, compact = false }: { level: number, compact?: boole
 
 const KioskFleet: React.FC<KioskFleetProps> = ({ onNavigateDetail }) => {
   const { isDarkMode } = useTheme();
+  const { kiosks: allKiosks } = useKiosks();
   const [activeTab, setActiveTab] = useState<FleetTab>('DEVICES');
   const [view, setView] = useState<'grid' | 'table'>('table');
   const [selectedKiosks, setSelectedKiosks] = useState<string[]>([]);
@@ -68,14 +69,14 @@ const KioskFleet: React.FC<KioskFleetProps> = ({ onNavigateDetail }) => {
   };
 
   const filteredData = useMemo(() => {
-    return kioskData.filter(k => {
+    return allKiosks.filter(k => {
       const matchesSearch = k.id.toLowerCase().includes(search.toLowerCase()) || 
                            k.hotel.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = filterStatus === 'ALL STATUS' || k.status === filterStatus;
       const matchesHotel = filterHotel === 'ALL HOTELS' || k.hotel.includes(filterHotel);
       return matchesSearch && matchesStatus && matchesHotel;
     });
-  }, [search, filterStatus, filterHotel]);
+  }, [allKiosks, search, filterStatus, filterHotel]);
 
   useEffect(() => {
     setCurrentPage(1);

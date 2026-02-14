@@ -8,9 +8,10 @@ import GlassCard from '../../components/ui/GlassCard';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import AddFirmwareModal from './AddFirmwareModal';
 import type { FirmwareRelease } from '@/domain/entities/Kiosk';
-import { mockFirmware } from '../../../data/kiosks';
+import { useKiosks } from '@/application/hooks/useKiosks';
 
 const KioskFirmware: React.FC = () => {
+  const { firmware: allFirmware } = useKiosks();
   const [search, setSearch] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -117,7 +118,7 @@ const KioskFirmware: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {mockFirmware.map((f) => (
+              {allFirmware.map((f) => (
                 <tr key={f.version} className="hover:bg-white/5 transition-all group">
                   <td className="px-10 py-6">
                     <div className="flex items-center gap-4">

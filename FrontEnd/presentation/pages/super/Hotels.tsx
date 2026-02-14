@@ -12,7 +12,7 @@ import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import SharedStatusBadge, { statusToVariant } from '../../components/ui/StatusBadge';
-import { hotelsData } from '../../../data/hotels';
+import { useHotels } from '@/application/hooks/useHotels';
 
 interface HotelsProps {
   onNavigate: (route: string) => void;
@@ -37,6 +37,7 @@ const StatusBadge = ({ status }: { status: string }) => (
 );
 
 const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
+  const { hotels: allHotels } = useHotels();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [filterPlan, setFilterPlan] = useState('All Plans');
@@ -51,7 +52,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
   };
 
   const filteredHotels = useMemo(() => {
-    return hotelsData.filter(hotel => {
+    return allHotels.filter(hotel => {
       const searchStr = search.toLowerCase();
       const matchesSearch = 
         hotel.name.toLowerCase().includes(searchStr) ||
@@ -64,7 +65,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
 
       return matchesSearch && matchesPlan && matchesStatus;
     });
-  }, [search, filterPlan, filterStatus]);
+  }, [allHotels, search, filterPlan, filterStatus]);
 
   useEffect(() => {
     setCurrentPage(1);

@@ -9,7 +9,7 @@ import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import HelpdeskDetailModal from '../../modals/super/HelpdeskDetailModal';
 import type { HelpdeskTicket as Ticket, HelpdeskPriority as Priority, HelpdeskStatus as Status, HelpdeskCategory as Category } from '@/domain/entities/Ticket';
-import { mockTickets } from '../../../data/helpdesk';
+import { useTickets } from '@/application/hooks/useTickets';
 
 type ViewMode = 'table' | 'kanban';
 
@@ -43,6 +43,7 @@ const StatusBadge = ({ status }: { status: Status }) => {
 };
 
 const Helpdesk: React.FC = () => {
+  const { tickets: allTickets } = useTickets();
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<Status | 'All'>('All');
@@ -51,14 +52,14 @@ const Helpdesk: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const filteredTickets = useMemo(() => {
-    return mockTickets.filter(t => {
+    return (allTickets as unknown as Ticket[]).filter(t => {
       const matchesSearch = t.subject.toLowerCase().includes(search.toLowerCase()) || 
                            t.id.toLowerCase().includes(search.toLowerCase()) ||
                            t.hotel.toLowerCase().includes(search.toLowerCase());
       const matchesTab = activeTab === 'All' || t.status === activeTab;
       return matchesSearch && matchesTab;
     });
-  }, [search, activeTab]);
+  }, [allTickets, search, activeTab]);
 
   useEffect(() => {
     setCurrentPage(1);

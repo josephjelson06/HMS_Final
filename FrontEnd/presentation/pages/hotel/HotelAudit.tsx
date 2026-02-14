@@ -12,7 +12,7 @@ import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import type { HotelActionType, HotelModule, HotelAuditLog as HotelAuditEntry } from '@/domain/entities/HotelAuditLog';
-import { mockHotelLogs } from '../../../data/hotelAudit';
+import { useHotelAudit } from '@/application/hooks/useHotelAudit';
 
 const ActionBadge = ({ action }: { action: HotelActionType }) => {
   const styles = {
@@ -35,6 +35,7 @@ const ActionBadge = ({ action }: { action: HotelActionType }) => {
 };
 
 const HotelAudit: React.FC = () => {
+  const { logs: allLogs } = useHotelAudit();
   const [search, setSearch] = useState('');
   const [userFilter, setUserFilter] = useState('All Staff');
   const [moduleFilter, setModuleFilter] = useState('All Modules');
@@ -42,13 +43,13 @@ const HotelAudit: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const filteredLogs = useMemo(() => {
-    return mockHotelLogs.filter(log => {
+    return allLogs.filter(log => {
       const matchesSearch = log.description.toLowerCase().includes(search.toLowerCase());
       const matchesUser = userFilter === 'All Staff' || log.user === userFilter;
       const matchesModule = moduleFilter === 'All Modules' || log.module === moduleFilter;
       return matchesSearch && matchesUser && matchesModule;
     });
-  }, [search, userFilter, moduleFilter]);
+  }, [allLogs, search, userFilter, moduleFilter]);
 
   useEffect(() => {
     setCurrentPage(1);

@@ -14,9 +14,10 @@ import Button from '../../components/ui/Button';
 import NewIncidentModal from '../../modals/hotel/NewIncidentModal';
 import IncidentDetailModal from '../../modals/hotel/IncidentDetailModal';
 import type { IncidentCategory, IncidentPriority, IncidentStatus, Incident } from '@/domain/entities/Incident';
-import { mockIncidents } from '../../../data/incidents';
+import { useIncidents } from '@/application/hooks/useIncidents';
 
 const IncidentsRecord: React.FC = () => {
+  const { incidents: allIncidents } = useIncidents();
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('kanban');
   const [activeTab, setActiveTab] = useState<IncidentStatus | 'All'>('All');
   const [search, setSearch] = useState('');
@@ -26,14 +27,14 @@ const IncidentsRecord: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const filteredIncidents = useMemo(() => {
-    return mockIncidents.filter(inc => {
+    return allIncidents.filter(inc => {
       const matchesSearch = inc.subject.toLowerCase().includes(search.toLowerCase()) || 
                            inc.id.toLowerCase().includes(search.toLowerCase()) ||
                            inc.room.includes(search);
       const matchesStatus = activeTab === 'All' || inc.status === activeTab;
       return matchesSearch && matchesStatus;
     });
-  }, [search, activeTab]);
+  }, [allIncidents, search, activeTab]);
 
   useEffect(() => {
     setCurrentPage(1);

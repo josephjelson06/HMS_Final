@@ -15,7 +15,7 @@ import Button from '../../components/ui/Button';
 import GuestDetailPanel from '../../modals/hotel/GuestDetailPanel';
 import NewBookingWizard from '../../modals/hotel/NewBookingWizard';
 import type { KYCStatus, GuestStatus, Guest } from '@/domain/entities/Guest';
-import { mockGuests } from '../../../data/guests';
+import { useGuests } from '@/application/hooks/useGuests';
 
 const KycBadge = ({ status }: { status: KYCStatus }) => {
   const styles = {
@@ -54,6 +54,7 @@ const StatusBadge = ({ status }: { status: GuestStatus }) => {
 };
 
 const GuestRegistry: React.FC = () => {
+  const { guests: allGuests } = useGuests();
   const [search, setSearch] = useState('');
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -62,7 +63,7 @@ const GuestRegistry: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const filteredGuests = useMemo(() => {
-    return mockGuests.filter(g => {
+    return allGuests.filter(g => {
       const s = search.toLowerCase();
       const matchesSearch = g.mobile.includes(search) || 
                            g.name.toLowerCase().includes(s) || 
@@ -76,7 +77,7 @@ const GuestRegistry: React.FC = () => {
       const matchesFilter = activeFilter === 'All' || g.status === activeFilter;
       return matchesSearch && matchesFilter;
     });
-  }, [search, activeFilter]);
+  }, [allGuests, search, activeFilter]);
 
   useEffect(() => {
     setCurrentPage(1);
