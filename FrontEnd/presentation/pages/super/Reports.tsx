@@ -4,7 +4,10 @@ import {
   ArrowLeft, FileOutput, ArrowRight
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
-import { useTheme } from '../../hooks/useTheme';
+import { useHotels } from '../../../application/hooks/useHotels';
+import { useSubscriptions } from '../../../application/hooks/useSubscriptions';
+import { useInvoices } from '../../../application/hooks/useInvoices';
+import { useUsers } from '../../../application/hooks/useUsers';
 
 // --- SUB-COMPONENTS ---
 
@@ -66,43 +69,58 @@ const HeaderSection = ({ title, sub }: any) => (
 
 const Reports: React.FC = () => {
   const [activeReport, setActiveReport] = useState<string | null>(null);
+  const { hotels, loading: hotelsLoading } = useHotels();
+  const { subscriptions, loading: subscriptionsLoading } = useSubscriptions();
+  const { invoices, loading: invoicesLoading } = useInvoices();
+  const { users, loading: usersLoading } = useUsers();
+
+  const isLoading = hotelsLoading || subscriptionsLoading || invoicesLoading || usersLoading;
+  const activeHotels = hotels.filter((hotel) => hotel.status === 'Active').length;
+  const activeSubscriptions = subscriptions.filter((subscription) => subscription.status === 'Active').length;
+  const overdueInvoices = invoices.filter((invoice) => invoice.status.toLowerCase() === 'overdue').length;
+  const activeUsers = users.filter((user) => user.status.toLowerCase() === 'active').length;
 
   const reports = [
     { 
       id: 'hotels', 
       icon: Building2, 
       title: 'Hotels Report', 
-      preview: 'Export complete hotel registry data including status, ratings, and amenities.', 
+      preview: `Export ${hotels.length} hotels (${activeHotels} active) with status, plans, and GST details.`, 
       formats: ['CSV', 'PDF', 'XLSX'], 
-      color: 'blue' 
+      color: 'blue',
+      rows: hotels.length,
     },
     { 
       id: 'subscriptions', 
       icon: CreditCard, 
       title: 'Subscriptions Report', 
-      preview: 'Export subscription data with plan details, status, and renewal information.', 
+      preview: `Export ${subscriptions.length} subscriptions (${activeSubscriptions} active) with renewal timelines.`, 
       formats: ['CSV', 'PDF', 'XLSX'], 
-      color: 'cyan' 
+      color: 'cyan',
+      rows: subscriptions.length,
     },
     { 
       id: 'invoices', 
       icon: FileText, 
       title: 'Invoices Report', 
-      preview: 'Export invoice data with payment status, amounts, and hotel details.', 
+      preview: `Export ${invoices.length} invoices with ${overdueInvoices} overdue receivables and payment status.`, 
       formats: ['CSV', 'PDF', 'XLSX'], 
-      color: 'emerald' 
+      color: 'emerald',
+      rows: invoices.length,
     },
     { 
       id: 'users', 
       icon: Users, 
       title: 'Users Report', 
-      preview: 'Export user accounts data with roles, status, and activity information.', 
+      preview: `Export ${users.length} user accounts (${activeUsers} active) with role and access metadata.`, 
       formats: ['CSV', 'XLSX'], 
-      color: 'purple' 
+      color: 'purple',
+      rows: users.length,
     },
   ];
 
   if (activeReport) {
+     const selectedReport = reports.find((r) => r.id === activeReport);
      return (
        <div className="p-4 md:p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
           <button 
@@ -112,7 +130,10 @@ const Reports: React.FC = () => {
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
             Back to Registry
           </button>
-          <HeaderSection title={reports.find(r => r.id === activeReport)?.title} sub="Comprehensive Data Analysis" />
+          <HeaderSection
+            title={selectedReport?.title}
+            sub={isLoading ? 'Synchronizing Live Data Sources' : `${selectedReport?.rows ?? 0} Records Ready for Export`}
+          />
           <GlassCard className="h-96 flex flex-col items-center justify-center text-gray-500 border-dashed border-2 border-white/10">
              <div className="text-center space-y-4">
                 <FileOutput size={64} className="mx-auto opacity-10 animate-pulse text-accent" />
@@ -128,7 +149,10 @@ const Reports: React.FC = () => {
 
   return (
     <div className="p-4 md:p-8 space-y-10 min-h-screen pb-24 animate-in fade-in duration-500">
-      <HeaderSection title="Intelligence Hub" sub="Analytical Insight & Data Export Engine" />
+      <HeaderSection
+        title="Intelligence Hub"
+        sub={isLoading ? 'Analytical Insight & Data Export Engine | Syncing Sources' : 'Analytical Insight & Data Export Engine | Live Repository Data'}
+      />
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {reports.map((r) => (

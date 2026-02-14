@@ -5,6 +5,7 @@ import GlassCard from '../components/ui/GlassCard';
 import GlassInput from '../components/ui/GlassInput';
 import Button from '../components/ui/Button';
 import { useTheme } from '../hooks/useTheme';
+import { useAuth } from '../../application/hooks/useAuth';
 
 interface LoginProps {
   onLogin: (role: 'super' | 'hotel') => void;
@@ -12,12 +13,14 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const { isDarkMode, toggleTheme } = useTheme();
+  const { quickLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const role = email.toLowerCase().includes('hotel') ? 'hotel' : 'super';
+    quickLogin(role);
     onLogin(role);
   };
 

@@ -9,6 +9,10 @@ import {
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import PageHeader from '../../components/ui/PageHeader';
+import { useRooms } from '../../../application/hooks/useRooms';
+import { useGuests } from '../../../application/hooks/useGuests';
+import { useInvoices } from '../../../application/hooks/useInvoices';
+import { useIncidents } from '../../../application/hooks/useIncidents';
 
 const FormatChip: React.FC<{ label: string }> = ({ label }) => (
   <span className="px-3 py-1 rounded-full bg-black/5 dark:bg-white/10 text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">
@@ -41,13 +45,24 @@ const IntelligenceCard = ({ icon: Icon, title, description, formats, colorClass 
 };
 
 const HotelReports: React.FC = () => {
+  const { rooms, loading: roomsLoading } = useRooms();
+  const { guests, loading: guestsLoading } = useGuests();
+  const { invoices, loading: invoicesLoading } = useInvoices();
+  const { incidents, loading: incidentsLoading } = useIncidents();
+
+  const isLoading = roomsLoading || guestsLoading || invoicesLoading || incidentsLoading;
+  const occupiedRooms = rooms.filter((room) => room.status === 'CLEAN_OCCUPIED' || room.status === 'DIRTY_OCCUPIED').length;
+  const occupancyRate = rooms.length > 0 ? Math.round((occupiedRooms / rooms.length) * 100) : 0;
+  const totalRevenue = invoices.reduce((sum, invoice) => sum + (invoice.total ?? invoice.amount ?? 0), 0);
+  const foreignGuests = guests.filter((guest) => guest.nationality === 'Foreign').length;
+  const openIncidents = incidents.filter((incident) => incident.status === 'Open' || incident.status === 'In Progress').length;
 
   const reports = [
     { 
       id: 'occ', 
       icon: Layout, 
       title: 'Occupancy Report', 
-      description: 'Comprehensive yield analysis including RevPAR, ADR, and daily fill trajectory.',
+      description: `Occupancy at ${occupancyRate}% (${occupiedRooms}/${rooms.length || 0} rooms) with daily fill trajectory.`,
       formats: ['CSV', 'PDF', 'XLSX'],
       colorClass: 'bg-blue-500/10 text-accent border border-accent/20'
     },
@@ -55,7 +70,7 @@ const HotelReports: React.FC = () => {
       id: 'rev', 
       icon: IndianRupee, 
       title: 'Revenue Report', 
-      description: 'Detailed GST split analysis by service type (Rooms/F&B) and channel yield.',
+      description: `Invoice-backed revenue summary from ${invoices.length} records totaling INR ${new Intl.NumberFormat('en-IN').format(totalRevenue)}.`,
       formats: ['CSV', 'PDF', 'XLSX'],
       colorClass: 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
     },
@@ -63,7 +78,7 @@ const HotelReports: React.FC = () => {
       id: 'gst', 
       icon: Globe, 
       title: 'Guest Report', 
-      description: 'Demographic analysis, C-Form compliance data, and nationality mix tracking.',
+      description: `Guest demographics from ${guests.length} profiles including ${foreignGuests} foreign nationals.`,
       formats: ['CSV', 'PDF', 'XLSX'],
       colorClass: 'bg-accent-muted text-accent border border-accent/20'
     },
@@ -71,7 +86,7 @@ const HotelReports: React.FC = () => {
       id: 'ops', 
       icon: Clock, 
       title: 'Operations Report', 
-      description: 'Turnaround efficiency by floor, MTTR for incidents, and staff productivity.',
+      description: `${openIncidents} open incidents with turnaround and resolution performance snapshots.`,
       formats: ['CSV', 'XLSX'],
       colorClass: 'bg-purple-500/10 text-purple-500 border-purple-500/20'
     },
@@ -84,7 +99,7 @@ const HotelReports: React.FC = () => {
       <PageHeader
         title="Intelligence Hub"
         subtitle="Property Performance & Data Export Engine"
-        badge="Dummy Data Page"
+        badge={isLoading ? 'Syncing Data' : 'Live Repository Data'}
       />
 
       {/* Main Grid */}

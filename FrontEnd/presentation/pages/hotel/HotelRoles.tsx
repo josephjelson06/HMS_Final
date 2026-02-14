@@ -1,6 +1,7 @@
 
 import React from 'react';
 import HotelUsers from './HotelUsers';
+import { useHotelStaff } from '../../../application/hooks/useHotelStaff';
 
 /**
  * Consolidating Role management into the unified HotelUsers component 
@@ -8,6 +9,7 @@ import HotelUsers from './HotelUsers';
  * convenient wrapper or can be removed if App.tsx is updated.
  */
 const HotelRoles: React.FC = () => {
+  useHotelStaff();
   return <HotelUsers initialTab="ROLES" />;
 };
 

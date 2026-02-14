@@ -7,12 +7,32 @@ import {
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
+import { useHotels } from '../../../application/hooks/useHotels';
+import { useInvoices } from '../../../application/hooks/useInvoices';
+import { useKiosks } from '../../../application/hooks/useKiosks';
 
 type Section = 'COMPANY' | 'BILLING' | 'KIOSK' | 'TEMPLATES';
 
 const PlatformSettings: React.FC = () => {
   const { isDarkMode } = useTheme();
   const [activeSection, setActiveSection] = useState<Section>('COMPANY');
+  const { hotels, loading: hotelsLoading } = useHotels();
+  const { invoices, loading: invoicesLoading } = useInvoices();
+  const { kiosks, loading: kiosksLoading } = useKiosks();
+
+  const isLoading = hotelsLoading || invoicesLoading || kiosksLoading;
+  const primaryHotel = hotels[0];
+  const legalBusinessName = primaryHotel ? `${primaryHotel.name} Platform Services Pvt Ltd` : 'ATC Platform Solutions Private Limited';
+  const defaultGstin = primaryHotel?.gstin ?? '27AABCU1234A1Z5';
+  const defaultPan = defaultGstin.length >= 12 ? defaultGstin.slice(2, 12) : 'AABCU1234A';
+  const defaultAddress = primaryHotel?.address ?? 'Level 4, Sky Tower, Business Bay, Pune, Maharashtra 411001, India';
+  const defaultInvoicePrefix = invoices[0]?.id.match(/^([A-Z]+-[A-Z]+-)/)?.[1] ?? 'ATC-INV-';
+  const criticalKiosks = kiosks.filter((kiosk) => kiosk.status === 'CRITICAL').length;
+  const offlineKiosks = kiosks.filter((kiosk) => kiosk.status === 'OFFLINE').length;
+  const latestFirmware = kiosks.map((kiosk) => kiosk.firmware).sort().at(-1) ?? 'v2.2.0';
+  const defaultHeartbeatInterval = offlineKiosks > 0 ? 3 : 5;
+  const defaultOfflineThreshold = criticalKiosks > 0 ? 45 : 60;
+  const firmwareRepositoryUrl = `https://cdn.atc-platform.com/firmware/${latestFirmware}/stable`;
 
   const inputClass = `w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border
     ${isDarkMode 
@@ -60,7 +80,7 @@ const PlatformSettings: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">Global Parameters</h1>
-          <p className="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Platform-wide governance & logic defaults</p>
+          <p className="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">{isLoading ? 'Synchronizing governance defaults' : 'Platform-wide governance & logic defaults'}</p>
         </div>
         <button className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-black px-10 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all">
           <Save size={18} />
@@ -82,7 +102,7 @@ const PlatformSettings: React.FC = () => {
                    <Shield size={14} />
                    <span className="text-[10px] font-bold uppercase">Data Sovereignty</span>
                 </div>
-                <p className="text-[10px] text-gray-500 font-medium leading-relaxed">Changes made here propagate to the CDN and Edge nodes within 60 seconds.</p>
+                <p className="text-[10px] text-gray-500 font-medium leading-relaxed">Changes made here propagate to {kiosks.length} edge nodes within 60 seconds.</p>
              </div>
           </div>
         </div>
@@ -101,19 +121,19 @@ const PlatformSettings: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="col-span-2">
                     <label className={labelClass}>Legal Business Name</label>
-                    <input type="text" defaultValue="ATC Platform Solutions Private Limited" className={inputClass} />
+                    <input type="text" defaultValue={legalBusinessName} className={inputClass} />
                   </div>
                   <div>
                     <label className={labelClass}>GSTIN (Tax ID)</label>
-                    <input type="text" defaultValue="27AABCU1234A1Z5" className={`${inputClass} font-mono uppercase`} />
+                    <input type="text" defaultValue={defaultGstin} className={`${inputClass} font-mono uppercase`} />
                   </div>
                   <div>
                     <label className={labelClass}>PAN (Income Tax)</label>
-                    <input type="text" defaultValue="AABCU1234A" className={`${inputClass} font-mono uppercase`} />
+                    <input type="text" defaultValue={defaultPan} className={`${inputClass} font-mono uppercase`} />
                   </div>
                   <div className="col-span-2">
                     <label className={labelClass}>Registered Office Address</label>
-                    <textarea rows={3} defaultValue="Level 4, Sky Tower, Business Bay, Pune, Maharashtra 411001, India" className={inputClass} />
+                    <textarea rows={3} defaultValue={defaultAddress} className={inputClass} />
                   </div>
                 </div>
               </div>
@@ -132,7 +152,7 @@ const PlatformSettings: React.FC = () => {
                   </div>
                   <div>
                     <label className={labelClass}>Invoice Number Prefix</label>
-                    <input type="text" defaultValue="ATC-INV-" className={`${inputClass} font-mono`} />
+                    <input type="text" defaultValue={defaultInvoicePrefix} className={`${inputClass} font-mono`} />
                   </div>
                   <div>
                     <label className={labelClass}>Default Payment Terms</label>
@@ -173,7 +193,7 @@ const PlatformSettings: React.FC = () => {
                   <div>
                     <label className={labelClass}>Heartbeat Interval (Min)</label>
                     <div className="relative">
-                       <input type="number" defaultValue="5" className={`${inputClass} pr-12`} />
+                       <input type="number" defaultValue={defaultHeartbeatInterval} className={`${inputClass} pr-12`} />
                        <Smartphone size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                     </div>
                     <p className="mt-2 text-[10px] text-gray-500 font-medium">Frequency of 'I am alive' signals from kiosks.</p>
@@ -181,7 +201,7 @@ const PlatformSettings: React.FC = () => {
                   <div>
                     <label className={labelClass}>Critical Offline Threshold (Min)</label>
                     <div className="relative">
-                       <input type="number" defaultValue="60" className={`${inputClass} pr-12`} />
+                       <input type="number" defaultValue={defaultOfflineThreshold} className={`${inputClass} pr-12`} />
                        <Clock size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                     </div>
                     <p className="mt-2 text-[10px] text-gray-500 font-medium">Wait time before triggering 'Critical' alert feed.</p>
@@ -189,7 +209,7 @@ const PlatformSettings: React.FC = () => {
                   <div className="col-span-2">
                     <label className={labelClass}>Global Firmware Repository (URL)</label>
                     <div className="relative">
-                       <input type="text" defaultValue="https://cdn.atc-platform.com/firmware/v2/stable" className={`${inputClass} font-mono pr-12`} />
+                       <input type="text" defaultValue={firmwareRepositoryUrl} className={`${inputClass} font-mono pr-12`} />
                        <Database size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                     </div>
                   </div>
@@ -205,7 +225,7 @@ const PlatformSettings: React.FC = () => {
                     { type: 'EMAIL', id: 'welcome', label: 'Welcome (New Hotel Onboarded)', icon: Building2 },
                     { type: 'EMAIL', id: 'inv_gen', label: 'Invoice Generated Alert', icon: Receipt },
                     { type: 'SMS', id: 'pay_rem', label: 'Payment Due Reminder', icon: BellRing },
-                    { type: 'EMAIL', id: 'pay_over', label: 'Payment Overdue Notice', icon: AlertCircle },
+                    { type: 'EMAIL', id: 'pay_over', label: `Payment Overdue Notice (${invoices.filter((invoice) => invoice.status.toLowerCase() === 'overdue').length})`, icon: AlertCircle },
                     { type: 'EMAIL', id: 'acc_susp', label: 'Account Suspended Warning', icon: Ban },
                   ].map((temp) => (
                     <div key={temp.id} className="flex items-center justify-between p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/5 group hover:border-blue-500/30 transition-all">

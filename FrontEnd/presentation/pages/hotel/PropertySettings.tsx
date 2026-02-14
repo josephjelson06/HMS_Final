@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Building2, Receipt, Settings2, DoorOpen, BellRing, 
   Save, ChevronRight, IndianRupee, MapPin, Phone, 
@@ -9,6 +9,9 @@ import {
 import GlassCard from '../../components/ui/GlassCard';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
+import { useHotels } from '../../../application/hooks/useHotels';
+import { useRooms } from '../../../application/hooks/useRooms';
+import { useGuests } from '../../../application/hooks/useGuests';
 
 type Tab = 'PROFILE' | 'TAX' | 'OPS' | 'ROOMS' | 'NOTIFS';
 
@@ -20,14 +23,44 @@ interface RoomType {
   amenities: string[];
 }
 
+const FALLBACK_ROOM_TYPES: RoomType[] = [
+  { id: '1', name: 'Deluxe Double', rackRate: 5500, occupancy: 2, amenities: ['AC', 'WiFi', 'Mini Bar'] },
+  { id: '2', name: 'Executive Suite', rackRate: 9500, occupancy: 3, amenities: ['AC', 'WiFi', 'Bathtub', 'Balcony'] },
+];
+
 const PropertySettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('PROFILE');
+  const { hotels, loading: hotelsLoading } = useHotels();
+  const { rooms, roomTypes: liveRoomTypes, loading: roomsLoading } = useRooms();
+  const { guests, loading: guestsLoading } = useGuests();
+  const isLoading = hotelsLoading || roomsLoading || guestsLoading;
 
   // Room Configuration States
-  const [roomTypes, setRoomTypes] = useState<RoomType[]>([
-    { id: '1', name: 'Deluxe Double', rackRate: 5500, occupancy: 2, amenities: ['AC', 'WiFi', 'Mini Bar'] },
-    { id: '2', name: 'Executive Suite', rackRate: 9500, occupancy: 3, amenities: ['AC', 'WiFi', 'Bathtub', 'Balcony'] },
-  ]);
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>(FALLBACK_ROOM_TYPES);
+  const primaryHotel = hotels[0];
+  const defaultPropertyName = primaryHotel?.name ?? 'Sapphire Boutique Hotel';
+  const defaultEntityName = primaryHotel ? `${primaryHotel.name} Hospitality Pvt Ltd` : 'Sapphire Hospitality Pvt Ltd';
+  const defaultEmail = primaryHotel?.email ?? 'ops@sapphire.com';
+  const defaultMobile = primaryHotel?.mobile ?? '+91 98860 32101';
+  const defaultAddress = primaryHotel?.address ?? 'HAL Old Airport Rd, ISRO Colony, Domlur, Bangalore, Karnataka 560008';
+  const defaultGstin = primaryHotel?.gstin ?? '29AABCU9603R1ZM';
+  const defaultPan = defaultGstin.length >= 12 ? defaultGstin.slice(2, 12) : 'AABCU9603R';
+  const defaultStateCode = defaultGstin.slice(0, 2);
+  const totalRoomCount = rooms.length;
+  const pendingGuestBalanceCount = guests.filter((guest) => guest.balance > 0).length;
+
+  useEffect(() => {
+    if (!liveRoomTypes.length) return;
+    setRoomTypes(
+      liveRoomTypes.map((type) => ({
+        id: type.id,
+        name: type.name,
+        rackRate: type.rate,
+        occupancy: type.occupancy,
+        amenities: type.amenities,
+      }))
+    );
+  }, [liveRoomTypes]);
 
   const inputClass = "w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-accent/50 dark:focus:border-accent/50";
     
@@ -54,7 +87,10 @@ const PropertySettings: React.FC = () => {
   return (
     <div className="p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
       {/* Header */}
-      <PageHeader title="The Configuration" subtitle="Property-wide Logic & Compliance Defaulting">
+      <PageHeader
+        title="The Configuration"
+        subtitle={isLoading ? 'Property-wide logic sync in progress' : 'Property-wide Logic & Compliance Defaulting'}
+      >
         <Button
           size="md"
           icon={<Save size={18} strokeWidth={3} />}
@@ -92,20 +128,20 @@ const PropertySettings: React.FC = () => {
                    <div className="space-y-8">
                       <div>
                         <label className={labelClass}>Hotel Trade Name (Public)</label>
-                        <input type="text" defaultValue="Sapphire Boutique Hotel" className={inputClass} />
+                        <input type="text" defaultValue={defaultPropertyName} className={inputClass} />
                       </div>
                       <div>
                         <label className={labelClass}>Legal Entity Name</label>
-                        <input type="text" defaultValue="Sapphire Hospitality Pvt Ltd" className={inputClass} />
+                        <input type="text" defaultValue={defaultEntityName} className={inputClass} />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                          <div>
                             <label className={labelClass}>Official Email</label>
-                            <input type="email" defaultValue="ops@sapphire.com" className={inputClass} />
+                            <input type="email" defaultValue={defaultEmail} className={inputClass} />
                          </div>
                          <div>
                             <label className={labelClass}>Front Desk Mobile</label>
-                            <input type="tel" defaultValue="+91 98860 32101" className={inputClass} />
+                            <input type="tel" defaultValue={defaultMobile} className={inputClass} />
                          </div>
                       </div>
                       <div>
@@ -129,7 +165,7 @@ const PropertySettings: React.FC = () => {
                       </div>
                       <div>
                         <label className={labelClass}>Physical Postal Address</label>
-                        <textarea rows={4} className={`${inputClass} resize-none`} defaultValue="HAL Old Airport Rd, ISRO Colony, Domlur, Bangalore, Karnataka 560008" />
+                        <textarea rows={4} className={`${inputClass} resize-none`} defaultValue={defaultAddress} />
                       </div>
                    </div>
                 </div>
@@ -144,16 +180,16 @@ const PropertySettings: React.FC = () => {
                    <div className="space-y-8">
                       <div>
                         <label className={labelClass}>Hotel GSTIN (Tax Identification)</label>
-                        <input type="text" defaultValue="29AABCU9603R1ZM" className={`${inputClass} font-mono uppercase`} />
+                        <input type="text" defaultValue={defaultGstin} className={`${inputClass} font-mono uppercase`} />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                          <div>
                             <label className={labelClass}>PAN (Income Tax)</label>
-                            <input type="text" defaultValue="AABCU9603R" className={`${inputClass} font-mono uppercase`} />
+                            <input type="text" defaultValue={defaultPan} className={`${inputClass} font-mono uppercase`} />
                          </div>
                          <div>
                             <label className={labelClass}>State Code</label>
-                            <input type="text" defaultValue="29 (Karnataka)" className={inputClass} />
+                            <input type="text" defaultValue={`${defaultStateCode} (Configured)`} className={inputClass} />
                          </div>
                       </div>
                    </div>
@@ -304,7 +340,7 @@ const PropertySettings: React.FC = () => {
                       <div className="w-14 h-14 rounded-2xl bg-accent-strong text-white flex items-center justify-center shadow-lg"><Bed size={28} /></div>
                       <div>
                          <h4 className="text-sm font-black dark:text-white uppercase">Room Hardware Registry</h4>
-                         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">120 Total Rooms Mapped to floors</p>
+                         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">{totalRoomCount} Total Rooms Mapped to floors</p>
                       </div>
                    </div>
                    <button className="px-8 py-3 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest shadow-xl">Audit Room Grid</button>
@@ -350,7 +386,7 @@ const PropertySettings: React.FC = () => {
                       </div>
                       {[
                         { l: 'New Walk-In Alert', d: 'Notify GM on manual check-in' },
-                        { l: 'Balance Overdue Check-out', d: 'Notify Manager if guest owes money' },
+                        { l: 'Balance Overdue Check-out', d: `Notify Manager if guest owes money (${pendingGuestBalanceCount} pending)` },
                         { l: 'Incident Escalation', d: 'Notify Supervisor if TTR > 2h' }
                       ].map((s, i) => (
                         <div key={i} className="flex items-center justify-between p-5 rounded-3xl bg-black/5 dark:bg-white/[0.02] border border-white/5">
