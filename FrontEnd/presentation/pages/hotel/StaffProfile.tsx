@@ -3,9 +3,20 @@ import { User, Mail, Phone, Lock, Bell, Globe, Camera, ShieldCheck, Save, Clipbo
 import GlassCard from '../../components/ui/GlassCard';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
+import { useHotelStaff } from '@/application/hooks/useHotelStaff';
 
 const StaffProfile: React.FC = () => {
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const { staff } = useHotelStaff();
+
+  const profile = staff[0];
+  const profileName = profile?.name ?? 'Staff Member';
+  const profileRole = profile?.role ?? 'Unassigned Role';
+  const profileId = profile?.id ?? 'N/A';
+  const profileJoinedOn = profile?.dateAdded ?? 'N/A';
+  const profileEmail = profile?.email ?? 'staff@example.com';
+  const profileMobile = profile?.mobile ?? '+91 00000 00000';
+  const avatarName = encodeURIComponent(profileName.replace(/\s+/g, '+'));
 
   const inputClass = "w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-accent/50 dark:focus:border-accent/50";
     
@@ -34,23 +45,23 @@ const StaffProfile: React.FC = () => {
              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
             <div className="relative mb-6">
               <div className="w-32 h-32 rounded-[2.5rem] bg-accent-muted flex items-center justify-center text-accent-strong shadow-inner overflow-hidden border-4 border-white dark:border-white/10">
-                <img src="https://ui-avatars.com/api/?name=Riya+Mehta&background=f97316&color=fff&size=128" alt="Profile" />
+                <img src={`https://ui-avatars.com/api/?name=${avatarName}&background=f97316&color=fff&size=128`} alt={profileName} />
               </div>
               <button className="absolute -bottom-2 -right-2 p-3 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black shadow-xl hover:scale-110 transition-transform">
                 <Camera size={18} />
               </button>
             </div>
-            <h3 className="text-2xl font-black dark:text-white tracking-tighter uppercase mb-1">Riya Mehta</h3>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-accent-strong bg-blue-500/10 px-3 py-1 rounded-full border border-accent/20">General Manager</p>
+            <h3 className="text-2xl font-black dark:text-white tracking-tighter uppercase mb-1">{profileName}</h3>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent-strong bg-blue-500/10 px-3 py-1 rounded-full border border-accent/20">{profileRole}</p>
             
             <div className="mt-8 pt-8 border-t border-white/5 w-full space-y-4">
                <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
                   <span className="text-gray-500">Employee ID</span>
-                  <span className="dark:text-white font-mono">STAFF-7701</span>
+                  <span className="dark:text-white font-mono">{profileId}</span>
                </div>
                <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
                   <span className="text-gray-500">Joined On</span>
-                  <span className="dark:text-white">12 Jan 2025</span>
+                  <span className="dark:text-white">{profileJoinedOn}</span>
                </div>
             </div>
           </GlassCard>
@@ -85,20 +96,20 @@ const StaffProfile: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <label className={labelClass}>Full Legal Name</label>
-                <input type="text" defaultValue="Riya Mehta" className={inputClass} />
+                <input type="text" defaultValue={profileName} className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>Work Email</label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input type="email" defaultValue="riya.m@sapphire.com" className={`${inputClass} pl-11`} readOnly />
+                  <input type="email" defaultValue={profileEmail} className={`${inputClass} pl-11`} readOnly />
                 </div>
               </div>
               <div>
                 <label className={labelClass}>Contact Mobile</label>
                 <div className="relative">
                   <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input type="tel" defaultValue="+91 98860 32101" className={`${inputClass} pl-11`} />
+                  <input type="tel" defaultValue={profileMobile} className={`${inputClass} pl-11`} />
                 </div>
               </div>
             </div>

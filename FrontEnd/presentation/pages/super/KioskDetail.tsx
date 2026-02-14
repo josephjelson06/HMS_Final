@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, Monitor, RefreshCw, Power, ShieldAlert, Cpu, HardDrive, 
   Thermometer, Terminal, Play, Save, Activity, Signal, Zap, 
@@ -9,6 +9,7 @@ import GlassCard from '../../components/ui/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
 import UnmapKioskModal from '../../modals/super/UnmapKioskModal';
 import KioskSupportTicketModal from '../../modals/super/KioskSupportTicketModal';
+import { useKiosks } from '@/application/hooks/useKiosks';
 
 interface KioskDetailProps {
   kioskId: string;
@@ -66,6 +67,7 @@ const PeripheralItem = ({ icon: Icon, name, status, detail }: any) => {
 
 const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
   const { isDarkMode } = useTheme();
+  const { kiosks, loading } = useKiosks();
   const [isUnmapModalOpen, setIsUnmapModalOpen] = useState(false);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
@@ -82,6 +84,39 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
     setIsUnmapModalOpen(false);
     onBack();
   };
+
+  const selectedKiosk = kiosks.find((kiosk) => kiosk.id === kioskId);
+  const isMissingKiosk = !loading && !selectedKiosk;
+
+  const kioskStatus = selectedKiosk?.status ?? 'UNKNOWN';
+  const kioskHotel = selectedKiosk?.hotel ?? 'Unknown Hotel';
+  const kioskSignal = selectedKiosk?.signal ?? 0;
+  const kioskBattery = selectedKiosk?.battery ?? 0;
+  const kioskLastSeen = selectedKiosk?.lastSeen ?? 'N/A';
+  const kioskPaper = selectedKiosk?.paper ?? 0;
+  const kioskFirmware = selectedKiosk?.firmware ?? 'Unknown';
+
+  const statusBadgeStyles: Record<string, string> = {
+    ONLINE: 'bg-emerald-500 text-white shadow-emerald-500/20',
+    OFFLINE: 'bg-gray-600 text-white shadow-gray-600/20',
+    CRITICAL: 'bg-red-500 text-white shadow-red-500/20',
+  };
+  const statusBadgeStyle = statusBadgeStyles[kioskStatus] ?? 'bg-gray-500 text-white shadow-gray-500/20';
+
+  if (isMissingKiosk) {
+    return (
+      <div className="p-8 space-y-8 min-h-screen pb-20 animate-in fade-in duration-500">
+        <button onClick={onBack} className="flex items-center gap-2 text-sm font-black text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors group">
+          <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+          EXIT COMMAND CENTER
+        </button>
+        <GlassCard className="p-8 text-center">
+          <h2 className="text-xl font-black dark:text-white tracking-tight">Kiosk not found</h2>
+          <p className="mt-2 text-sm text-gray-500">No kiosk exists for ID: {kioskId}</p>
+        </GlassCard>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 space-y-8 min-h-screen pb-20 animate-in fade-in duration-500">
@@ -119,9 +154,9 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
               <div>
                 <div className="flex items-center gap-3 mb-1">
                   <h1 className="text-3xl font-black dark:text-white tracking-tighter">{kioskId}</h1>
-                  <span className="px-3 py-1 rounded-lg bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/20">Online</span>
+                  <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest shadow-lg ${statusBadgeStyle}`}>{kioskStatus}</span>
                 </div>
-                <p className="text-sm text-gray-500 font-bold uppercase tracking-widest">Hotel Sapphire • Main Lobby</p>
+                <p className="text-sm text-gray-500 font-bold uppercase tracking-widest">{kioskHotel} • Main Lobby</p>
               </div>
             </div>
             <div className="flex gap-8 relative z-10">
@@ -129,7 +164,7 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Last Heartbeat</p>
                 <div className="flex items-center gap-2 text-emerald-500 font-black">
                    <Zap size={14} fill="currentColor" />
-                   <span className="text-lg">2m 14s ago</span>
+                   <span className="text-lg">{kioskLastSeen}</span>
                 </div>
               </div>
               <div className="text-center">
@@ -144,10 +179,10 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
             <GlassCard>
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 mb-8">Connection & Network</h3>
                 <div className="space-y-8">
-                    <TelemetryGauge label="Signal Strength" value="-42" unit="dBm" color="bg-emerald-500" percentage={85} />
+                    <TelemetryGauge label="Signal Strength" value={kioskSignal} unit="%" color={kioskSignal >= 60 ? "bg-emerald-500" : kioskSignal >= 30 ? "bg-amber-500" : "bg-red-500"} percentage={kioskSignal} />
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/5">
                         <div className="flex items-center gap-3">
-                            <Signal size={20} className="text-emerald-500" />
+                            <Signal size={20} className={kioskSignal >= 60 ? "text-emerald-500" : kioskSignal >= 30 ? "text-amber-500" : "text-red-500"} />
                             <div>
                                 <p className="text-xs font-bold dark:text-white">Connection Type</p>
                                 <p className="text-[10px] text-gray-500 font-bold uppercase">Wi-Fi (WPA3 Enterprise)</p>
@@ -161,8 +196,8 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
             <GlassCard>
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 mb-8">Hardware Environment</h3>
                 <div className="space-y-8">
-                    <TelemetryGauge label="CPU Temperature" value="42" unit="°C" color="bg-emerald-500" percentage={45} />
-                    <TelemetryGauge label="UPS Battery" value="98" unit="%" color="bg-emerald-500" percentage={98} />
+                    <TelemetryGauge label="CPU Temperature" value="42" unit="Â°C" color="bg-emerald-500" percentage={45} />
+                    <TelemetryGauge label="UPS Battery" value={kioskBattery} unit="%" color={kioskBattery >= 50 ? "bg-emerald-500" : kioskBattery >= 20 ? "bg-amber-500" : "bg-red-500"} percentage={kioskBattery} />
                 </div>
             </GlassCard>
           </div>
@@ -195,7 +230,7 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
           <GlassCard className="h-full">
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 mb-6">Peripheral Health</h3>
             <div className="space-y-3">
-              <PeripheralItem icon={Printer} name="Thermal Printer" status="warning" detail="42% Paper Remaining" />
+              <PeripheralItem icon={Printer} name="Thermal Printer" status={kioskPaper <= 20 ? "warning" : "ok"} detail={`${kioskPaper}% Paper Remaining`} />
               <PeripheralItem icon={Camera} name="Face Camera" status="ok" detail="1080p Stream Active" />
               <PeripheralItem icon={Scan} name="ID Scanner" status="ok" detail="Aadhar/PAN Optimized" />
               <PeripheralItem icon={CreditCard} name="Card Reader" status="offline" detail="Device Disconnected" />
@@ -231,7 +266,7 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
                 { l: 'Serial No', v: 'SN-2024-X492-B' },
                 { l: 'Processor', v: 'Octa-core AI SoC' },
                 { l: 'Deployment', v: 'Oct 12, 2024' },
-                { l: 'Firmware', v: 'v2.1.4 (Stable)' }
+                { l: 'Firmware', v: `${kioskFirmware} (${selectedKiosk?.update ? 'Update Available' : 'Up to date'})` }
               ].map((spec, i) => (
                 <div key={i} className="flex justify-between items-center py-1">
                   <span className="text-[10px] font-bold text-gray-500 uppercase">{spec.l}</span>
@@ -249,7 +284,7 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
         onClose={() => setIsUnmapModalOpen(false)} 
         onConfirm={handleUnmapConfirm}
         kioskId={kioskId}
-        hotelName="Hotel Sapphire"
+        hotelName={kioskHotel}
       />
 
       <KioskSupportTicketModal 
@@ -262,3 +297,5 @@ const KioskDetail: React.FC<KioskDetailProps> = ({ kioskId, onBack }) => {
 };
 
 export default KioskDetail;
+
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { 
   CreditCard, Zap, Calendar, CheckCircle2, Download, 
   ArrowRightLeft, ShieldCheck, Info, Package, 
@@ -11,6 +11,7 @@ import {
 import GlassCard from '../../components/ui/GlassCard';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
+import { useSubscriptions } from '@/application/hooks/useSubscriptions';
 
 // --- Sub-Components for Modular Structure ---
 
@@ -48,7 +49,7 @@ const AddonCard = ({ title, price, icon: Icon }: any) => (
       </div>
       <div>
         <p className="text-[11px] font-black dark:text-white uppercase tracking-tight">{title}</p>
-        <p className="text-[9px] font-bold text-gray-500 uppercase">₹{price} / mo</p>
+        <p className="text-[9px] font-bold text-gray-500 uppercase">â‚¹{price} / mo</p>
       </div>
     </div>
     <Plus size={16} className="text-gray-600 group-hover:text-accent transition-colors" />
@@ -56,7 +57,27 @@ const AddonCard = ({ title, price, icon: Icon }: any) => (
 );
 
 const SubscriptionBilling: React.FC = () => {
-  const [autoRenew, setAutoRenew] = useState(true);
+  const { subscriptions } = useSubscriptions();
+  const activeSubscription = subscriptions.find((sub) => sub.status === 'Active') ?? subscriptions[0];
+
+  const subscriptionPlan = activeSubscription?.plan ?? 'Enterprise';
+  const subscriptionPrice = activeSubscription?.price ?? 15000;
+  const subscriptionRenewalDate = activeSubscription?.renewalDate ?? '';
+  const subscriptionAutoRenew = activeSubscription?.autoRenew ?? true;
+
+  const [autoRenew, setAutoRenew] = useState(subscriptionAutoRenew);
+
+  useEffect(() => {
+    setAutoRenew(subscriptionAutoRenew);
+  }, [subscriptionAutoRenew]);
+
+  const renewalLabel = subscriptionRenewalDate
+    ? new Date(subscriptionRenewalDate).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+    : 'N/A';
 
   const invoices = [
     { id: 'INV-ATC-2026-01-004', period: 'Jan 2026', amount: 17700, status: 'Paid', date: '10 Jan 2026' },
@@ -111,8 +132,8 @@ const SubscriptionBilling: React.FC = () => {
                     <Package size={40} />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-black dark:text-white tracking-tighter uppercase leading-none">Enterprise Tier</h2>
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-2">Unlimited Mappings • Priority Hardware logic</p>
+                    <h2 className="text-3xl font-black dark:text-white tracking-tighter uppercase leading-none">{subscriptionPlan} Tier</h2>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-2">Unlimited Mappings â€¢ Priority Hardware logic</p>
                   </div>
                 </div>
 
@@ -120,7 +141,7 @@ const SubscriptionBilling: React.FC = () => {
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Monthly Commitment</p>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-black dark:text-white tracking-tighter">₹15,000</span>
+                      <span className="text-4xl font-black dark:text-white tracking-tighter">INR {subscriptionPrice.toLocaleString()}</span>
                       <span className="text-sm font-bold text-gray-500">/ month</span>
                     </div>
                     <p className="text-[9px] font-bold text-emerald-500 uppercase flex items-center gap-1">
@@ -131,7 +152,7 @@ const SubscriptionBilling: React.FC = () => {
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Term Expiry</p>
                     <div className="flex items-center gap-3">
                       <Calendar size={20} className="text-accent" />
-                      <span className="text-xl font-black dark:text-white uppercase tracking-tighter">28 Feb 2026</span>
+                      <span className="text-xl font-black dark:text-white uppercase tracking-tighter">{renewalLabel}</span>
                     </div>
                     <p className="text-[9px] font-bold text-gray-500 uppercase italic">Next auto-settlement in 18 days</p>
                   </div>
@@ -155,8 +176,8 @@ const SubscriptionBilling: React.FC = () => {
                       <div className="flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-black/40 border border-white/10 shadow-sm">
                          <div className="p-2 rounded-xl bg-blue-500/10 text-accent"><CreditCard size={18} /></div>
                          <div className="min-w-0">
-                            <p className="text-xs font-black dark:text-white leading-none mb-1">•••• 4412</p>
-                            <p className="text-[8px] font-bold text-gray-500 uppercase">Visa • Exp 08/28</p>
+                            <p className="text-xs font-black dark:text-white leading-none mb-1">â€¢â€¢â€¢â€¢ 4412</p>
+                            <p className="text-[8px] font-bold text-gray-500 uppercase">Visa â€¢ Exp 08/28</p>
                          </div>
                       </div>
                     </div>
@@ -207,7 +228,7 @@ const SubscriptionBilling: React.FC = () => {
                         <tr key={inv.id} className="hover:bg-white/5 transition-colors group">
                            <td className="px-10 py-6 text-xs font-mono font-black dark:text-white uppercase tracking-tighter">{inv.id}</td>
                            <td className="px-8 py-6 text-sm font-bold dark:text-gray-400 uppercase tracking-tight">{inv.period}</td>
-                           <td className="px-8 py-6 text-right text-sm font-black dark:text-white tracking-tighter">₹{inv.amount.toLocaleString()}</td>
+                           <td className="px-8 py-6 text-right text-sm font-black dark:text-white tracking-tighter">â‚¹{inv.amount.toLocaleString()}</td>
                            <td className="px-8 py-6 text-center">
                               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-bold uppercase">
                                  <CheckCircle2 size={10} strokeWidth={4} /> {inv.status}
@@ -266,7 +287,7 @@ const SubscriptionBilling: React.FC = () => {
                 </div>
              </div>
              <p className="text-sm font-medium leading-relaxed mb-8">
-               You are eligible for up to <span className="font-black underline decoration-2">₹2,700</span> monthly in Input Tax Credit (ITC) for this property using your verified GSTIN.
+               You are eligible for up to <span className="font-black underline decoration-2">â‚¹2,700</span> monthly in Input Tax Credit (ITC) for this property using your verified GSTIN.
              </p>
              <button className="w-full py-4 rounded-2xl bg-white text-accent-strong text-[10px] font-bold uppercase tracking-widest hover:shadow-2xl transition-all">
                 Validate Gstin Status
@@ -312,3 +333,4 @@ const SubscriptionBilling: React.FC = () => {
 };
 
 export default SubscriptionBilling;
+
