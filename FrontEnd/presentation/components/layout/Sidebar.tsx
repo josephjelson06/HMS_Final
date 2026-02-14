@@ -153,6 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                 <SidebarSection title="Insights" collapsed={isCollapsed}>
                   <SidebarItem icon={HelpCircle} label="Help & Support" active={currentRoute === 'help'} onClick={() => onNavigate('help')} collapsed={isCollapsed} />
+                  <SidebarItem icon={CalendarDays} label="Audit Trail" active={currentRoute === 'hotel-audit'} onClick={() => onNavigate('hotel-audit')} collapsed={isCollapsed} />
                   <SidebarItem icon={BarChart3} label="Reports" active={currentRoute === 'hotel-reports'} onClick={() => onNavigate('hotel-reports')} collapsed={isCollapsed} />
                 </SidebarSection>
               </>

@@ -65,6 +65,8 @@ export function pathnameToLegacyRoute(pathname: string): string {
         return "help";
       case "reports":
         return "hotel-reports";
+      case "audit":
+        return "hotel-audit";
       case "profile":
         return "hotel-profile";
       case "settings":
@@ -139,6 +141,8 @@ export function legacyRouteToPath(route: string, viewMode: ViewMode): string {
       return "/hotel/help";
     case "hotel-reports":
       return "/hotel/reports";
+    case "hotel-audit":
+      return "/hotel/audit";
     case "hotel-profile":
       return "/hotel/profile";
     case "hotel-settings":
@@ -149,4 +153,3 @@ export function legacyRouteToPath(route: string, viewMode: ViewMode): string {
       return "/hotel/dashboard";
   }
 }
-

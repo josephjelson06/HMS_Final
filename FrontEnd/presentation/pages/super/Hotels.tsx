@@ -17,6 +17,7 @@ import { useHotels } from '@/application/hooks/useHotels';
 interface HotelsProps {
   onNavigate: (route: string) => void;
   onLoginAsAdmin?: (hotelName: string) => void;
+  onNavigateHotelDetails?: (hotelId: number) => void;
 }
 
 const PlanBadge = ({ plan }: { plan: string }) => {
@@ -36,7 +37,7 @@ const StatusBadge = ({ status }: { status: string }) => (
   <SharedStatusBadge label={status} variant={statusToVariant(status)} />
 );
 
-const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
+const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateHotelDetails }) => {
   const { hotels: allHotels } = useHotels();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -77,6 +78,15 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
   }, [filteredHotels, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredHotels.length / itemsPerPage);
+
+  const navigateToHotelDetails = (hotelId: number) => {
+    if (onNavigateHotelDetails) {
+      onNavigateHotelDetails(hotelId);
+      return;
+    }
+    // Legacy fallback for the non-URL SPA mode.
+    onNavigate('hotel-details');
+  };
 
   return (
     <div className="p-4 md:p-8 space-y-10 min-h-screen pb-24 animate-in fade-in duration-500">
@@ -251,7 +261,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                                   }
                                   items={[
                                       { icon: LogIn, label: 'Impersonate Admin', onClick: () => onLoginAsAdmin?.(hotel.name), variant: 'primary', hasSeparatorAfter: true },
-                                      { icon: ExternalLink, label: 'View Analytics', onClick: () => onNavigate('hotel-details') },
+                                      { icon: ExternalLink, label: 'View Analytics', onClick: () => navigateToHotelDetails(hotel.id) },
                                       { icon: Edit, label: 'Edit Parameters', onClick: () => {} },
                                       { icon: ShieldAlert, label: 'Suspend Account', onClick: () => {}, variant: 'warning' },
                                       { icon: Trash2, label: 'Delete Registry', onClick: () => {}, variant: 'danger' },
@@ -263,7 +273,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
 
                   {/* UNIFIED CONTAINER: Full-Bleed Anchored Footer Button */}
                   <button 
-                      onClick={() => onNavigate('hotel-details')}
+                      onClick={() => navigateToHotelDetails(hotel.id)}
                       className="w-full py-5 bg-gray-900 dark:bg-white text-white dark:text-black text-[11px] font-bold uppercase tracking-[0.25em] hover:bg-accent-strong hover:text-white transition-all flex items-center justify-center gap-3 group/btn border-t border-white/5"
                   >
                       Access Property Profile <ArrowUpRight size={16} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
@@ -299,7 +309,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                           </div>
                           <div className="min-w-0">
                               <button 
-                                  onClick={() => onNavigate('hotel-details')}
+                                  onClick={() => navigateToHotelDetails(hotel.id)}
                                   className="font-black text-gray-900 dark:text-white text-base hover:text-accent-strong transition-colors text-left truncate block w-full tracking-tight"
                               >
                                   {hotel.name}
@@ -335,7 +345,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin }) => {
                               }
                               items={[
                                   { icon: LogIn, label: 'Impersonate Admin', onClick: () => onLoginAsAdmin?.(hotel.name), variant: 'primary', hasSeparatorAfter: true },
-                                  { icon: ExternalLink, label: 'Full Analytics', onClick: () => onNavigate('hotel-details') },
+                                  { icon: ExternalLink, label: 'Full Analytics', onClick: () => navigateToHotelDetails(hotel.id) },
                                   { icon: Edit, label: 'Settings', onClick: () => {} },
                                   { icon: ShieldAlert, label: 'Suspend', onClick: () => {}, variant: 'warning' },
                                   { icon: Trash2, label: 'Delete', onClick: () => {}, variant: 'danger' },

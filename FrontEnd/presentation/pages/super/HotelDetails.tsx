@@ -4,22 +4,65 @@ import {
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
+import { useHotels } from '@/application/hooks/useHotels';
 
 interface HotelDetailsProps {
   onNavigate: (route: string) => void;
   onLoginAsAdmin?: (hotelName: string) => void;
+  hotelId?: number;
 }
 
-const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin }) => {
+const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin, hotelId }) => {
   const { isDarkMode } = useTheme();
   const [activeTab, setActiveTab] = useState('Overview');
-  const hotelName = "Royal Orchid Bangalore";
-  const hotelAddress = "Domlur, Bangalore, KA";
+  const { hotels: allHotels, loading } = useHotels();
+
+  const selectedHotel = hotelId !== undefined
+    ? allHotels.find((hotel) => hotel.id === hotelId)
+    : allHotels[0];
+
+  const hotelName = selectedHotel?.name ?? 'Hotel';
+  const hotelAddress = selectedHotel?.address ?? 'Address unavailable';
+  const hotelEmail = selectedHotel?.email ?? 'ops@example.com';
+  const hotelStatus = selectedHotel?.status ?? 'Unknown';
+  const hotelPlan = selectedHotel?.plan ?? 'Starter';
+  const hotelMrr = selectedHotel?.mrr ?? 0;
+  const hotelGstin = selectedHotel?.gstin ?? 'N/A';
+  const hotelPan = hotelGstin.length >= 12 ? hotelGstin.slice(2, 12) : 'N/A';
+  const hotelStateCode = hotelGstin.length >= 2 ? `${hotelGstin.slice(0, 2)} (IN)` : 'N/A';
+
+  const isMissingRequestedHotel = !loading && hotelId !== undefined && !selectedHotel;
+
+  const statusClasses: Record<string, string> = {
+    Active: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    Suspended: 'bg-red-500/10 text-red-500 border-red-500/20',
+    'Past Due': 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+    Onboarding: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  };
+  const statusClassName = statusClasses[hotelStatus] ?? 'bg-gray-500/10 text-gray-500 border-gray-500/20';
 
   const tabs = [
     { name: 'Overview', icon: FileText },
     { name: 'Invoice History', icon: CreditCard },
   ];
+
+  if (isMissingRequestedHotel) {
+    return (
+      <div className="p-4 md:p-8 space-y-6 min-h-screen pb-20 animate-in fade-in duration-500">
+        <button
+          onClick={() => onNavigate('hotels')}
+          className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors group"
+        >
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+          Back to Registry
+        </button>
+        <GlassCard className="p-8 text-center">
+          <h2 className="text-xl font-black dark:text-white tracking-tight">Hotel not found</h2>
+          <p className="mt-2 text-sm text-gray-500">No hotel exists for ID: {hotelId}</p>
+        </GlassCard>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 space-y-6 min-h-screen pb-20 animate-in fade-in duration-500">
@@ -42,7 +85,7 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin 
                 <div>
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white uppercase tracking-tighter">{hotelName}</h1>
-                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Active</span>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${statusClassName}`}>{hotelStatus}</span>
                     </div>
                     <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 dark:text-gray-400">
                         <a 
@@ -56,7 +99,7 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin 
                         </a>
                         <div className="flex items-center gap-1.5">
                           <Mail size={14} />
-                          <a href="mailto:ops@royalorchid.com" className="hover:text-accent-strong transition-colors">ops@royalorchid.com</a>
+                          <a href={`mailto:${hotelEmail}`} className="hover:text-accent-strong transition-colors">{hotelEmail}</a>
                         </div>
                     </div>
                 </div>
@@ -75,10 +118,10 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin 
 
       {/* UNIFIED CONTAINER: KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[
-          { label: 'Subscription', value: 'Enterprise', color: 'text-accent', footer: 'Renewing in 12 days' },
-          { label: 'Status', value: 'Active', sub: 'Since June 2024', color: 'text-emerald-500', footer: 'Account in good standing' },
-          { label: 'Total Revenue', value: '₹59.0k', color: 'text-accent', footer: 'Life-to-date yielding' },
+                {[
+          { label: 'Subscription', value: hotelPlan, color: 'text-accent', footer: 'Active plan assigned' },
+          { label: 'Status', value: hotelStatus, sub: loading ? 'Loading...' : 'Current account state', color: 'text-emerald-500', footer: 'Operational status' },
+          { label: 'Total Revenue', value: 'INR ' + (hotelMrr / 1000).toFixed(1) + 'k', color: 'text-accent', footer: 'Monthly recurring revenue' },
         ].map((m, i) => (
           <GlassCard key={i} noPadding clipContent className="flex flex-col h-32 border-white/5 dark:border-white/10">
             <div className="flex-1 px-6 flex flex-col justify-center">
@@ -118,11 +161,11 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin 
               </div>
               <div className="p-8 space-y-4 text-sm flex-1">
                 {[
-                  { l: 'Trade Name', v: 'Royal Orchid Suites' },
-                  { l: 'GSTIN', v: '29AABCU9603R1ZM', mono: true },
-                  { l: 'PAN', v: 'AABCU9603R', mono: true },
-                  { l: 'Registered Address', v: 'HAL Old Airport Rd, ISRO Colony, Domlur, Bangalore, Karnataka 560008' },
-                  { l: 'State Code', v: '29 (KA)' },
+                  { l: 'Trade Name', v: hotelName },
+                  { l: 'GSTIN', v: hotelGstin, mono: true },
+                  { l: 'PAN', v: hotelPan, mono: true },
+                  { l: 'Registered Address', v: hotelAddress },
+                  { l: 'State Code', v: hotelStateCode },
                 ].map((it, i) => (
                   <div key={i} className="flex flex-col gap-1 border-b border-white/5 pb-2 last:border-0">
                     <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{it.l}</span>
@@ -137,8 +180,8 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin 
               </div>
               <div className="p-8 space-y-4 text-sm flex-1">
                 {[
-                  { l: 'Current Plan', v: 'Enterprise Plan', badge: 'Orange' },
-                  { l: 'Billing Cycle', v: 'Monthly (₹15,000/mo)' },
+                  { l: 'Current Plan', v: `${hotelPlan} Plan`, badge: 'Orange' },
+                  { l: 'Billing Cycle', v: `Monthly (INR ${hotelMrr.toLocaleString()}/mo)` },
                   { l: 'Next Renewal', v: 'Dec 01, 2025' },
                   { l: 'Auto-Renewal', v: 'Enabled', badge: 'Emerald' },
                 ].map((it, i) => (
@@ -189,3 +232,4 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin 
 };
 
 export default HotelDetails;
+

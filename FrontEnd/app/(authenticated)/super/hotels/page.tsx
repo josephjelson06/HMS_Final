@@ -13,8 +13,8 @@ export default function SuperHotelsPage() {
   return (
     <Hotels
       onNavigate={(route) => router.push(legacyRouteToPath(route, "super"))}
+      onNavigateHotelDetails={(hotelId) => router.push(`/super/hotels/${hotelId}`)}
       onLoginAsAdmin={startImpersonation}
     />
   );
 }
-
