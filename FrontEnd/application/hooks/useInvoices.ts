@@ -26,5 +26,10 @@ export function useInvoices() {
     return updated;
   };
 
-  return { invoices, loading, error, createInvoice, updateInvoice };
+  const deleteInvoice = async (id: string) => {
+    await repositories.invoices.delete(id);
+    setInvoices(prev => prev.filter(inv => inv.id !== id));
+  };
+
+  return { invoices, loading, error, createInvoice, updateInvoice, deleteInvoice };
 }

@@ -3,13 +3,14 @@ import {
   Plus, Edit3, Archive, Check, 
   Monitor, Layout, IndianRupee, HelpCircle, 
   BarChart, ChevronRight, Zap, Users, ShieldCheck,
-  ArchiveRestore, Layers
+  ArchiveRestore, Layers, Trash2
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import CreatePlanPanel from '../../modals/super/CreatePlanPanel';
 import UpdatePlanPanel from '../../modals/super/UpdatePlanPanel';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { useTheme } from '../../hooks/useTheme';
 import type { PlanData } from '@/domain/entities/Plan';
 import { usePlans } from '@/application/hooks/usePlans';
@@ -18,7 +19,8 @@ const PlanCard: React.FC<{
   plan: PlanData; 
   onEdit: (plan: PlanData) => void;
   onArchive: (id: string) => void;
-}> = ({ plan, onEdit, onArchive }) => {
+  onDelete: (id: string) => void;
+}> = ({ plan, onEdit, onArchive, onDelete }) => {
   const { isDarkMode } = useTheme();
   
   const themeStyles = {
@@ -132,12 +134,19 @@ const PlanCard: React.FC<{
              >
                 <Edit3 size={14} /> Update Catalog
              </button>
-             <button 
+             <button
                onClick={() => onArchive(plan.id)}
                className={`px-4 py-4 rounded-xl bg-black/5 dark:bg-white/5 transition-all border border-white/5 ${plan.isArchived ? 'text-emerald-500 hover:text-emerald-600' : 'text-gray-500 hover:text-red-500'}`}
                title={plan.isArchived ? "Restore Plan" : "Archive Plan"}
              >
-                {plan.isArchived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+                 {plan.isArchived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+             </button>
+             <button
+               onClick={() => onDelete(plan.id)}
+               className="px-4 py-4 rounded-xl bg-red-500/10 text-red-500 transition-all border border-red-500/20 hover:bg-red-500 hover:text-white"
+               title="Delete Plan"
+             >
+                <Trash2 size={16} />
              </button>
           </div>
       </div>
@@ -146,11 +155,13 @@ const PlanCard: React.FC<{
 };
 
 const Plans: React.FC = () => {
-  const { plans: hookPlans, createPlan, updatePlan } = usePlans();
+  const { plans: hookPlans, createPlan, updatePlan, deletePlan } = usePlans();
   const [plans, setPlans] = useState<PlanData[]>([]);
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const [isUpdatePanelOpen, setIsUpdatePanelOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanData | null>(null);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     setPlans(hookPlans);
@@ -175,6 +186,19 @@ const Plans: React.FC = () => {
 
   const handleCreatePlan = async (data: Omit<PlanData, 'id'>) => {
     await createPlan(data);
+  };
+
+  const handleDeletePlan = async (id: string) => {
+    setPlanToDelete(id);
+    setIsConfirmDeleteOpen(true);
+  };
+
+  const confirmDeletePlan = async () => {
+    if (planToDelete) {
+      await deletePlan(planToDelete);
+      setIsConfirmDeleteOpen(false);
+      setPlanToDelete(null);
+    }
   };
 
 
@@ -242,6 +266,7 @@ const Plans: React.FC = () => {
               plan={plan} 
               onEdit={handleEditPlan}
               onArchive={handleArchivePlan}
+              onDelete={handleDeletePlan}
             />
           ))}
           
@@ -260,6 +285,16 @@ const Plans: React.FC = () => {
           onUpdate={handleUpdatePlan}
         />
       )}
+
+      <ConfirmationModal 
+        isOpen={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={confirmDeletePlan}
+        title="Delete Plan Offering"
+        message="Are you sure you want to delete this plan? This action cannot be undone and may affect active subscriptions."
+        variant="danger"
+        confirmLabel="Delete Forever"
+      />
     </div>
   );
 };

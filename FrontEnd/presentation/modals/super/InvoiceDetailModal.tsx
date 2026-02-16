@@ -4,9 +4,10 @@ import ReactDOM from 'react-dom';
 import { 
   X, Printer, Download, Mail, Ban, CheckSquare, 
   Building2, MapPin, FileText, Zap, CreditCard, 
-  ArrowRight, ShieldCheck, HelpCircle, History
+  ArrowRight, ShieldCheck, HelpCircle, History, Trash2
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { useTheme } from '../../hooks/useTheme';
 import { useModalVisibility } from '../../hooks/useModalVisibility';
 
@@ -15,12 +16,14 @@ interface InvoiceDetailModalProps {
   invoice: any;
   onClose: () => void;
   onUpdate?: (id: string, data: Partial<any>) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
 }
 
-const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice, onClose, onUpdate }) => {
+const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice, onClose, onUpdate, onDelete }) => {
   const { isDarkMode } = useTheme();
   const { isVisible } = useModalVisibility(isOpen);
   const [loading, setLoading] = React.useState(false);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = React.useState(false);
 
   if (!isVisible && !isOpen) return null;
 
@@ -31,6 +34,19 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
         await onUpdate(invoice.id, { status: 'paid' });
     } catch (err) {
         console.error("Failed to update invoice status", err);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!onDelete || !invoice) return;
+    setLoading(true);
+    try {
+        await onDelete(invoice.id);
+        onClose();
+    } catch (err) {
+        console.error("Failed to delete invoice", err);
     } finally {
         setLoading(false);
     }
@@ -182,8 +198,12 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
             {/* Footer Actions */}
             <div className={`px-8 py-6 border-t shrink-0 flex items-center justify-between gap-3 ${isDarkMode ? 'border-white/10 bg-black/20' : 'border-gray-200/50 bg-white/50'}`}>
                 <div className="flex gap-2">
-                    <button className="p-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all border border-red-500/20" title="Void Invoice">
-                        <Ban size={18} />
+                    <button 
+                      onClick={() => setIsConfirmDeleteOpen(true)}
+                      className="p-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/20" 
+                      title="Delete Invoice"
+                    >
+                        <Trash2 size={18} />
                     </button>
                     <button className="px-6 py-3 rounded-xl bg-black/5 dark:bg-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-all flex items-center gap-2">
                         <Mail size={16} /> Send Reminder
@@ -198,6 +218,15 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
                 </button>
             </div>
             
+            <ConfirmationModal 
+                isOpen={isConfirmDeleteOpen}
+                onClose={() => setIsConfirmDeleteOpen(false)}
+                onConfirm={handleDelete}
+                title="Delete Invoice"
+                message="Are you sure you want to permanently delete this invoice? This action cannot be undone."
+                variant="danger"
+                confirmLabel="Delete Forever"
+            />
         </div>
       </div>
     </>

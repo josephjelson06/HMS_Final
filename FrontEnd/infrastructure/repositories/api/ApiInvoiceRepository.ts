@@ -101,6 +101,24 @@ export class ApiInvoiceRepository implements IInvoiceRepository {
   }
 
   async delete(id: string): Promise<void> {
-      throw new Error("Method not implemented.");
+    console.log(`Deleting invoice ${id}`);
+    
+    // Resolve numeric ID
+    let numericId: number | undefined;
+    
+    const parts = id.split('-');
+    const lastPart = parts[parts.length - 1];
+    numericId = parseInt(lastPart);
+
+    if (isNaN(numericId)) {
+        const inv = await this.getById(id);
+        numericId = inv?.numericId;
+    }
+
+    if (!numericId) {
+        throw new Error(`Could not resolve numeric ID for invoice ${id}`);
+    }
+
+    await httpClient.delete(`${this.baseUrl}/${numericId}`);
   }
 }

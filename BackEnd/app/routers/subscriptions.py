@@ -210,3 +210,14 @@ def get_hotel_invoices(hotel_id: int, db: Session = Depends(get_db)):
         inv_data.invoice_number = formatted_number
         result.append(inv_data)
     return result
+
+
+@router.delete("/invoices/{invoice_id}")
+def delete_invoice(invoice_id: int, db: Session = Depends(get_db)):
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    db.delete(invoice)
+    db.commit()
+    return {"detail": "Invoice deleted"}

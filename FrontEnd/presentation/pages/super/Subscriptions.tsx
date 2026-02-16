@@ -12,9 +12,11 @@ import ExtendSubscriptionModal from '../../modals/super/ExtendSubscriptionModal'
 import InvoiceHistoryModal from '../../modals/super/InvoiceHistoryModal';
 import type { Subscription } from '@/domain/entities/Subscription';
 import { useSubscriptions } from '@/application/hooks/useSubscriptions';
+import { usePlans } from '@/application/hooks/usePlans';
 
 const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onNavigate }) => {
   const { subscriptions: allSubscriptions, updateSubscription } = useSubscriptions();
+  const { plans: apiPlans } = usePlans();
   const [filterPlan, setFilterPlan] = useState('All Plans');
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -88,10 +90,12 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
                         </button>
                     }
                     items={[
-                        { label: 'All Plans', onClick: () => setFilterPlan('All Plans'), variant: filterPlan === 'All Plans' ? 'selected' : 'default' },
-                        { label: 'Starter', onClick: () => setFilterPlan('Starter'), variant: filterPlan === 'Starter' ? 'selected' : 'default' },
-                        { label: 'Professional', onClick: () => setFilterPlan('Professional'), variant: filterPlan === 'Professional' ? 'selected' : 'default' },
-                        { label: 'Enterprise', onClick: () => setFilterPlan('Enterprise'), variant: filterPlan === 'Enterprise' ? 'selected' : 'default' }
+                        { label: 'All Plans', onClick: () => setFilterPlan('All Plans'), variant: (filterPlan === 'All Plans' ? 'selected' : 'default') as any },
+                        ...apiPlans.filter(p => !p.isArchived).map(p => ({
+                          label: p.name,
+                          onClick: () => setFilterPlan(p.name),
+                          variant: (filterPlan === p.name ? 'selected' : 'default') as any
+                        }))
                     ]}
                 />
             </div>

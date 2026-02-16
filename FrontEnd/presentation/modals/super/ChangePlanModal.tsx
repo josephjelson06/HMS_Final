@@ -18,7 +18,7 @@ const ChangePlanModal: React.FC<ChangePlanModalProps> = ({ isOpen, onClose, subs
   const [loading, setLoading] = useState(false);
 
   // Map API plans to the format used in this modal
-  const plans = apiPlans.map(p => ({
+  const plans = apiPlans.filter(p => !p.isArchived).map(p => ({
     id: p.name,
     price: p.price,
     color: p.theme,

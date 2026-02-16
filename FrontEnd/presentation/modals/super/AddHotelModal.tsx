@@ -4,6 +4,7 @@ import { ChevronRight, ChevronLeft, Building, User, CreditCard, Monitor, CheckCi
 import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
+import { usePlans } from '@/application/hooks/usePlans';
 
 
 interface KioskData {
@@ -18,6 +19,7 @@ interface AddHotelModalProps {
 }
 
 const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreateHotel }) => {
+  const { plans: apiPlans } = usePlans();
   const [step, setStep] = useState(1);
   const totalSteps = 5;
   const [loading, setLoading] = useState(false);
@@ -25,17 +27,24 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
   const [formData, setFormData] = useState({
     name: '',
     gstin: '',
-    pan: '', // Note: PAN is not in Hotel entity but in form, we'll strip it or add to entity later if needed
+    pan: '',
     address: '',
     owner: '',
     mobile: '',
     email: '',
-    plan: 'Starter',
+    plan: '',
     contractStartDate: new Date().toISOString().split('T')[0],
   });
 
   const [kiosks, setKiosks] = useState<KioskData[]>([]);
   const [currentKiosk, setCurrentKiosk] = useState<KioskData>({ serialNumber: '', location: '' });
+
+  useEffect(() => {
+    const activePlans = apiPlans.filter(p => !p.isArchived);
+    if (activePlans.length > 0 && !formData.plan) {
+      setFormData(prev => ({ ...prev, plan: activePlans[0].name }));
+    }
+  }, [apiPlans, formData.plan]);
 
   const handleAddKiosk = () => {
     if (currentKiosk.serialNumber && currentKiosk.location) {
@@ -57,6 +66,7 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
   useEffect(() => {
     if (isOpen) {
       setStep(1);
+      const activePlans = apiPlans.filter(p => !p.isArchived);
       setFormData({
         name: '',
         gstin: '',
@@ -65,17 +75,20 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
         owner: '',
         mobile: '',
         email: '',
-        plan: 'Starter',
+        plan: activePlans.length > 0 ? activePlans[0].name : '',
         contractStartDate: new Date().toISOString().split('T')[0],
       });
       setKiosks([]);
       setCurrentKiosk({ serialNumber: '', location: '' });
     }
-  }, [isOpen]);
+  }, [isOpen, apiPlans]);
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      const selectedPlan = apiPlans.find(p => p.name === formData.plan);
+      const mrr = selectedPlan ? selectedPlan.price : 0;
+
       await onCreateHotel({
         name: formData.name,
         gstin: formData.gstin,
@@ -84,10 +97,10 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
         mobile: formData.mobile,
         address: formData.address,
         plan: formData.plan,
-        status: 'Onboarding', // Default status
+        status: 'Onboarding',
         kiosks: kiosks.length,
         kiosks_details: kiosks.map(k => ({ serial_number: k.serialNumber, location: k.location })),
-        mrr: formData.plan === 'Starter' ? 4999 : formData.plan === 'Professional' ? 12999 : 24999
+        mrr: mrr
       });
       onClose();
     } catch (error) {
@@ -213,14 +226,21 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
         {step === 3 && (
           <div className="space-y-6">
             <div className="flex items-center gap-2 mb-2"><CreditCard size={16} className="text-accent" /><span className="text-xs font-bold uppercase dark:text-white">Subscription Setup</span></div>
-            <div className="grid grid-cols-1 gap-4">
-              {['Starter', 'Professional', 'Enterprise'].map((p) => (
+            <div className="grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+              {apiPlans.filter(p => !p.isArchived).map((p) => (
                 <div 
-                  key={p} 
-                  onClick={() => handleChange('plan', p)}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all ${formData.plan === p ? 'border-orange-500/50 bg-accent/5' : 'border-white/10 hover:border-white/20'}`}
+                  key={p.id} 
+                  onClick={() => handleChange('plan', p.name)}
+                  className={`p-4 rounded-2xl border cursor-pointer transition-all ${formData.plan === p.name ? 'border-orange-500/50 bg-accent/5' : 'border-white/10 hover:border-white/20'}`}
                 >
-                  <div className="flex justify-between items-center"><h4 className="font-bold dark:text-white">{p} Plan</h4><span className="text-sm font-bold text-accent">₹{p === 'Starter' ? '4,999' : p === 'Professional' ? '12,999' : '24,999'}/mo</span></div>
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-bold dark:text-white">{p.name} Plan</h4>
+                    <span className="text-sm font-bold text-accent">₹{p.price.toLocaleString()}/mo</span>
+                  </div>
+                  <div className="flex gap-4 mt-2">
+                    <span className="text-[10px] text-gray-500 uppercase font-bold">{p.rooms} Rooms</span>
+                    <span className="text-[10px] text-gray-500 uppercase font-bold">{p.kiosks} Kiosks</span>
+                  </div>
                 </div>
               ))}
               <div className="mt-4">

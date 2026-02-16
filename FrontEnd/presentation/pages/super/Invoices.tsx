@@ -19,7 +19,7 @@ const StatusBadge = ({ status }: { status: string }) => (
 );
 
 const Invoices: React.FC = () => {
-  const { invoices: hookInvoices, updateInvoice, createInvoice, loading } = useInvoices();
+  const { invoices: hookInvoices, updateInvoice, createInvoice, deleteInvoice, loading } = useInvoices();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -184,6 +184,10 @@ const Invoices: React.FC = () => {
         onUpdate={async (id, data) => {
             const updated = await updateInvoice(id, data);
             setSelectedInvoice(updated);
+        }}
+        onDelete={async (id) => {
+            await deleteInvoice(id);
+            setSelectedInvoice(null);
         }}
       />
 

@@ -14,6 +14,8 @@ import Button from '../../components/ui/Button';
 import SharedStatusBadge, { statusToVariant } from '../../components/ui/StatusBadge';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { useHotels } from '@/application/hooks/useHotels';
+import { usePlans } from '@/application/hooks/usePlans';
+import type { PlanData } from '@/domain/entities/Plan';
 
 interface HotelsProps {
   onNavigate: (route: string) => void;
@@ -21,14 +23,20 @@ interface HotelsProps {
   onNavigateHotelDetails?: (hotelId: number) => void;
 }
 
-const PlanBadge = ({ plan }: { plan: string }) => {
+const PlanBadge = ({ plan, plans }: { plan: string, plans: PlanData[] }) => {
+  const currentPlan = plans.find(p => p.name === plan);
+  const theme = currentPlan?.theme || 'blue';
+  
   const styles: Record<string, string> = {
-    Starter: "bg-blue-500/10 text-accent-strong border-accent/20",
-    Professional: "bg-purple-500/10 text-purple-600 border-purple-500/20",
-    Enterprise: "bg-accent-muted text-accent-strong border-accent/20",
+    blue: "bg-blue-500/10 text-accent-strong border-accent/20",
+    purple: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+    orange: "bg-accent-muted text-accent-strong border-accent/20",
+    emerald: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+    cyan: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+    slate: "bg-slate-500/10 text-slate-600 border-slate-500/20",
   };
   return (
-    <span className={`px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-wider ${styles[plan] || styles.Starter}`}>
+    <span className={`px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-wider ${styles[theme] || styles.blue}`}>
       {plan}
     </span>
   );
@@ -40,6 +48,7 @@ const StatusBadge = ({ status }: { status: string }) => (
 
 const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateHotelDetails }) => {
   const { hotels: allHotels, updateHotel, deleteHotel, createHotel } = useHotels();
+  const { plans: apiPlans } = usePlans();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [filterPlan, setFilterPlan] = useState('All Plans');
@@ -102,16 +111,6 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
         await deleteHotel(id);
       }
     });
-  };
-
-  // Instant Update Handler
-  const handleCreateHotel = async (data: any) => {
-    // createHotel from useHotels updates the local state 'hotels'
-    // so we just need to pass this function down
-    await useHotels().createHotel(data); 
-    // Wait, calling useHotels() here creates a NEW hook instance with NEW state.
-    // We must use the 'createHotel' from the component scope.
-    // But 'createHotel' is available from the destructured hook at the top.
   };
 
   // Helper for status filtering
@@ -210,10 +209,12 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
                           </div>
                       }
                       items={[
-                          { label: 'All Plans', onClick: () => setFilterPlan('All Plans'), variant: filterPlan === 'All Plans' ? 'selected' : 'default' },
-                          { label: 'Starter', onClick: () => setFilterPlan('Starter'), variant: filterPlan === 'Starter' ? 'selected' : 'default' },
-                          { label: 'Professional', onClick: () => setFilterPlan('Professional'), variant: filterPlan === 'Professional' ? 'selected' : 'default' },
-                          { label: 'Enterprise', onClick: () => setFilterPlan('Enterprise'), variant: filterPlan === 'Enterprise' ? 'selected' : 'default' }
+                          { label: 'All Plans', onClick: () => setFilterPlan('All Plans'), variant: (filterPlan === 'All Plans' ? 'selected' : 'default') as any },
+                          ...apiPlans.filter(p => !p.isArchived).map(p => ({
+                            label: p.name,
+                            onClick: () => setFilterPlan(p.name),
+                            variant: (filterPlan === p.name ? 'selected' : 'default') as any
+                          }))
                       ]}
                   />
 
@@ -255,7 +256,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
                       ></div>
                       
                       <div className="absolute top-5 right-5 z-20">
-                          <PlanBadge plan={hotel.plan} />
+                          <PlanBadge plan={hotel.plan} plans={apiPlans} />
                       </div>
 
                       <div className="absolute bottom-5 left-6 right-6 z-20">
@@ -390,7 +391,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
                               <a href={`mailto:${hotel.email}`} className="text-gray-500 hover:text-accent transition-colors"><Mail size={12} /></a>
                           </div>
                       </div>
-                      <div className="col-span-1"><PlanBadge plan={hotel.plan} /></div>
+                      <div className="col-span-1"><PlanBadge plan={hotel.plan} plans={apiPlans} /></div>
                       <div className="col-span-1 flex justify-center"><StatusBadge status={hotel.status} /></div>
                       <div className="col-span-1 text-right pr-4">
                           <p className="text-sm font-black dark:text-white tracking-tighter">₹{hotel.mrr.toLocaleString()}</p>
