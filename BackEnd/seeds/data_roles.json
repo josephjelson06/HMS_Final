@@ -1,21 +1,26 @@
 {
   "common": [
-    { "name": "Manager", "color": "purple", "description": "General Manager with full access" },
-    { "name": "Receptionist", "color": "blue", "description": "Front desk operations" }
+    { "name": "General Manager", "color": "purple", "description": "Property Oversight & Root Level Controls" },
+    { "name": "Front Desk Executive", "color": "blue", "description": "Guest Check-In/Out & Billing Management" },
+    { "name": "Housekeeping", "color": "emerald", "description": "Room Status & Maintenance Reporting" }
   ],
   "specific": {
     "2": [
-      { "name": "Concierge", "color": "gold", "description": "Guest services and bookings" },
-      { "name": "Head Chef", "color": "red", "description": "Kitchen management" },
-      { "name": "Valet Lead", "color": "slate", "description": "Parking operations" }
+      { "name": "Housekeeping Lead", "color": "emerald", "description": "Housekeeping team supervision" },
+      { "name": "Night Auditor", "color": "orange", "description": "EndOfDay Operations & Revenue Reconciliation" },
+      { "name": "Maintenance Lead", "color": "blue", "description": "Critical Infrastructure & Hardware Repair Access" }
     ],
     "3": [
-      { "name": "Host", "color": "orange", "description": "Welcoming guests and dining" },
-      { "name": "Housekeeper", "color": "cyan", "description": "Room cleaning and maintenance" }
+      { "name": "Property Manager", "color": "purple", "description": "Boutique property management" },
+      { "name": "Guest Relations", "color": "rose", "description": "VIP guest assistance and concierge" },
+      { "name": "Head Chef", "color": "red", "description": "Kitchen and menu management" },
+      { "name": "Security Chief", "color": "slate", "description": "Full property security management" }
     ],
     "4": [
-      { "name": "Night Guard", "color": "slate", "description": "Security and night shift" },
-      { "name": "Cleaner", "color": "green", "description": "General cleaning" }
+      { "name": "Supervisor", "color": "amber", "description": "General shift supervision" },
+      { "name": "Night Guard", "color": "indigo", "description": "Night shift property security" },
+      { "name": "Receptionist", "color": "sky", "description": "Front desk and call handling" },
+      { "name": "Cleaner", "color": "green", "description": "General facility upkeep" }
     ]
   }
 }

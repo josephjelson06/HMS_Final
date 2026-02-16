@@ -19,13 +19,11 @@ def get_db(request: Request = None):
     # Apply RLS if request context has tenant_id
     if request and hasattr(request, "state"):
         tenant_id = getattr(request.state, "tenant_id", None)
-        if tenant_id:
-            # Check if tenant_id is int or uuid.
-            # Our Hotel ID is int.
-            # Postgres SET LOCAL usually takes string.
-            # RLS Policy: USING (tenant_id = current_setting('app.tenant_id')::integer)
+        tenant_type = getattr(request.state, "tenant_type", "hotel")
+        if tenant_id is not None:
             try:
                 db.execute(text(f"SET LOCAL app.tenant_id = '{tenant_id}'"))
+                db.execute(text(f"SET LOCAL app.tenant_type = '{tenant_type}'"))
             except Exception as e:
                 print(f"Failed to set tenant context: {e}")
 

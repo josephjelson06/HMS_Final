@@ -1,183 +1,191 @@
-import React, { useState } from 'react';
-import { User, Mail, Phone, Lock, Bell, Globe, Camera, ShieldCheck, Save, ClipboardList, CheckCircle2, History } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { User, Mail, Phone, Lock, Camera, ShieldCheck, Save, Loader2 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
-import { useHotelStaff } from '@/application/hooks/useHotelStaff';
+import { useAuth } from '@/application/hooks/useAuth';
+import { repositories } from '@/infrastructure/config/container';
 
 const StaffProfile: React.FC = () => {
-  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-  const { staff } = useHotelStaff();
+    const { user } = useAuth();
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
 
-  const profile = staff[0];
-  const profileName = profile?.name ?? 'Staff Member';
-  const profileRole = profile?.role ?? 'Unassigned Role';
-  const profileId = profile?.id ?? 'N/A';
-  const profileJoinedOn = profile?.dateAdded ?? 'N/A';
-  const profileEmail = profile?.email ?? 'staff@example.com';
-  const profileMobile = profile?.mobile ?? '+91 00000 00000';
-  const avatarName = encodeURIComponent(profileName.replace(/\s+/g, '+'));
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        mobile: ''
+    });
 
-  const inputClass = "w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-accent/50 dark:focus:border-accent/50";
-    
-  const labelClass = "block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400";
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                name: user.name,
+                email: user.email,
+                mobile: user.mobile || user.phone || ''
+            });
+        }
+    }, [user]);
 
-  return (
-    <div className="p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
-      {/* Header */}
-      <PageHeader
-        title="My Terminal Access"
-        subtitle="Staff Profile & Operational Preferences"
-      >
-        <Button
-          variant="primary"
-          size="lg"
-          icon={<Save size={18} strokeWidth={3} />}
-        >
-          Commit Changes
-        </Button>
-      </PageHeader>
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Staff Identity */}
-        <div className="lg:col-span-4 space-y-8">
-          <GlassCard className="flex flex-col items-center text-center p-10 relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-            <div className="relative mb-6">
-              <div className="w-32 h-32 rounded-[2.5rem] bg-accent-muted flex items-center justify-center text-accent-strong shadow-inner overflow-hidden border-4 border-white dark:border-white/10">
-                <img src={`https://ui-avatars.com/api/?name=${avatarName}&background=f97316&color=fff&size=128`} alt={profileName} />
-              </div>
-              <button className="absolute -bottom-2 -right-2 p-3 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black shadow-xl hover:scale-110 transition-transform">
-                <Camera size={18} />
-              </button>
-            </div>
-            <h3 className="text-2xl font-black dark:text-white tracking-tighter uppercase mb-1">{profileName}</h3>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-accent-strong bg-blue-500/10 px-3 py-1 rounded-full border border-accent/20">{profileRole}</p>
-            
-            <div className="mt-8 pt-8 border-t border-white/5 w-full space-y-4">
-               <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                  <span className="text-gray-500">Employee ID</span>
-                  <span className="dark:text-white font-mono">{profileId}</span>
-               </div>
-               <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                  <span className="text-gray-500">Joined On</span>
-                  <span className="dark:text-white">{profileJoinedOn}</span>
-               </div>
-            </div>
-          </GlassCard>
+    const handleSave = async () => {
+        if (!user) return;
+        setLoading(true);
+        setSuccess(false);
+        try {
+            await repositories.users.update(user.id, {
+                name: formData.name,
+                email: formData.email,
+                mobile: formData.mobile
+            });
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 3000);
+        } catch (error) {
+            console.error("Failed to update profile", error);
+            alert("Failed to update profile");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-          <GlassCard>
-            <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500"><History size={20} /></div>
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] dark:text-white">Session History</h3>
-            </div>
-            <div className="space-y-4">
-                {[
-                    { t: 'Today, 08:00 AM', d: 'Chrome • Desk Terminal 1' },
-                    { t: 'Yesterday, 02:45 PM', d: 'Safari • iPhone 15 Pro' }
-                ].map((s, i) => (
-                    <div key={i} className="p-4 rounded-2xl bg-black/5 dark:bg-white/[0.02] border border-white/5">
-                        <p className="text-xs font-black dark:text-white mb-1">{s.t}</p>
-                        <p className="text-[10px] font-bold text-gray-500 uppercase">{s.d}</p>
-                    </div>
-                ))}
-            </div>
-          </GlassCard>
-        </div>
+    const profileName = formData.name || 'Staff Member';
+    const profileRole = user?.role || 'Unassigned Role';
+    const profileId = user?.id || 'N/A'; // Or employee_id if available on user object
+    const profileJoinedOn = user?.dateAdded || 'N/A';
+    // const profileEmail = formData.email || 'staff@example.com';
+    // const profileMobile = formData.mobile || '+91 00000 00000';
+    const avatarName = encodeURIComponent(profileName.replace(/\s+/g, '+') || 'Staff');
 
-        {/* Right Column: Information & Notification Matrix */}
-        <div className="lg:col-span-8 space-y-8">
-          {/* Identity Form */}
-          <GlassCard>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 rounded-xl bg-blue-500/10 text-accent"><User size={20} /></div>
-              <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Personal Identity</h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <label className={labelClass}>Full Legal Name</label>
-                <input type="text" defaultValue={profileName} className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>Work Email</label>
-                <div className="relative">
-                  <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input type="email" defaultValue={profileEmail} className={`${inputClass} pl-11`} readOnly />
-                </div>
-              </div>
-              <div>
-                <label className={labelClass}>Contact Mobile</label>
-                <div className="relative">
-                  <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <input type="tel" defaultValue={profileMobile} className={`${inputClass} pl-11`} />
-                </div>
-              </div>
-            </div>
-          </GlassCard>
+    const inputClass = "w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-bold border bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-accent/50 dark:focus:border-accent/50";
 
-          {/* Security Deck */}
-          <GlassCard>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 rounded-xl bg-accent-muted text-accent"><Lock size={20} /></div>
-              <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Security & Access</h3>
-            </div>
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <label className={labelClass}>New Secret Password</label>
-                  <input type="password" placeholder="••••••••••••" className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Repeat Password</label>
-                  <input type="password" placeholder="••••••••••••" className={inputClass} />
-                </div>
-              </div>
-              
-              <div className="pt-8 border-t border-white/5 flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-black dark:text-white">Two-Factor Authentication</h4>
-                  <p className="text-xs font-medium text-gray-500 mt-1">Require an SMS code for every terminal login</p>
-                </div>
-                <button 
-                    onClick={() => setIs2FAEnabled(!is2FAEnabled)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${is2FAEnabled ? 'bg-emerald-500' : 'bg-gray-700'}`}
+    const labelClass = "block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400";
+
+    return (
+        <div className="p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
+            {/* Header */}
+            <PageHeader
+                title="My Profile"
+                subtitle="Staff Profile & Preferences"
+            >
+                <Button
+                    variant="primary"
+                    size="lg"
+                    icon={loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} strokeWidth={3} />}
+                    onClick={handleSave}
+                    disabled={loading}
                 >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ${is2FAEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
-            </div>
-          </GlassCard>
+                    {success ? 'Saved!' : 'Save Changes'}
+                </Button>
+            </PageHeader>
 
-          {/* Operational Notification Matrix */}
-          <GlassCard>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500"><Bell size={20} /></div>
-              <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Operational Notification Matrix</h3>
-            </div>
-            <div className="space-y-3">
-              {[
-                { id: 'checkin', label: 'Guest Arrival Alerts', desc: 'Real-time notification when a guest checks in', default: true },
-                { id: 'hk', label: 'Housekeeping Updates', desc: 'Alerts when room status changes (Dirty to Clean)', default: false },
-                { id: 'incident', label: 'Incident Assignments', desc: 'Direct notification for maintenance tickets assigned to you', default: true },
-                { id: 'night', label: 'End-of-Day Summary', desc: 'Daily summary report of property revenue and occupancy', default: true }
-              ].map((notif) => (
-                <div key={notif.id} className="flex items-center justify-between p-5 rounded-2xl bg-black/5 dark:bg-white/[0.02] border border-transparent hover:border-white/5 transition-all group">
-                  <div className="flex-1 pr-10">
-                    <h4 className="text-sm font-black dark:text-white uppercase tracking-tight">{notif.label}</h4>
-                    <p className="text-[10px] text-gray-500 font-bold mt-0.5 tracking-wide">{notif.desc}</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" defaultChecked={notif.default} />
-                    <div className={`w-9 h-5 bg-gray-200 dark:bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-accent-strong after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all shadow-inner`}></div>
-                  </label>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Left Column: Staff Identity */}
+                <div className="lg:col-span-4 space-y-8">
+                    <GlassCard className="flex flex-col items-center text-center p-10 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                        <div className="relative mb-6">
+                            <div className="w-32 h-32 rounded-[2.5rem] bg-accent-muted flex items-center justify-center text-accent-strong shadow-inner overflow-hidden border-4 border-white dark:border-white/10">
+                                <img src={user?.avatar || `https://ui-avatars.com/api/?name=${avatarName}&background=f97316&color=fff&size=128`} alt={profileName} />
+                            </div>
+                            <button className="absolute -bottom-2 -right-2 p-3 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black shadow-xl hover:scale-110 transition-transform">
+                                <Camera size={18} />
+                            </button>
+                        </div>
+                        <h3 className="text-2xl font-black dark:text-white tracking-tighter uppercase mb-1">{profileName}</h3>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-accent-strong bg-blue-500/10 px-3 py-1 rounded-full border border-accent/20">{profileRole}</p>
+
+                        <div className="mt-8 pt-8 border-t border-white/5 w-full space-y-4">
+                            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+                                <span className="text-gray-500">Employee ID</span>
+                                <span className="dark:text-white font-mono">{profileId}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+                                <span className="text-gray-500">Joined On</span>
+                                <span className="dark:text-white">{profileJoinedOn}</span>
+                            </div>
+                        </div>
+                    </GlassCard>
+
                 </div>
-              ))}
+
+                {/* Right Column: Information & Notification Matrix */}
+                <div className="lg:col-span-8 space-y-8">
+                    {/* Identity Form */}
+                    <GlassCard>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="p-2 rounded-xl bg-blue-500/10 text-accent"><User size={20} /></div>
+                            <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Personal Identity</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <label className={labelClass}>Full Legal Name</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    className={inputClass}
+                                />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Work Email</label>
+                                <div className="relative">
+                                    <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        className={`${inputClass} pl-11`}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className={labelClass}>Contact Mobile</label>
+                                <div className="relative">
+                                    <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                                    <input
+                                        type="tel"
+                                        name="mobile"
+                                        value={formData.mobile}
+                                        onChange={handleChange}
+                                        className={`${inputClass} pl-11`}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </GlassCard>
+
+                    {/* Security Deck */}
+                    <GlassCard>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="p-2 rounded-xl bg-accent-muted text-accent"><Lock size={20} /></div>
+                            <h3 className="text-sm font-black uppercase tracking-widest dark:text-white">Security & Access</h3>
+                        </div>
+                        <div className="space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <label className={labelClass}>New Secret Password</label>
+                                    <input type="password" placeholder="••••••••••••" className={inputClass} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Repeat Password</label>
+                                    <input type="password" placeholder="••••••••••••" className={inputClass} />
+                                </div>
+                            </div>
+
+                        </div>
+                    </GlassCard>
+
+                </div>
             </div>
-          </GlassCard>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default StaffProfile;

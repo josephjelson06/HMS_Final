@@ -214,10 +214,6 @@ const Plans: React.FC = () => {
         title="Product Catalog"
         subtitle="Commercial Configuration & Tier Management"
       >
-        <div className="hidden lg:flex items-center gap-3 px-6 py-3 rounded-2xl bg-accent-strong/10 border border-accent-strong/20 text-accent-strong">
-          <BarChart size={18} />
-          <span className="text-[10px] font-bold uppercase tracking-widest">Yield Optimization: Active</span>
-        </div>
         <Button
           size="lg"
           onClick={() => setIsCreatePanelOpen(true)}

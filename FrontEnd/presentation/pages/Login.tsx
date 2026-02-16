@@ -8,7 +8,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../../application/hooks/useAuth';
 
 interface LoginProps {
-  onLogin: (role: 'super' | 'hotel') => void;
+  onLogin: (role: 'super' | 'hotel' | string) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {

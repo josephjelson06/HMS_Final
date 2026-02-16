@@ -50,35 +50,41 @@ def seed_all():
     tenant_map = {}  # Key -> ID
 
     try:
-        # 2. Seed Tenants (Hotels)
+        # 2. Seed Tenants (Hotels + Platform)
         print("\n--- Seeding Tenants ---")
         auth_data = load_json("auth_data.json")
         tenants = auth_data.get("tenants", [])
 
         for t_data in tenants:
-            if t_data["tenant_type"] == "hotel":
-                hotel = Hotel(
-                    name=t_data["name"],
-                    email=t_data["email"],
-                    tenant_key=t_data["tenant_key"],
-                    tenant_type="hotel",
-                    status="Active",
-                    address="123 Seed Street",
-                    mobile="+1234567890",
-                    owner="Seed Owner",
-                    gstin=f"GSTIN-{t_data['tenant_key'].upper()}",
-                    plan="Pro",
-                    is_auto_renew=1,
-                    kiosks=0,
-                    mrr=0.0,
-                )
-                db.add(hotel)
-                db.flush()  # get ID
-                tenant_map[t_data["tenant_key"]] = hotel.id
-                print(f"Created Hotel: {hotel.name} (ID: {hotel.id})")
-            else:
-                print(f"Skipping Platform Tenant Record for {t_data['name']}")
-                tenant_map[t_data["tenant_key"]] = 0  # Platform
+            # Create ALL tenants, including Platform
+            hotel = Hotel(
+                name=t_data["name"],
+                email=t_data["email"],
+                tenant_key=t_data["tenant_key"],
+                tenant_type=t_data["tenant_type"],  # 'hotel' or 'platform'
+                status="Active",
+                address="Level 4, Sky Tower, Business Bay, Pune, Maharashtra 411001, India"
+                if t_data["tenant_type"] == "platform"
+                else "123 Seed Street",
+                mobile="+91 99988 77766"
+                if t_data["tenant_type"] == "platform"
+                else "+1234567890",
+                owner="Seed Owner",
+                gstin=f"27AABCU1234A1Z5"
+                if t_data["tenant_type"] == "platform"
+                else f"GSTIN-{t_data['tenant_key'].upper()}",
+                pan="AABCU1234A" if t_data["tenant_type"] == "platform" else None,
+                plan="Pro",
+                is_auto_renew=1,
+                kiosks=0,
+                mrr=0.0,
+            )
+            db.add(hotel)
+            db.flush()  # get ID
+            tenant_map[t_data["tenant_key"]] = hotel.id
+            print(
+                f"Created Tenant: {hotel.name} (Type: {hotel.tenant_type}, ID: {hotel.id})"
+            )
 
         db.commit()
 
@@ -88,8 +94,10 @@ def seed_all():
         common_roles = roles_data.get("common", [])
         specific_roles = roles_data.get("specific", {})
 
-        # Get all hotels to seed common roles
-        hotels = db.query(Hotel).all()
+        # Get all HOTELS (exclude platform for role seeding if needed, or include if desired)
+        # Assuming roles are primarily for hotels. Platform roles (Super Admin) handled implicitly or manually?
+        # Let's seed common roles for hotels.
+        hotels = db.query(Hotel).filter(Hotel.tenant_type == "hotel").all()
 
         def create_role(name, color, description, hotel_id):
             role = Role(
@@ -111,15 +119,34 @@ def seed_all():
                 create_role(r["name"], r["color"], r["description"], hotel.id)
 
             # Specific Roles
-            # keys in JSON are likely string "2", "3" but our IDs might be different if sequences changed
-            # But likely they are 1, 2, 3...
-            # Let's try to match by ID string.
-            # If IDs are generated sequentially, 1, 2, 3...
-            # The JSON keys for specific roles are "2", "3", "4".
-            # Hopefully queries align.
-            s_roles = specific_roles.get(str(hotel.id), [])
-            for r in s_roles:
-                create_role(r["name"], r["color"], r["description"], hotel.id)
+            # keys in JSON are likely string "2", "3". Let's try to match by ID string if possible.
+            # But IDs changed because we added Platform (ID 1 maybe?).
+            # Tenant Map: platform=1, grand_hotel=2... ?
+            # Let's use tenant_map and JSON hardcoded IDs map logic.
+            # Hardcoded mapping for this task:
+            # 2 -> grand_hotel
+            # 3 -> cozy_stay
+            # 4 -> budget_inn
+
+            # Find which 'key' this hotel corresponds to
+            # Iterate map
+            json_key = None
+            for k, stored_id in tenant_map.items():
+                if stored_id == hotel.id:
+                    # found key, e.g. 'grand_hotel'
+                    # map back to JSON ID
+                    if k == "grand_hotel":
+                        json_key = "2"
+                    elif k == "cozy_stay":
+                        json_key = "3"
+                    elif k == "budget_inn":
+                        json_key = "4"
+                    break
+
+            if json_key:
+                s_roles = specific_roles.get(json_key, [])
+                for r in s_roles:
+                    create_role(r["name"], r["color"], r["description"], hotel.id)
 
         db.commit()
 
@@ -131,18 +158,15 @@ def seed_all():
             t_key = u.get("tenant_key")
             h_id = tenant_map.get(t_key)
 
-            # Special case: Platform user might be 0 or None
-            if h_id == 0:
-                h_id = None
-                try:
-                    db.execute(text("RESET app.tenant_id"))
-                except:
-                    pass
-            else:
-                try:
-                    db.execute(text(f"SET LOCAL app.tenant_id = '{h_id}'"))
-                except:
-                    pass
+            if not h_id:
+                print(f"Skipping user {u['name']} - tenant key {t_key} not found")
+                continue
+
+            # Set context
+            try:
+                db.execute(text(f"SET LOCAL app.tenant_id = '{h_id}'"))
+            except:
+                pass
 
             user = User(
                 name=u["name"],
@@ -151,48 +175,19 @@ def seed_all():
                 role=u["role"],
                 user_type=u["user_type"],
                 hotel_id=h_id,
-                mobile=f"+1 555 000 {h_id if h_id else 0}",
+                mobile=f"+1 555 000 {h_id}",
                 status="Active",
                 department="Management",
                 employee_id=f"EMP-{u['email'][:3].upper()}",
             )
             db.add(user)
-            print(f"Created Admin: {user.name}")
+            print(f"Created User: {user.name} (Tenant: {h_id})")
 
         # seed staff from data_staff
         staff_data = load_json("data_staff.json")
         for hotel_group in staff_data:
-            # The JSON uses hardcoded "hotel_id": 2.
-            # If our DB generates different IDs, this breaks.
-            # But since we reset DB, IDs should start from 1.
-            # Hotels are seeded first.
-            # Platform skipped in table (?), so first hotel is ID 1?
-            # NO, Platform tenant was skipped in DB insert loop above!
-            # So First Hotel = ID 1.
-            # But auth_data.json has Grand Hotel as 2nd...
-            # Wait, auth_data.json has [Platform, Grand, Cozy, Budget].
-            # Platform skipped.
-            # So Grand = 1, Cozy = 2, Budget = 3.
-            # BUT `data_staff.json` uses ID 2, 3, 4.
-            # I should align them.
-            # OR I should fix `data_staff.json` to use tenant_key, but I didn't write it that way.
-            # Let's just assume the offset is -1 from JSON if Platform skipped.
-            # actually, let's fix the JSON map logic on the fly.
-
             target_id = hotel_group["hotel_id"]
-            # If JSON says 2 (Grand Hotel), and in DB it's 1...
-            # This is risky.
-            # Let's verify:
-            # Tenant Map: {'grand_hotel': 1, 'cozy_stay': 2, ...}
-            # JSOn uses 2 for Grand Hotel.
-            # I will map hardcoded JSON IDs to Tenant Keys if possible.
-            # Hardcoded mapping for this task:
-            # 2 -> grand_hotel
-            # 3 -> cozy_stay
-            # 4 -> budget_inn
-
             key_map = {2: "grand_hotel", 3: "cozy_stay", 4: "budget_inn"}
-
             t_key = key_map.get(target_id)
             real_h_id = tenant_map.get(t_key)
 

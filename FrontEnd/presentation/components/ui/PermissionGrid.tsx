@@ -127,7 +127,7 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type 
             <RotateCcw size={16} /> Reset Default
           </button>
           <button className="flex items-center gap-2 px-10 py-3 rounded-2xl bg-accent-strong text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-accent-strong/20 hover:scale-105 active:scale-95 transition-all">
-            <Save size={18} /> Commit Changes
+            <Save size={18} /> Save Changes
           </button>
         </div>
       </div>

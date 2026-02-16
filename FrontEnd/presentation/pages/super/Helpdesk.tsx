@@ -92,6 +92,8 @@ const Helpdesk: React.FC = () => {
          })}
       </div>
 
+      {selectedTicket && <HelpdeskDetailModal isOpen={!!selectedTicket} ticket={selectedTicket} onClose={() => setSelectedTicket(null)} />}
+
       <Pagination 
         currentPage={currentPage}
         totalPages={totalPages}
@@ -100,8 +102,6 @@ const Helpdesk: React.FC = () => {
         onItemsPerPageChange={setItemsPerPage}
         totalItems={filteredTickets.length}
       />
-
-      {selectedTicket && <HelpdeskDetailModal isOpen={!!selectedTicket} ticket={selectedTicket} onClose={() => setSelectedTicket(null)} />}
     </div>
   );
 };

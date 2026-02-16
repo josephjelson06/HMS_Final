@@ -40,8 +40,8 @@ import { MockBookingRepository } from '../repositories/mock/MockBookingRepositor
 import { MockGuestRepository } from '../repositories/mock/MockGuestRepository';
 import { MockHotelAuditRepository } from '../repositories/mock/MockHotelAuditRepository';
 import { MockHotelHelpRepository } from '../repositories/mock/MockHotelHelpRepository';
-import { MockHotelStaffRepository } from '../repositories/mock/MockHotelStaffRepository';
-import { MockIncidentRepository } from '../repositories/mock/MockIncidentRepository';
+import { ApiHotelStaffRepository } from '../repositories/api/ApiHotelStaffRepository';
+import { ApiIncidentRepository } from '../repositories/api/ApiIncidentRepository';
 // import { MockSubscriptionRepository } from '../repositories/mock/MockSubscriptionRepository';
 import { ApiSubscriptionRepository } from '../repositories/api/ApiSubscriptionRepository';
 
@@ -51,7 +51,6 @@ import { ApiRoomRepository } from '../repositories/api/ApiRoomRepository';
 import { ApiInvoiceRepository } from '../repositories/api/ApiInvoiceRepository';
 import { ApiPlanRepository } from '../repositories/api/ApiPlanRepository';
 import { ApiUserRepository } from '../repositories/api/ApiUserRepository';
-import { ApiIncidentRepository } from '../repositories/api/ApiIncidentRepository';
 import { ApiTicketRepository } from '../repositories/api/ApiTicketRepository';
 import { ApiAuthService } from '../services/ApiAuthService';
 
@@ -100,7 +99,7 @@ function createRepositories(): Repositories {
       guests: new MockGuestRepository(),
       hotelAudit: new MockHotelAuditRepository(),
       hotelHelp: new MockHotelHelpRepository(),
-      hotelStaff: new MockHotelStaffRepository(),
+      hotelStaff: new ApiHotelStaffRepository(), // Force API repo
       incidents: new ApiIncidentRepository(), // Force API repo
       subscriptions: new ApiSubscriptionRepository(), // Force API repo
       tickets: new ApiTicketRepository(), // Force API repo

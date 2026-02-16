@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Search, Bell, Moon, Sun, ChevronDown, User, LogOut, Settings, Menu, PanelLeft } from 'lucide-react';
+import { Search, Bell, Moon, Sun, ChevronDown, User, LogOut, Settings, Menu } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import GlassDropdown from '../ui/GlassDropdown';
 
@@ -35,15 +35,6 @@ const Header: React.FC<HeaderProps> = ({
           <Menu size={22} />
         </button>
 
-        {/* Desktop Mini Brand / Toggle - Shows when sidebar is collapsed */}
-        {isSidebarCollapsed && (
-          <button 
-            onClick={onToggleSidebar}
-            className="hidden lg:flex p-2.5 rounded-xl text-accent bg-accent-muted border border-accent/20 hover:scale-105 transition-all animate-in zoom-in duration-300"
-          >
-            <PanelLeft size={20} />
-          </button>
-        )}
 
         {/* Search Bar - hidden on small mobile */}
         <div className="relative w-64 xl:w-96 hidden md:block group">
@@ -61,13 +52,6 @@ const Header: React.FC<HeaderProps> = ({
       {/* Right Actions */}
       <div className="flex items-center gap-2 md:gap-5">
         
-        {/* Context Badge for Hotel View */}
-        {viewMode === 'hotel' && (
-          <div className="hidden sm:flex flex-col items-end mr-2 md:mr-4">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 leading-none mb-1">Sapphire Unit</span>
-            <span className="text-[11px] font-bold text-gray-800 dark:text-white uppercase tracking-tighter">Terminal Active</span>
-          </div>
-        )}
 
         <div className="flex items-center gap-1.5 md:gap-3">
           {/* Theme Toggle */}

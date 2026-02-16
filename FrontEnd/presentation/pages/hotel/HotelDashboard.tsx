@@ -1,19 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
-  Users, DoorOpen, Zap, History, Bell, 
-  ArrowUpRight, ArrowDownRight, CheckCircle2, 
-  AlertCircle, ChevronRight, Clock, Building2,
-  Scan, Info, Printer, ShieldAlert, ArrowRight,
-  TrendingUp, ClipboardCheck, ShieldCheck,
-  Terminal, LogOut, AlertTriangle, IndianRupee,
-  Activity, BarChart3
+  Users, ArrowUpRight, ArrowDownRight, CheckCircle2, 
+  ChevronRight, Scan, TrendingUp, IndianRupee,
+  Activity, BarChart3, ShieldCheck
 } from 'lucide-react';
-import { ResponsiveContainer, AreaChart, Area, Tooltip, XAxis } from 'recharts';
 import GlassCard from '../../components/ui/GlassCard';
 import OccupancyGauge from '../../components/hotel/OccupancyGauge';
 import PageHeader from '../../components/ui/PageHeader';
-import Button from '../../components/ui/Button';
-import NightAuditWizard from '../../modals/hotel/NightAuditWizard';
 import { useGuests } from '../../../application/hooks/useGuests';
 import { useBookings } from '../../../application/hooks/useBookings';
 import { useRooms } from '../../../application/hooks/useRooms';
@@ -61,24 +54,7 @@ const ReadinessItem = ({ status, count, color, label }: any) => (
   </div>
 );
 
-const InlineAlert = ({ type, message }: { type: 'critical' | 'warning', message: string }) => {
-  const styles = type === 'critical' 
-    ? 'bg-red-500/10 text-red-500 border-red-500/20' 
-    : 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-  
-  return (
-    <div className={`flex items-center gap-3 p-4 rounded-2xl border ${styles} animate-in slide-in-from-top-2 duration-500`}>
-      <div className="relative">
-        <div className={`w-2 h-2 rounded-full ${type === 'critical' ? 'bg-red-500 animate-pulse' : 'bg-amber-500'}`} />
-        <div className={`absolute inset-0 rounded-full ${type === 'critical' ? 'bg-red-500' : 'bg-amber-500'} animate-ping opacity-30`} />
-      </div>
-      <span className="text-[10px] font-bold uppercase tracking-[0.1em]">{message}</span>
-    </div>
-  );
-};
-
 const HotelDashboard: React.FC = () => {
-  const [isAuditOpen, setIsAuditOpen] = useState(false);
   const { guests, loading: guestsLoading } = useGuests();
   const { bookings, loading: bookingsLoading } = useBookings();
   const { rooms, loading: roomsLoading } = useRooms();
@@ -121,32 +97,9 @@ const HotelDashboard: React.FC = () => {
       
       {/* Header Context */}
       <PageHeader
-        title="Shift Overview"
+        title="Dashboard"
         subtitle={`Property Status | ${todayLabel}`}
-        badge={isLoading ? 'Syncing Data' : 'Live Repository Data'}
-      >
-        <div className="flex flex-wrap gap-3">
-          <Button
-            variant="ghost"
-            size="md"
-            onClick={() => setIsAuditOpen(true)}
-            icon={<Terminal size={18} />}
-            className="border border-white/20 text-gray-500 dark:text-gray-400 hover:text-white hover:border-white/40"
-          >
-            Start Night Audit
-          </Button>
-          <div className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-accent-muted border border-accent/20 text-accent-strong">
-            <Clock size={16} strokeWidth={3} className="animate-spin-slow" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Shift Ends: 5h 22m</span>
-          </div>
-        </div>
-      </PageHeader>
-
-      {/* Top Notification Banner */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-         <InlineAlert type="critical" message="Room 412: Maintenance Required (Plumbing)" />
-         <InlineAlert type="warning" message="Compliance GAP: Missing Signature RM 608" />
-      </div> */}
+      />
 
       {/* KPI Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -283,8 +236,6 @@ const HotelDashboard: React.FC = () => {
            </div>
         </GlassCard>
       </div>
-
-      <NightAuditWizard isOpen={isAuditOpen} onClose={() => setIsAuditOpen(false)} />
     </div>
   );
 };

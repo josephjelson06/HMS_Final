@@ -316,7 +316,7 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin,
                   title: isSuspended ? 'Activate Hotel' : 'Suspend Hotel',
                   message: isSuspended 
                     ? `Are you sure you want to activate ${hotelName}? This will restore access to all services.`
-                    : `Are you sure you want to suspend ${hotelName}? This will immediately revoke access to all services involved.`,
+                    : `Are you sure you want to suspend ${hotelName}? This will immediately suspend the account and restrict all involved services.`,
                   variant: 'warning',
                   confirmLabel: isSuspended ? 'Activate' : 'Suspend',
                   onConfirm: async () => {

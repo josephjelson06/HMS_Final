@@ -53,7 +53,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
   const [search, setSearch] = useState('');
   const [filterPlan, setFilterPlan] = useState('All Plans');
   const [filterStatus, setFilterStatus] = useState('All Status');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
   const [selectedHotels, setSelectedHotels] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -91,7 +91,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
       title: isSuspended ? 'Activate Hotel' : 'Suspend Hotel',
       message: isSuspended 
         ? `Are you sure you want to activate ${hotel.name}?` 
-        : `Are you sure you want to suspend ${hotel.name}? This will revoke access.`,
+        : `Are you sure you want to suspend ${hotel.name}? This will suspend the account and all associated services.`,
       variant: 'warning',
       confirmLabel: isSuspended ? 'Activate' : 'Suspend',
       onConfirm: async () => {
@@ -160,20 +160,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
       >
 
 
-        <div className="flex bg-black/5 dark:bg-white/5 rounded-2xl p-1.5 border border-white/10">
-          <button 
-            onClick={() => setViewMode('grid')}
-            className={`p-3 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 shadow-lg text-accent-strong' : 'text-gray-400 hover:text-white'}`}
-          >
-            <LayoutGrid size={22} />
-          </button>
-          <button 
-            onClick={() => setViewMode('list')}
-            className={`p-3 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-white/10 shadow-lg text-accent-strong' : 'text-gray-400 hover:text-white'}`}
-          >
-            <List size={22} />
-          </button>
-        </div>
+
         <Button
           size="lg"
           onClick={() => setIsAddModalOpen(true)}
@@ -240,7 +227,6 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
 
       {/* Main Registry View Area */}
       <div className="relative z-10">
-        {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
              {paginatedHotels.map((hotel) => (
                <GlassCard key={hotel.id} noPadding clipContent className="group flex flex-col h-full border-white/10 hover:border-accent/30 overflow-hidden shadow-2xl">
@@ -340,91 +326,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
                </GlassCard>
              ))}
           </div>
-        ) : (
-          <div className="space-y-1 animate-in fade-in slide-in-from-bottom-6 duration-700">
-              <div className="px-8 py-6 grid grid-cols-12 gap-4 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 bg-black/10 dark:bg-white/5 rounded-t-[2rem] border-x border-t border-white/10 shadow-sm">
-                  <div className="col-span-1 flex items-center"><CheckSquare size={16} className="opacity-30" /></div>
-                  <div className="col-span-3 flex items-center">Identity & Location</div>
-                  <div className="col-span-2 flex items-center">Tax Identifier</div>
-                  <div className="col-span-2 flex items-center">Owner / Contact</div>
-                  <div className="col-span-1 flex items-center">Plan</div>
-                  <div className="col-span-1 flex items-center justify-center">Status</div>
-                  <div className="col-span-1 flex items-center justify-end pr-4">Yield</div>
-                  <div className="col-span-1 flex items-center justify-end pr-4">Action</div>
-              </div>
-
-              <div className="space-y-3 pt-3">
-                  {paginatedHotels.map((hotel) => (
-                  <div 
-                      key={hotel.id}
-                      className="group relative grid grid-cols-12 gap-4 items-center p-6 rounded-[2rem] glass-card border-white/5 dark:border-white/10 transition-all hover:border-blue-500/30 shadow-md"
-                  >
-                      <div className="col-span-1" onClick={(e) => { e.stopPropagation(); toggleSelect(hotel.id); }}>
-                        {selectedHotels.includes(hotel.id) ? <CheckSquare size={20} className="text-accent-strong" /> : <Square size={20} className="text-gray-400" />}
-                      </div>
-                      <div className="col-span-3 flex items-center gap-5">
-                          <div className="w-14 h-14 rounded-2xl bg-black/10 dark:bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-accent transition-colors shrink-0">
-                              <Building2 size={28} />
-                          </div>
-                          <div className="min-w-0">
-                              <button 
-                                  onClick={() => navigateToHotelDetails(hotel.id)}
-                                  className="font-black text-gray-900 dark:text-white text-base hover:text-accent-strong transition-colors text-left truncate block w-full tracking-tight"
-                              >
-                                  {hotel.name}
-                              </button>
-                              <a 
-                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.address + ", " + hotel.name)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 mt-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-tighter hover:text-accent transition-colors"
-                              >
-                                  <MapPin size={12} /> {hotel.address}
-                              </a>
-                          </div>
-                      </div>
-                      <div className="col-span-2 text-[11px] font-mono font-black text-gray-500 dark:text-gray-400 tracking-tighter">{hotel.gstin}</div>
-                      <div className="col-span-2 flex flex-col gap-1.5">
-                          <span className="text-sm font-black text-gray-800 dark:text-gray-200">{hotel.owner}</span>
-                          <div className="flex items-center gap-3">
-                              <a href={`tel:${hotel.mobile}`} className="text-gray-500 hover:text-accent transition-colors"><Phone size={12} /></a>
-                              <a href={`mailto:${hotel.email}`} className="text-gray-500 hover:text-accent transition-colors"><Mail size={12} /></a>
-                          </div>
-                      </div>
-                      <div className="col-span-1"><PlanBadge plan={hotel.plan} plans={apiPlans} /></div>
-                      <div className="col-span-1 flex justify-center"><StatusBadge status={hotel.status} /></div>
-                      <div className="col-span-1 text-right pr-4">
-                          <p className="text-sm font-black dark:text-white tracking-tighter">₹{hotel.mrr.toLocaleString()}</p>
-                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{hotel.kiosks} Kiosks</p>
-                      </div>
-                      <div className="col-span-1 flex justify-end pr-2">
-                          <GlassDropdown 
-                              trigger={
-                                  <button className="p-3.5 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all bg-black/5 dark:bg-white/5"><MoreHorizontal size={22} /></button>
-                              }
-                              items={[
-                                  { icon: LogIn, label: 'Impersonate Admin', onClick: () => onLoginAsAdmin?.(hotel.name), variant: 'primary', hasSeparatorAfter: true },
-                                  { icon: ExternalLink, label: 'View Profile', onClick: () => navigateToHotelDetails(hotel.id) },
-                                  { icon: ShieldAlert, label: hotel.status === 'Suspended' ? 'Activate Account' : 'Suspend Account', onClick: () => handleSuspend(hotel), variant: 'warning' },
-                                  { icon: Trash2, label: 'Delete Registry', onClick: () => handleDelete(hotel.id), variant: 'danger' },
-                              ]}
-                          />
-                      </div>
-                  </div>
-                  ))}
-              </div>
-          </div>
-        )}
       </div>
-
-      <Pagination 
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={setItemsPerPage}
-        totalItems={filteredHotels.length}
-      />
 
       <AddHotelModal 
         isOpen={isAddModalOpen} 
@@ -442,6 +344,15 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
         message={modalConfig.message}
         variant={modalConfig.variant}
         confirmLabel={modalConfig.confirmLabel}
+      />
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        totalItems={filteredHotels.length}
       />
     </div>
   );

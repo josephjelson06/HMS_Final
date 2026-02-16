@@ -2,23 +2,30 @@
   {
     "hotel_id": 2,
     "users": [
-      { "name": "Valet John", "email": "john.valet@grand.com", "role": "Valet Lead", "password": "password123", "mobile": "+91 999 888 7771", "department": "Front Office" },
-      { "name": "Chef Gordon", "email": "gordon@grand.com", "role": "Head Chef", "password": "password123", "mobile": "+91 999 888 7772", "department": "Kitchen" },
-      { "name": "Concierge Mary", "email": "mary@grand.com", "role": "Concierge", "password": "password123", "mobile": "+91 999 888 7773", "department": "Front Office" }
+      { "name": "Riya Mehta", "email": "riya.m@grandhotel.com", "role": "General Manager", "password": "password123", "mobile": "+91 98860 32101", "department": "Front Office" },
+      { "name": "Suresh Kumar", "email": "suresh.k@grandhotel.com", "role": "Housekeeping Lead", "password": "password123", "mobile": "+91 91234 56789", "department": "Housekeeping" },
+      { "name": "Meera Lakhani", "email": "meera.l@grandhotel.com", "role": "Front Desk Executive", "password": "password123", "mobile": "+91 88776 65544", "department": "Front Office" },
+      { "name": "Arjun V. Deshmukh", "email": "arjun.v@grandhotel.com", "role": "Night Auditor", "password": "password123", "mobile": "+91 77665 54433", "department": "Finance" },
+      { "name": "Karan Johar", "email": "k.johar@grandhotel.com", "role": "Maintenance Lead", "password": "password123", "mobile": "+91 98223 34455", "department": "Maintenance" }
     ]
   },
   {
     "hotel_id": 3,
     "users": [
-      { "name": "Host Alice", "email": "alice@cozy.com", "role": "Host", "password": "password123", "mobile": "+91 888 777 6661", "department": "Operations" },
-      { "name": "Cleaner Bob", "email": "bob@cozy.com", "role": "Housekeeper", "password": "password123", "mobile": "+91 888 777 6662", "department": "Housekeeping" }
+      { "name": "Vikram Singh", "email": "vikram@cozystay.com", "role": "Property Manager", "password": "password123", "mobile": "+91 999 000 1111", "department": "Management" },
+      { "name": "Maya Sharma", "email": "maya@cozystay.com", "role": "Guest Relations", "password": "password123", "mobile": "+91 999 000 1112", "department": "Front Office" },
+      { "name": "Rohan Verma", "email": "rohan@cozystay.com", "role": "Head Chef", "password": "password123", "mobile": "+91 999 000 1113", "department": "F&B" },
+      { "name": "Anjali Rao", "email": "anjali@cozystay.com", "role": "Front Desk", "password": "password123", "mobile": "+91 999 000 1114", "department": "Front Office" },
+      { "name": "Mike Ross", "email": "mike@cozystay.com", "role": "Security Chief", "password": "password123", "mobile": "+91 999 000 1115", "department": "Security" }
     ]
   },
   {
     "hotel_id": 4,
     "users": [
-      { "name": "Guard Mike", "email": "mike@budget.com", "role": "Night Guard", "password": "password123", "mobile": "+91 777 666 5551", "department": "Security" },
-      { "name": "Cleaner Sarah", "email": "sarah@budget.com", "role": "Cleaner", "password": "password123", "mobile": "+91 777 666 5552", "department": "Housekeeping" }
+      { "name": "Amit Patel", "email": "amit@budgetinn.com", "role": "Supervisor", "password": "password123", "mobile": "+91 888 111 2221", "department": "Operations" },
+      { "name": "Sunita Rao", "email": "sunita@budgetinn.com", "role": "Cleaner", "password": "password123", "mobile": "+91 888 111 2222", "department": "Housekeeping" },
+      { "name": "Rajesh Khanna", "email": "rajesh@budgetinn.com", "role": "Receptionist", "password": "password123", "mobile": "+91 888 111 2223", "department": "Front Office" },
+      { "name": "Bobby Deol", "email": "bobby@budgetinn.com", "role": "Night Guard", "password": "password123", "mobile": "+91 888 111 2224", "department": "Security" }
     ]
   }
 ]

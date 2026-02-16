@@ -151,15 +151,6 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
         </div>
       </GlassCard>
 
-      <Pagination 
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={setItemsPerPage}
-        totalItems={filteredData.length}
-      />
-
       {activeSub && (
         <>
           <ChangePlanModal 
@@ -181,6 +172,15 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
           />
         </>
       )}
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        totalItems={filteredData.length}
+      />
     </div>
   );
 };

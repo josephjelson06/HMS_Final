@@ -12,6 +12,9 @@ class Hotel(Base):
     owner = Column(String)
     email = Column(String, index=True)
     mobile = Column(String)
+    pan = Column(String)  # Added for Platform Identity
+    legal_name = Column(String)
+    logo = Column(String)
     plan = Column(String, default="Starter")
     kiosks = Column(Integer, default=0)
     status = Column(String, default="Onboarding")

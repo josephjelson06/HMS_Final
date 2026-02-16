@@ -236,7 +236,7 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
                     Update Room Blueprint
                 </button>
                 <button className="px-6 py-4 rounded-2xl bg-accent-strong text-white text-[10px] font-bold uppercase tracking-widest shadow-xl hover:scale-[1.02] transition-all">
-                    Commit Changes
+                    Save Changes
                 </button>
             </div>
             

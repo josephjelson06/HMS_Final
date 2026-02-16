@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   LifeBuoy, MessageSquare, Plus, FileQuestion, Monitor, 
-  Phone, ChevronRight, Search, Filter, Clock, 
+  Search, Filter, Clock, 
   CheckCircle2, AlertTriangle, ArrowRight,
   ShieldAlert, Headphones, IndianRupee, HelpCircle, Info
 } from 'lucide-react';
@@ -46,6 +46,26 @@ const HotelHelp: React.FC = () => {
     };
     return <span className={`inline-block px-3 py-1.5 rounded-full border text-[8px] font-bold uppercase tracking-widest leading-none whitespace-nowrap ${styles[status]}`}>{status}</span>;
   };
+  const stats = useMemo(() => {
+    const active = allTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed').length;
+    const awaiting = allTickets.filter(t => t.status === 'Open').length;
+    
+    // SLA Health: Percentage of non-critical tickets or critical ones resolved in time
+    const criticalBreached = allTickets.filter(t => t.priority === 'Critical' && t.status !== 'Resolved' && t.status !== 'Closed').length;
+    const slaHealth = allTickets.length > 0 ? Math.round(((allTickets.length - criticalBreached) / allTickets.length) * 100) : 100;
+
+    // Average Response (Simplified to resolution time for closed tickets)
+    const resolved = allTickets.filter(t => t.status === 'Resolved' || t.status === 'Closed');
+    let avgResp = '--';
+    if (resolved.length > 0) {
+      const avgMs = resolved.reduce((acc, t) => acc + (new Date(t.updatedAt).getTime() - new Date(t.createdAt).getTime()), 0) / resolved.length;
+      const hours = Math.floor(avgMs / 3600000);
+      const mins = Math.floor((avgMs % 3600000) / 60000);
+      avgResp = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+    }
+
+    return { active, awaiting, slaHealth, avgResp };
+  }, [allTickets]);
 
   return (
     <div className="p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
@@ -54,7 +74,6 @@ const HotelHelp: React.FC = () => {
       <PageHeader
         title="Support Helpdesk"
         subtitle="Direct Lifeline to ATC Platform Team"
-        badge="Platform Support"
       >
         <Button
           variant="primary"
@@ -68,11 +87,12 @@ const HotelHelp: React.FC = () => {
 
       {/* Operational Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-         <SummaryItem label="Active Tickets" value="01" icon={LifeBuoy} color="text-accent" />
-         <SummaryItem label="Awaiting Action" value="00" icon={Clock} color="text-amber-500" />
-         <SummaryItem label="SLA Health" value="98%" icon={ShieldAlert} color="text-emerald-500" />
-         <SummaryItem label="Avg Response" value="42m" icon={MessageSquare} color="text-purple-500" />
+         <SummaryItem label="Active Tickets" value={stats.active.toString().padStart(2, '0')} icon={LifeBuoy} color="text-accent" />
+         <SummaryItem label="Awaiting Action" value={stats.awaiting.toString().padStart(2, '0')} icon={Clock} color="text-amber-500" />
+         <SummaryItem label="SLA Health" value={`${stats.slaHealth}%`} icon={ShieldAlert} color="text-emerald-500" />
+         <SummaryItem label="Avg Response" value={stats.avgResp} icon={MessageSquare} color="text-purple-500" />
       </div>
+
 
       <div className="flex flex-col space-y-6">
         {/* Search & Filter Bar */}
@@ -137,22 +157,6 @@ const HotelHelp: React.FC = () => {
         )}
       </div>
 
-      {/* Emergency Contact Strip */}
-      <div className="p-8 rounded-[3rem] bg-accent-strong/90 dark:bg-accent-strong/20 text-white shadow-2xl relative overflow-hidden border border-white/10 mt-12">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-            <div className="text-center md:text-left">
-              <h4 className="text-2xl font-black tracking-tighter mb-2 uppercase italic">Critical System Failure?</h4>
-              <p className="text-base font-medium opacity-80 leading-relaxed max-w-xl">Our high-priority engineers are on standby 24/7 to ensure your hotel operations never skip a beat.</p>
-            </div>
-            <div className="p-8 rounded-[2rem] bg-black/20 backdrop-blur-md text-center space-y-1 group hover:bg-black/40 transition-all cursor-pointer border border-white/10 min-w-[300px]">
-                <p className="text-[11px] font-black uppercase tracking-[0.3em] opacity-60 flex items-center justify-center gap-2">
-                  <Phone size={12} /> Emergency Priority Line
-                </p>
-                <p className="text-2xl font-black tracking-widest text-white shadow-sm">+91 1800-ATC-HMS</p>
-            </div>
-          </div>
-      </div>
 
       <NewTicketModal 
         isOpen={isNewModalOpen} 
@@ -174,5 +178,6 @@ const SummaryItem = ({ label, value, icon: Icon, color }: any) => (
       <h3 className="text-3xl font-black dark:text-white tracking-tighter">{value}</h3>
     </GlassCard>
 );
+
 
 export default HotelHelp;

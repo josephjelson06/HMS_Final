@@ -2,8 +2,14 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: 'super' | 'hotel';
+  role: 'super' | 'hotel' | string;
   hotelId?: string;
+  status?: string;
+  mobile?: string;
+  phone?: string;
+  lastLogin?: string;
+  avatar?: string;
+  dateAdded?: string;
 }
 
 export interface LoginCredentials {

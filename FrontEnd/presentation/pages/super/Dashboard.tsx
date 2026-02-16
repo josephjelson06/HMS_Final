@@ -150,9 +150,6 @@ const Dashboard: React.FC = () => {
           <div className="flex-1 p-8 min-h-0">
             <TenantOnboardingTrend />
           </div>
-          <div className="p-4 border-t border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/[0.02] text-center">
-             <button className="text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:text-accent-strong transition-colors">Generate Growth Report</button>
-          </div>
         </GlassCard>
 
         <div className="lg:col-span-2 h-[480px]">
@@ -160,17 +157,6 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <GlassCard noPadding clipContent className="bg-white/40 dark:bg-white/[0.02] border-white/20 dark:border-white/5 shadow-xl">
-        <div className="flex items-center gap-10 overflow-x-auto no-scrollbar py-4 px-10">
-          <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] whitespace-nowrap">Shortcuts Registry:</p>
-          {['Hotels Database', 'Fleet Health', 'Analytics Engine', 'Access Control'].map((item, i) => (
-            <button key={i} className="text-[11px] font-black text-slate-500 dark:text-gray-400 hover:text-accent-strong whitespace-nowrap transition-all flex items-center gap-3 uppercase tracking-[0.1em] group">
-              {item}
-              <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-          ))}
-        </div>
-      </GlassCard>
     </div>
   );
 };

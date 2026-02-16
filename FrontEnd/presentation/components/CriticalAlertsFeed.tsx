@@ -81,11 +81,6 @@ const CriticalAlertsFeed: React.FC = () => {
       </div>
       
       {/* UNIFIED CONTAINER: Full-bleed anchored footer bar */}
-      <div className="border-t border-gray-100 dark:border-white/5 bg-gray-900 dark:bg-white mt-auto">
-        <button className="w-full py-5 text-[10px] font-bold uppercase tracking-[0.25em] text-white dark:text-black hover:bg-accent-strong hover:text-white transition-all">
-          View All System Events
-        </button>
-      </div>
     </GlassCard>
   );
 };

@@ -22,5 +22,8 @@ export interface Hotel {
   status: HotelStatus | string;
   mrr: number;
   address: string;
+  pan?: string;
+  legal_name?: string;
+  logo?: string;
   kiosk_list?: Kiosk[];
 }

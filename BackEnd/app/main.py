@@ -11,6 +11,7 @@ from app.routers import (
     rooms,
     incidents,
     tickets,
+    settings,
     # auth, # Disable old auth
 )
 from app.database import engine, Base
@@ -64,6 +65,7 @@ app.include_router(roles.router, prefix="/api/roles", tags=["roles"])
 app.include_router(rooms.router, prefix="/api", tags=["rooms"])
 app.include_router(incidents.router, prefix="/api", tags=["incidents"])
 app.include_router(tickets.router, prefix="/api", tags=["tickets"])
+app.include_router(settings.router, prefix="/api/settings", tags=["settings"])
 app.include_router(auth_simple.router)  # Mounts at /auth/login etc.
 
 

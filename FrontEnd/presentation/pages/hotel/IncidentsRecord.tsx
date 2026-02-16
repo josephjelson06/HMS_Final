@@ -5,7 +5,7 @@ import {
   AlertTriangle, CheckCircle2, History, Wrench,
   Zap, Info, LayoutGrid, AlertCircle,
   Link as LinkIcon, Camera, MousePointer2, UserPlus,
-  Monitor, Brush, Lock
+  Monitor, Brush, Lock, Activity
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import PageHeader from '../../components/ui/PageHeader';
@@ -20,7 +20,6 @@ const IncidentsRecord: React.FC = () => {
   const [activeTab, setActiveTab] = useState<IncidentStatus | 'All'>('All');
   const [search, setSearch] = useState('');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const filteredIncidents = useMemo(() => {
     return allIncidents.filter(inc => {
@@ -36,8 +35,9 @@ const IncidentsRecord: React.FC = () => {
     const openCritical = allIncidents.filter(i => i.status === 'Open' && i.priority === 'Critical').length;
     const maintenance = allIncidents.filter(i => i.category === 'Maintenance' && i.status !== 'Closed').length;
     const housekeeping = allIncidents.filter(i => i.category === 'Housekeeping' && i.status !== 'Closed').length;
-    // MTTR placeholder - hard to calc without history
-    return { openCritical, maintenance, housekeeping };
+    const inProgress = allIncidents.filter(i => i.status === 'In Progress').length;
+
+    return { openCritical, maintenance, housekeeping, inProgress };
   }, [allIncidents]);
 
   const PriorityBadge = ({ level }: { level: IncidentPriority }) => {
@@ -103,13 +103,6 @@ const IncidentsRecord: React.FC = () => {
       
       {/* Header Context */}
       <PageHeader title="Incident Records" subtitle="Operational Issue & Problem Tracker">
-         <Button 
-            variant="primary" 
-            onClick={() => setIsCreateModalOpen(true)}
-            icon={<Plus size={16} />}
-         >
-            Report Incident
-         </Button>
       </PageHeader>
 
       {/* Analytics Strip */}
@@ -117,7 +110,7 @@ const IncidentsRecord: React.FC = () => {
          <SummaryCard label="Open Critical" value={stats.openCritical.toString().padStart(2, '0')} sub="Resolution Overdue" icon={ShieldAlert} color="text-red-500" />
          <SummaryCard label="Maintenance" value={stats.maintenance.toString().padStart(2, '0')} sub="On-going repair" icon={Wrench} color="text-accent" />
          <SummaryCard label="Housekeeping" value={stats.housekeeping.toString().padStart(2, '0')} sub="Priority Cleaning" icon={Brush} color="text-accent" />
-         <SummaryCard label="MTTR (Today)" value="--" sub="Not available" icon={Clock} color="text-emerald-500" />
+         <SummaryCard label="In Progress" value={stats.inProgress.toString().padStart(2, '0')} sub="Active Resolution" icon={Activity} color="text-emerald-500" />
       </div>
 
       {/* Filter Bar */}
@@ -163,12 +156,6 @@ const IncidentsRecord: React.FC = () => {
         onUpdate={updateIncident as any}
       />
       
-      <CreateIncidentModal 
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={async (data) => { await createIncident(data); }}
-      />
-
     </div>
   );
 };

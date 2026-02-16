@@ -168,15 +168,6 @@ const Invoices: React.FC = () => {
         </div>
       </GlassCard>
 
-      <Pagination 
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={setItemsPerPage}
-        totalItems={filteredInvoices.length}
-      />
-
       <InvoiceDetailModal 
         isOpen={!!selectedInvoice} 
         invoice={selectedInvoice} 
@@ -197,6 +188,15 @@ const Invoices: React.FC = () => {
         onSave={async (data) => {
             await createInvoice(data);
         }}
+      />
+
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        totalItems={filteredInvoices.length}
       />
     </div>
   );

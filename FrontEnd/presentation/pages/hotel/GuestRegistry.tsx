@@ -1,42 +1,17 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
-  Users, Search, Filter, Mail, Phone, Calendar, 
-  MoreHorizontal, Scan, CheckCircle2, AlertCircle, 
-  ChevronRight, ArrowRight, Building2, MapPin, 
-  CreditCard, FileText, Plus, UserPlus, Clock,
-  Globe, ShieldCheck, ShieldAlert, Download,
-  ExternalLink, User, History, AlertTriangle
+  Users, Search, Phone, Calendar, 
+  ChevronRight, ArrowRight, History
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import GuestDetailPanel from '../../modals/hotel/GuestDetailPanel';
-import NewBookingWizard from '../../modals/hotel/NewBookingWizard';
-import type { KYCStatus, GuestStatus, Guest } from '@/domain/entities/Guest';
+import type { GuestStatus, Guest } from '@/domain/entities/Guest';
 import { useGuests } from '@/application/hooks/useGuests';
 
-const KycBadge = ({ status }: { status: KYCStatus }) => {
-  const styles = {
-    Verified: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-emerald-500/20',
-    Pending: 'bg-red-500/10 text-red-600 dark:text-red-500 border-red-500/20',
-    'Manual Review': 'bg-amber-500/10 text-amber-700 dark:text-amber-500 border-amber-500/20',
-    Failed: 'bg-slate-900 text-white border-transparent'
-  };
-  const dot = {
-    Verified: 'bg-emerald-500',
-    Pending: 'bg-red-500',
-    'Manual Review': 'bg-amber-500',
-    Failed: 'bg-white'
-  };
-  return (
-    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${styles[status]}`}>
-      <span className={`w-2 h-2 rounded-full ${dot[status]}`}></span>
-      {status}
-    </div>
-  );
-};
 
 const StatusBadge = ({ status }: { status: GuestStatus }) => {
   const styles = {
@@ -57,8 +32,7 @@ const GuestRegistry: React.FC = () => {
   const { guests: allGuests } = useGuests();
   const [search, setSearch] = useState('');
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
-  const [isWizardOpen, setIsWizardOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<GuestStatus | 'All' | 'ESCALATED'>('All');
+  const [activeFilter, setActiveFilter] = useState<GuestStatus | 'All'>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
@@ -69,10 +43,6 @@ const GuestRegistry: React.FC = () => {
                            g.name.toLowerCase().includes(s) || 
                            g.refId.toLowerCase().includes(s) || 
                            g.room.includes(search);
-      
-      if (activeFilter === 'ESCALATED') {
-          return matchesSearch && g.status === 'Checked-In' && g.kycStatus === 'Pending';
-      }
       
       const matchesFilter = activeFilter === 'All' || g.status === activeFilter;
       return matchesSearch && matchesFilter;
@@ -111,7 +81,7 @@ const GuestRegistry: React.FC = () => {
         
         <div className="flex items-center gap-4 w-full lg:w-auto">
             <div className="flex p-1.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 overflow-x-auto no-scrollbar">
-                {['All', 'Reserved', 'Checked-In', 'Checked-Out'].map((f) => (
+                {['All', 'Checked-In', 'Checked-Out'].map((f) => (
                     <button 
                         key={f}
                         onClick={() => setActiveFilter(f as any)}
@@ -120,23 +90,8 @@ const GuestRegistry: React.FC = () => {
                         {f}
                     </button>
                 ))}
-                <button 
-                    onClick={() => setActiveFilter('ESCALATED')}
-                    className={`px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2 ${activeFilter === 'ESCALATED' ? 'bg-red-600 text-white shadow-sm border border-red-700' : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10'}`}
-                >
-                    <AlertTriangle size={14} /> Escalations
-                </button>
             </div>
 
-            <Button
-                variant="primary"
-                size="lg"
-                onClick={() => setIsWizardOpen(true)}
-                icon={<Plus size={18} strokeWidth={3} />}
-                className="whitespace-nowrap shadow-lg shadow-accent-strong/20"
-            >
-                New Booking
-            </Button>
         </div>
       </div>
 
@@ -151,10 +106,7 @@ const GuestRegistry: React.FC = () => {
                 <th className="px-8 py-5">Phone</th>
                 <th className="px-8 py-5 text-center">Room</th>
                 <th className="px-8 py-5">Stay Dates</th>
-                <th className="px-8 py-5">KYC Status</th>
-                <th className="px-8 py-5 text-right">Balance</th>
                 <th className="px-8 py-5">Status</th>
-                <th className="px-8 py-5 text-right pr-10">Channel</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -162,7 +114,7 @@ const GuestRegistry: React.FC = () => {
                 <tr 
                   key={g.id} 
                   onClick={() => setSelectedGuest(g)}
-                  className={`hover:bg-blue-50/30 dark:hover:bg-white/5 transition-all group cursor-pointer border-l-4 border-transparent hover:border-accent-strong ${activeFilter === 'ESCALATED' ? 'bg-red-500/[0.02]' : ''}`}
+                  className="hover:bg-blue-50/30 dark:hover:bg-white/5 transition-all group cursor-pointer border-l-4 border-transparent hover:border-accent-strong"
                 >
                   <td className="px-8 py-6 align-middle">
                     <span className="text-sm font-bold text-orange-800 dark:text-orange-400 group-hover:underline font-mono">
@@ -191,18 +143,7 @@ const GuestRegistry: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-8 py-6 align-middle">
-                    <KycBadge status={g.kycStatus} />
-                  </td>
-                  <td className="px-8 py-6 align-middle text-right">
-                    <span className={`text-sm font-black ${g.balance > 0 ? 'text-red-600' : g.balance < 0 ? 'text-accent-strong' : 'text-emerald-600'}`}>
-                        {g.balance > 0 ? `₹${g.balance.toLocaleString()}` : g.balance < 0 ? `-₹${Math.abs(g.balance).toLocaleString()}` : '₹0.00'}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6 align-middle">
                     <StatusBadge status={g.status} />
-                  </td>
-                  <td className="px-8 py-6 align-middle text-right pr-10">
-                    <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-white/5 px-2.5 py-1 rounded-md border border-slate-200 dark:border-white/5">{g.source}</span>
                   </td>
                 </tr>
               ))}
@@ -210,15 +151,6 @@ const GuestRegistry: React.FC = () => {
           </table>
         </div>
       </GlassCard>
-
-      <Pagination 
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={setItemsPerPage}
-        totalItems={filteredGuests.length}
-      />
 
       {/* Empty State */}
       {filteredGuests.length === 0 && (
@@ -229,15 +161,19 @@ const GuestRegistry: React.FC = () => {
           </div>
       )}
 
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        totalItems={filteredGuests.length}
+      />
+
       <GuestDetailPanel 
         isOpen={!!selectedGuest} 
         guest={selectedGuest} 
         onClose={() => setSelectedGuest(null)} 
-      />
-
-      <NewBookingWizard 
-        isOpen={isWizardOpen} 
-        onClose={() => setIsWizardOpen(false)} 
       />
 
     </div>

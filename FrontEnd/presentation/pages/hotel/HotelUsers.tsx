@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Users, Shield, Search, UserPlus, MoreHorizontal, Mail, Phone, 
-  Key, Edit2, Trash2, ShieldAlert, Plus, MoreVertical, Eye
+  Edit2, Trash2, ShieldAlert, Plus, MoreVertical, Eye
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import GlassDropdown from '../../components/ui/GlassDropdown';
@@ -161,8 +161,7 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
                           }
                           items={[
                               { icon: Edit2, label: 'Edit Profile', onClick: () => {} },
-                              { icon: Key, label: 'Reset Password', onClick: () => {} },
-                              { icon: ShieldAlert, label: 'Revoke Access', onClick: () => {}, variant: 'warning', hasSeparatorAfter: true },
+                              { icon: ShieldAlert, label: 'Suspend Account', onClick: () => {}, variant: 'warning', hasSeparatorAfter: true },
                               { icon: Trash2, label: 'Delete Record', onClick: () => {}, variant: 'danger' },
                           ]}
                       />
@@ -215,14 +214,7 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
                </GlassCard>
              ))}
             </div>
-            <Pagination 
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={setItemsPerPage}
-                totalItems={filteredStaff.length}
-            />
+
           </div>
         ) : (
           <div className="space-y-4">
@@ -268,25 +260,8 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
                  </GlassCard>
                ))}
                
-               <button 
-                 onClick={() => setIsRoleModalOpen(true)}
-                 className="group flex flex-col items-center justify-center p-8 rounded-[2.5rem] border-2 border-dashed border-white/10 bg-black/5 dark:bg-white/[0.01] hover:border-blue-500/50 hover:bg-blue-50/5 transition-all h-full min-h-[300px]"
-               >
-                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-accent group-hover:scale-110 transition-all mb-4">
-                     <Plus size={32} />
-                  </div>
-                  <h4 className="text-sm font-black dark:text-white uppercase tracking-widest">New Custom Role</h4>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase mt-2">Define unique rights</p>
-               </button>
             </div>
-            <Pagination 
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={setItemsPerPage}
-                totalItems={filteredRoles.length}
-            />
+
           </div>
         )}
       </div>
@@ -298,6 +273,15 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
               <p className="text-sm font-bold text-gray-500 uppercase mt-2">Adjust your filters or try a different search query.</p>
           </div>
       )}
+
+      <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={setItemsPerPage}
+          totalItems={activeTab === 'STAFF' ? filteredStaff.length : filteredRoles.length}
+      />
 
       <AddHotelUserModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
       <CreateHotelRoleModal isOpen={isRoleModalOpen} onClose={() => setIsRoleModalOpen(false)} onCreated={handleRoleCreated} />

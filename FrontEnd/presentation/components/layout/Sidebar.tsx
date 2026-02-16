@@ -9,7 +9,6 @@ import {
   BarChart3, 
   Users, 
   Shield, 
-  LogOut,
   Zap,
   User,
   Settings,
@@ -65,7 +64,7 @@ const SidebarItem = ({
         ? 'bg-white text-accent-strong shadow-[0_10px_20px_-5px_rgba(0,0,0,0.1)] dark:bg-white/10 dark:text-white dark:shadow-none' 
         : 'text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5'
       }
-      ${collapsed ? 'justify-center px-0 mx-2 w-12 h-12 self-center' : ''}
+      ${collapsed ? 'justify-center px-0 w-12 h-12 mx-auto' : ''}
     `}>
       <Icon size={collapsed ? 24 : 20} strokeWidth={2.5} className={`
         ${active ? 'text-accent-strong' : 'group-hover:scale-110 transition-transform text-gray-500 dark:text-gray-400'}
@@ -84,7 +83,7 @@ const SidebarItem = ({
 }
 
 const SidebarSection = ({ title, children, collapsed = false }: { title: string, children?: React.ReactNode, collapsed?: boolean }) => (
-  <div className={`mb-6 ${collapsed ? 'px-2' : ''}`}>
+  <div className={`mb-6 ${collapsed ? '' : 'px-2'}`}>
     {!collapsed ? (
       <h3 className="px-5 text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-4 opacity-70">
         {title}
@@ -118,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         lg:rounded-[2.5rem] lg:m-4 lg:h-[calc(100vh-2rem)] overflow-hidden
       `}>
-        <div className="p-4 md:p-6 h-full flex flex-col scrollbar-none overflow-x-hidden">
+        <div className={`h-full flex flex-col scrollbar-none overflow-x-hidden transition-all duration-300 ${isCollapsed ? 'p-4' : 'p-4 md:p-6'}`}>
           
           {/* Brand Section */}
           <div className={`flex items-center gap-3 mb-10 mt-2 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'px-2'}`}>
@@ -146,7 +145,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                 <SidebarSection title="Management" collapsed={isCollapsed}>
                   <SidebarItem icon={Users} label="Staff Registry" active={currentRoute === 'user-mgmt'} onClick={() => onNavigate('user-mgmt')} collapsed={isCollapsed} />
-                  <SidebarItem icon={Wallet} label="My Subscription" active={currentRoute === 'my-subscription'} onClick={() => onNavigate('my-subscription')} collapsed={isCollapsed} />
                 </SidebarSection>
 
                 <SidebarSection title="Insights" collapsed={isCollapsed}>
@@ -181,15 +179,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
 
-          <div className={`mt-4 pt-6 border-t border-black/5 dark:border-white/10 ${isCollapsed ? 'px-0' : ''}`}>
-              <div 
-                onClick={onLogout}
-                className={`cursor-pointer flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors ${isCollapsed ? 'justify-center px-0 mx-2' : ''}`}
-              >
-                  <LogOut size={20} strokeWidth={2.5} />
-                  {!isCollapsed && <span className="text-[14px] font-black">Log Out</span>}
-              </div>
-          </div>
         </div>
 
         {/* Desktop Collapse Toggle (Bottom) */}

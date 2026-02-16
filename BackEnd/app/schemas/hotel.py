@@ -23,6 +23,9 @@ class HotelBase(BaseModel):
     owner: str = Field(..., min_length=1)
     email: EmailStr
     mobile: str = Field(..., min_length=10)
+    pan: Optional[str] = None
+    legal_name: Optional[str] = None
+    logo: Optional[str] = None
     plan: str = "Starter"
     kiosks: int = Field(default=0, ge=0)
     status: str = "Onboarding"
@@ -40,6 +43,9 @@ class HotelUpdate(BaseModel):
     owner: Optional[str] = None
     email: Optional[EmailStr] = None
     mobile: Optional[str] = None
+    pan: Optional[str] = None
+    legal_name: Optional[str] = None
+    logo: Optional[str] = None
     plan: Optional[str] = None
     kiosks: Optional[int] = None
     status: Optional[str] = None
