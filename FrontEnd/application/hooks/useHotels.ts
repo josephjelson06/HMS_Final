@@ -14,7 +14,7 @@ export function useHotels() {
       .finally(() => setLoading(false));
   }, []);
 
-  const createHotel = async (data: Omit<Hotel, 'id'>) => {
+  const createHotel = async (data: Omit<Hotel, 'id'> & { kiosks_details?: { serial_number: string, location: string }[] }) => {
     const hotel = await repositories.hotels.create(data);
     setHotels(prev => [...prev, hotel]);
     return hotel;

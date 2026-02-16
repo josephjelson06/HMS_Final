@@ -44,12 +44,17 @@ import { MockHotelStaffRepository } from '../repositories/mock/MockHotelStaffRep
 import { MockIncidentRepository } from '../repositories/mock/MockIncidentRepository';
 import { MockSubscriptionRepository } from '../repositories/mock/MockSubscriptionRepository';
 
+// ... imports
+import { ApiHotelRepository } from '../repositories/api/ApiHotelRepository';
+
+// ... 
+
 // When backend is ready:
 // 1. Create Api*Repository classes in ../repositories/api/
 // 2. Import them here
 // 3. Set USE_MOCK = false (or use env: process.env.NEXT_PUBLIC_USE_MOCK !== 'false')
 
-const USE_MOCK = true;
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true'; // Controlled by env now
 
 export interface Repositories {
   // Original 7
@@ -73,9 +78,8 @@ export interface Repositories {
 }
 
 function createRepositories(): Repositories {
-  if (USE_MOCK) {
-    return {
-      hotels: new MockHotelRepository(),
+  // Common repositories for now (mock)
+  const commonMockRepos = {
       rooms: new MockRoomRepository(),
       users: new MockUserRepository(),
       kiosks: new MockKioskRepository(),
@@ -91,28 +95,19 @@ function createRepositories(): Repositories {
       hotelStaff: new MockHotelStaffRepository(),
       incidents: new MockIncidentRepository(),
       subscriptions: new MockSubscriptionRepository(),
+  };
+
+  if (USE_MOCK) {
+    return {
+      hotels: new MockHotelRepository(),
+      ...commonMockRepos
     };
   }
 
-  // Future: return API implementations
-  // Fallback to mock until API repos are implemented
+  // API implementation mixed with mocks (gradual rollout)
   return {
-    hotels: new MockHotelRepository(),
-    rooms: new MockRoomRepository(),
-    users: new MockUserRepository(),
-    kiosks: new MockKioskRepository(),
-    plans: new MockPlanRepository(),
-    invoices: new MockInvoiceRepository(),
-    tickets: new MockTicketRepository(),
-    auditLogs: new MockAuditLogRepository(),
-    billing: new MockBillingRepository(),
-    bookings: new MockBookingRepository(),
-    guests: new MockGuestRepository(),
-    hotelAudit: new MockHotelAuditRepository(),
-    hotelHelp: new MockHotelHelpRepository(),
-    hotelStaff: new MockHotelStaffRepository(),
-    incidents: new MockIncidentRepository(),
-    subscriptions: new MockSubscriptionRepository(),
+    hotels: new ApiHotelRepository(), // SWAPPED!
+    ...commonMockRepos
   };
 }
 

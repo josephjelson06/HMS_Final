@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Search, Plus, MoreHorizontal, User, Smartphone, CreditCard, 
-  LogIn, ExternalLink, Edit, ShieldOff, ChevronDown, Filter,
+  LogIn, ExternalLink, ShieldOff, ChevronDown, Filter,
   LayoutGrid, List, Building2, MapPin, Phone, IndianRupee,
-  Activity, ArrowUpRight, Mail, ShieldAlert, Trash2, CheckSquare, Square
+  Activity, Mail, ShieldAlert, Trash2, CheckSquare, Square
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import GlassDropdown from '../../components/ui/GlassDropdown';
@@ -12,6 +12,7 @@ import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import SharedStatusBadge, { statusToVariant } from '../../components/ui/StatusBadge';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { useHotels } from '@/application/hooks/useHotels';
 
 interface HotelsProps {
@@ -38,7 +39,7 @@ const StatusBadge = ({ status }: { status: string }) => (
 );
 
 const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateHotelDetails }) => {
-  const { hotels: allHotels } = useHotels();
+  const { hotels: allHotels, updateHotel, deleteHotel, createHotel } = useHotels();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [filterPlan, setFilterPlan] = useState('All Plans');
@@ -47,11 +48,73 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
   const [selectedHotels, setSelectedHotels] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'primary';
+    confirmLabel: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    variant: 'primary',
+    confirmLabel: 'Confirm',
+    onConfirm: () => {},
+  });
+
+  const openConfirm = (config: Omit<typeof modalConfig, 'isOpen'>) => {
+    setModalConfig({ ...config, isOpen: true });
+  };
+
+  const closeConfirm = () => {
+    setModalConfig(prev => ({ ...prev, isOpen: false }));
+  };
 
   const toggleSelect = (id: number) => {
     setSelectedHotels(prev => prev.includes(id) ? prev.filter(hId => hId !== id) : [...prev, id]);
   };
 
+  const handleSuspend = (hotel: typeof allHotels[0]) => {
+    const isSuspended = hotel.status === 'Suspended';
+    openConfirm({
+      title: isSuspended ? 'Activate Hotel' : 'Suspend Hotel',
+      message: isSuspended 
+        ? `Are you sure you want to activate ${hotel.name}?` 
+        : `Are you sure you want to suspend ${hotel.name}? This will revoke access.`,
+      variant: 'warning',
+      confirmLabel: isSuspended ? 'Activate' : 'Suspend',
+      onConfirm: async () => {
+        const newStatus = isSuspended ? 'Active' : 'Suspended';
+        await updateHotel(hotel.id, { status: newStatus });
+      }
+    });
+  };
+
+  const handleDelete = (id: number) => {
+    openConfirm({
+      title: 'Delete Hotel',
+      message: 'Are you sure you want to delete this hotel? This action cannot be undone.',
+      variant: 'danger',
+      confirmLabel: 'Delete Forever',
+      onConfirm: async () => {
+        await deleteHotel(id);
+      }
+    });
+  };
+
+  // Instant Update Handler
+  const handleCreateHotel = async (data: any) => {
+    // createHotel from useHotels updates the local state 'hotels'
+    // so we just need to pass this function down
+    await useHotels().createHotel(data); 
+    // Wait, calling useHotels() here creates a NEW hook instance with NEW state.
+    // We must use the 'createHotel' from the component scope.
+    // But 'createHotel' is available from the destructured hook at the top.
+  };
+
+  // Helper for status filtering
   const filteredHotels = useMemo(() => {
     return allHotels.filter(hotel => {
       const searchStr = search.toLowerCase();
@@ -94,8 +157,10 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
       {/* Page Header */}
       <PageHeader
         title="Hotels Registry"
-        subtitle={`Core Tenant Ecosystem • ${filteredHotels.length} Active Accounts`}
+        subtitle={`Core Tenant Ecosystem • ${filteredHotels.length} Accounts`}
       >
+
+
         <div className="flex bg-black/5 dark:bg-white/5 rounded-2xl p-1.5 border border-white/10">
           <button 
             onClick={() => setViewMode('grid')}
@@ -185,7 +250,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
                           <Building2 size={120} className="text-white group-hover:scale-110 transition-transform duration-1000" />
                       </div>
                       <div 
-                        className="absolute inset-0 opacity-40 bg-cover bg-center grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
+                        className={`absolute inset-0 opacity-40 bg-cover bg-center transition-all duration-1000 ${hotel.status === 'Suspended' ? 'grayscale opacity-20' : 'grayscale group-hover:grayscale-0 group-hover:scale-105'}`} 
                         style={{ backgroundImage: `url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&auto=format&fit=crop&q=60')` }}
                       ></div>
                       
@@ -259,25 +324,18 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
                                           <MoreHorizontal size={22} />
                                       </button>
                                   }
-                                  items={[
-                                      { icon: LogIn, label: 'Impersonate Admin', onClick: () => onLoginAsAdmin?.(hotel.name), variant: 'primary', hasSeparatorAfter: true },
-                                      { icon: ExternalLink, label: 'View Analytics', onClick: () => navigateToHotelDetails(hotel.id) },
-                                      { icon: Edit, label: 'Edit Parameters', onClick: () => {} },
-                                      { icon: ShieldAlert, label: 'Suspend Account', onClick: () => {}, variant: 'warning' },
-                                      { icon: Trash2, label: 'Delete Registry', onClick: () => {}, variant: 'danger' },
-                                  ]}
-                              />
+                                      items={[
+                                          { icon: LogIn, label: 'Impersonate Admin', onClick: () => onLoginAsAdmin?.(hotel.name), variant: 'primary', hasSeparatorAfter: true },
+                                          { icon: ExternalLink, label: 'View Profile', onClick: () => navigateToHotelDetails(hotel.id) },
+                                          { icon: ShieldAlert, label: hotel.status === 'Suspended' ? 'Activate Account' : 'Suspend Account', onClick: () => handleSuspend(hotel), variant: 'warning' },
+                                          { icon: Trash2, label: 'Delete Registry', onClick: () => handleDelete(hotel.id), variant: 'danger' },
+                                      ]}
+                                  />
                           </div>
                       </div>
                   </div>
 
-                  {/* UNIFIED CONTAINER: Full-Bleed Anchored Footer Button */}
-                  <button 
-                      onClick={() => navigateToHotelDetails(hotel.id)}
-                      className="w-full py-5 bg-gray-900 dark:bg-white text-white dark:text-black text-[11px] font-bold uppercase tracking-[0.25em] hover:bg-accent-strong hover:text-white transition-all flex items-center justify-center gap-3 group/btn border-t border-white/5"
-                  >
-                      Access Property Profile <ArrowUpRight size={16} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                  </button>
+
                </GlassCard>
              ))}
           </div>
@@ -345,10 +403,9 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
                               }
                               items={[
                                   { icon: LogIn, label: 'Impersonate Admin', onClick: () => onLoginAsAdmin?.(hotel.name), variant: 'primary', hasSeparatorAfter: true },
-                                  { icon: ExternalLink, label: 'Full Analytics', onClick: () => navigateToHotelDetails(hotel.id) },
-                                  { icon: Edit, label: 'Settings', onClick: () => {} },
-                                  { icon: ShieldAlert, label: 'Suspend', onClick: () => {}, variant: 'warning' },
-                                  { icon: Trash2, label: 'Delete', onClick: () => {}, variant: 'danger' },
+                                  { icon: ExternalLink, label: 'View Profile', onClick: () => navigateToHotelDetails(hotel.id) },
+                                  { icon: ShieldAlert, label: hotel.status === 'Suspended' ? 'Activate Account' : 'Suspend Account', onClick: () => handleSuspend(hotel), variant: 'warning' },
+                                  { icon: Trash2, label: 'Delete Registry', onClick: () => handleDelete(hotel.id), variant: 'danger' },
                               ]}
                           />
                       </div>
@@ -368,7 +425,23 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
         totalItems={filteredHotels.length}
       />
 
-      <AddHotelModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+      <AddHotelModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+        onCreateHotel={async (data) => {
+           await createHotel(data);
+        }}
+      />
+      
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        onClose={closeConfirm}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        variant={modalConfig.variant}
+        confirmLabel={modalConfig.confirmLabel}
+      />
     </div>
   );
 };

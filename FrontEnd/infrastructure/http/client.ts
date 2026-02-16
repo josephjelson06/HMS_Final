@@ -28,7 +28,15 @@ class HttpClient {
   }
 
   private buildUrl(path: string, params?: Record<string, string>): string {
-    const url = new URL(path, this.baseUrl);
+    if (path.startsWith('http')) return path;
+
+    // Simple robust join
+    const base = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
+    const endpoint = path.startsWith('/') ? path : `/${path}`;
+    
+    // Construct new URL object to handle query params easily
+    const url = new URL(base + endpoint);
+    
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         url.searchParams.append(key, value);

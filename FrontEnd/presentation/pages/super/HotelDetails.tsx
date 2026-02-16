@@ -3,8 +3,10 @@ import {
   ArrowLeft, MapPin, Mail, Edit, LogIn, Building2, FileText, CreditCard, Monitor, ArrowUpRight, Download
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { useTheme } from '../../hooks/useTheme';
 import { useHotels } from '@/application/hooks/useHotels';
+import EditHotelModal from '../../modals/super/EditHotelModal';
 
 interface HotelDetailsProps {
   onNavigate: (route: string) => void;
@@ -13,9 +15,33 @@ interface HotelDetailsProps {
 }
 
 const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin, hotelId }) => {
-  const { isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();                        
   const [activeTab, setActiveTab] = useState('Overview');
-  const { hotels: allHotels, loading } = useHotels();
+  const { hotels: allHotels, loading, updateHotel, deleteHotel } = useHotels();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'primary';
+    confirmLabel: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    variant: 'primary',
+    confirmLabel: 'Confirm',
+    onConfirm: () => {},
+  });   
+
+  const openConfirm = (config: Omit<typeof modalConfig, 'isOpen'>) => {
+    setModalConfig({ ...config, isOpen: true });
+  };
+
+  const closeConfirm = () => {
+    setModalConfig(prev => ({ ...prev, isOpen: false }));
+  };
 
   const selectedHotel = hotelId !== undefined
     ? allHotels.find((hotel) => hotel.id === hotelId)
@@ -43,6 +69,7 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin,
 
   const tabs = [
     { name: 'Overview', icon: FileText },
+    { name: 'Kiosk Fleet', icon: Monitor },
     { name: 'Invoice History', icon: CreditCard },
   ];
 
@@ -76,10 +103,10 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin,
 
       {/* UNIFIED CONTAINER: Header Info Section */}
       <GlassCard noPadding clipContent className="relative">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-accent/5 dark:bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+        <div className={`absolute top-0 right-0 w-96 h-96 bg-accent/5 dark:bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none ${hotelStatus === 'Suspended' ? 'grayscale opacity-10' : ''}`}></div>
         <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6 p-8 relative z-10">
             <div className="flex items-start gap-5">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-xl ${isDarkMode ? 'bg-white/10 border border-white/10' : 'bg-emerald-500 text-white'}`}>
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-xl ${isDarkMode ? 'bg-white/10 border border-white/10' : 'bg-emerald-500 text-white'} ${hotelStatus === 'Suspended' ? 'grayscale opacity-50' : ''}`}>
                     <Building2 size={32} className={isDarkMode ? 'text-emerald-400' : 'text-white'} />
                 </div>
                 <div>
@@ -105,7 +132,12 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin,
                 </div>
             </div>
             <div className="flex items-center gap-3">
-                <button className="px-4 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 dark:border-white/20 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition-all flex items-center gap-2"><Edit size={16} />Edit Profile</button>
+                <button 
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 dark:border-white/20 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition-all flex items-center gap-2"
+                >
+                  <Edit size={16} />Edit Profile
+                </button>
                 <button 
                   onClick={() => onLoginAsAdmin?.(hotelName)} 
                   className="px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-accent/20 bg-gray-900 dark:bg-accent text-white hover:scale-105 transition-all flex items-center gap-2"
@@ -137,6 +169,61 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin,
           </GlassCard>
         ))}
       </div>
+      
+      {/* Danger Zone */}
+      <GlassCard className="border-red-500/20 bg-red-500/5">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div>
+            <h3 className="text-lg font-bold text-red-500 mb-1">Danger Zone</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Irreversible actions for this hotel account. Proceed with caution.
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <button 
+              onClick={() => {
+                const isSuspended = hotelStatus === 'Suspended';
+                openConfirm({
+                  title: isSuspended ? 'Activate Hotel' : 'Suspend Hotel',
+                  message: isSuspended 
+                    ? `Are you sure you want to activate ${hotelName}? This will restore access to all services.`
+                    : `Are you sure you want to suspend ${hotelName}? This will immediately revoke access to all services involved.`,
+                  variant: 'warning',
+                  confirmLabel: isSuspended ? 'Activate' : 'Suspend',
+                  onConfirm: async () => {
+                     const newStatus = isSuspended ? 'Active' : 'Suspended';
+                     if (hotelId) {
+                       await updateHotel(hotelId, { status: newStatus });
+                     }
+                  }
+                });
+              }}
+              className="px-5 py-2.5 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors text-sm font-bold"
+            >
+              {hotelStatus === 'Suspended' ? 'Activate Hotel' : 'Suspend Hotel'}
+            </button>
+            <button 
+               onClick={() => {
+                 openConfirm({
+                   title: 'Delete Hotel',
+                   message: `Are you sure you want to permanently delete ${hotelName}? This action cannot be undone and will remove all associated data including kiosks and invoices.`,
+                   variant: 'danger',
+                   confirmLabel: 'Delete Forever',
+                   onConfirm: async () => {
+                     if (hotelId) {
+                       await deleteHotel(hotelId);
+                       onNavigate('hotels');
+                     }
+                   }
+                 });
+               }}
+              className="px-5 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-colors text-sm font-bold shadow-lg shadow-red-500/20"
+            >
+              Delete Hotel
+            </button>
+          </div>
+        </div>
+      </GlassCard>
 
       {/* Tabs Switcher */}
       <div className="flex overflow-x-auto pb-1 gap-2 no-scrollbar">
@@ -196,6 +283,46 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin,
           </div>
         )}
 
+        
+        {activeTab === 'Kiosk Fleet' && (
+           <GlassCard noPadding clipContent className="overflow-hidden border-white/5 dark:border-white/10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             {(selectedHotel?.kiosk_list?.length ?? 0) === 0 ? (
+               <div className="p-12 text-center">
+                 <div className="w-16 h-16 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center mx-auto mb-4 text-gray-400">
+                   <Monitor size={32} />
+                 </div>
+                 <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-1">No Kiosks Found</h3>
+                 <p className="text-xs text-gray-400 max-w-xs mx-auto">This hotel currently has no kiosks assigned to its fleet.</p>
+               </div>
+             ) : (
+               <table className="w-full text-left">
+                 <thead className="bg-black/5 dark:bg-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                   <tr>
+                     <th className="px-8 py-6">Status</th>
+                     <th className="px-8 py-6">Serial Number</th>
+                     <th className="px-8 py-6">Location</th>
+                     <th className="px-8 py-6 text-right pr-10">Actions</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-white/5">
+                   {selectedHotel?.kiosk_list?.map((kiosk, i) => (
+                     <tr key={i} className="hover:bg-white/5 transition-colors group cursor-pointer">
+                       <td className="px-8 py-6">
+                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-[0_0_10px_rgba(16,185,129,0.4)]"></span>
+                       </td>
+                       <td className="px-8 py-6 text-sm font-mono font-bold text-accent-strong">{kiosk.serial_number}</td>
+                       <td className="px-8 py-6 text-sm font-bold dark:text-white uppercase tracking-tight">{kiosk.location}</td>
+                       <td className="px-8 py-6 text-right pr-10">
+                         <button className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"><Edit size={16} /></button>
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             )}
+           </GlassCard>
+        )}
+
         {activeTab === 'Invoice History' && (
           <GlassCard noPadding clipContent className="overflow-hidden border-white/5 dark:border-white/10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <table className="w-full text-left">
@@ -227,6 +354,28 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin,
           </GlassCard>
         )}
       </div>
+      
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        onClose={closeConfirm}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        variant={modalConfig.variant}
+        confirmLabel={modalConfig.confirmLabel}
+      />
+
+      {selectedHotel && (
+        <EditHotelModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          hotel={selectedHotel}
+          onUpdate={async (id, data) => {
+             await updateHotel(id, data);
+             // Instant UI update is handled by the hook's state
+          }}
+        />
+      )}
     </div>
   );
 };

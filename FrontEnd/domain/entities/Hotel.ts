@@ -3,6 +3,13 @@
 export type HotelStatus = 'Active' | 'Suspended' | 'Onboarding' | 'Past Due';
 export type HotelPlan = 'Starter' | 'Professional' | 'Enterprise';
 
+export interface Kiosk {
+  id: number;
+  serial_number: string;
+  location: string;
+  hotel_id: number;
+}
+
 export interface Hotel {
   id: number;
   name: string;
@@ -15,4 +22,5 @@ export interface Hotel {
   status: HotelStatus | string;
   mrr: number;
   address: string;
+  kiosk_list?: Kiosk[];
 }

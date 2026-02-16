@@ -1,22 +1,102 @@
 
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, Building, User, CreditCard, Monitor, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Building, User, CreditCard, Monitor, CheckCircle2, Trash2 } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
 
+
+interface KioskData {
+  serialNumber: string;
+  location: string;
+}
+
 interface AddHotelModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onCreateHotel: (data: any) => Promise<void>;
 }
 
-const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose }) => {
+const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreateHotel }) => {
   const [step, setStep] = useState(1);
   const totalSteps = 5;
+  const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: '',
+    gstin: '',
+    pan: '', // Note: PAN is not in Hotel entity but in form, we'll strip it or add to entity later if needed
+    address: '',
+    owner: '',
+    mobile: '',
+    email: '',
+    plan: 'Starter',
+    contractStartDate: new Date().toISOString().split('T')[0],
+  });
+
+  const [kiosks, setKiosks] = useState<KioskData[]>([]);
+  const [currentKiosk, setCurrentKiosk] = useState<KioskData>({ serialNumber: '', location: '' });
+
+  const handleAddKiosk = () => {
+    if (currentKiosk.serialNumber && currentKiosk.location) {
+      setKiosks([...kiosks, currentKiosk]);
+      setCurrentKiosk({ serialNumber: '', location: '' });
+    }
+  };
+
+  const handleRemoveKiosk = (index: number) => {
+    const newKiosks = [...kiosks];
+    newKiosks.splice(index, 1);
+    setKiosks(newKiosks);
+  };
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   useEffect(() => {
-    if (isOpen) setStep(1);
+    if (isOpen) {
+      setStep(1);
+      setFormData({
+        name: '',
+        gstin: '',
+        pan: '',
+        address: '',
+        owner: '',
+        mobile: '',
+        email: '',
+        plan: 'Starter',
+        contractStartDate: new Date().toISOString().split('T')[0],
+      });
+      setKiosks([]);
+      setCurrentKiosk({ serialNumber: '', location: '' });
+    }
   }, [isOpen]);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      await onCreateHotel({
+        name: formData.name,
+        gstin: formData.gstin,
+        owner: formData.owner,
+        email: formData.email,
+        mobile: formData.mobile,
+        address: formData.address,
+        plan: formData.plan,
+        status: 'Onboarding', // Default status
+        kiosks: kiosks.length,
+        kiosks_details: kiosks.map(k => ({ serial_number: k.serialNumber, location: k.location })),
+        mrr: formData.plan === 'Starter' ? 4999 : formData.plan === 'Professional' ? 12999 : 24999
+      });
+      onClose();
+    } catch (error) {
+      console.error("Failed to create hotel", error);
+      alert("Failed to create hotel. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const StepIndicator = () => (
     <div className="flex items-center gap-2 mb-8">
@@ -42,7 +122,7 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose }) => {
           <Button
             variant="ghost"
             size="md"
-            disabled={step === 1}
+            disabled={step === 1 || loading}
             onClick={() => setStep(step - 1)}
             icon={<ChevronLeft size={18} />}
           >
@@ -51,10 +131,11 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose }) => {
           <Button
             variant="action"
             size="md"
-            onClick={() => step === 5 ? onClose() : setStep(step + 1)}
-            iconRight={<ChevronRight size={18} />}
+            disabled={loading}
+            onClick={() => step === 5 ? handleSubmit() : setStep(step + 1)}
+            iconRight={loading ? undefined : <ChevronRight size={18} />}
           >
-            {step === 5 ? 'Confirm & Create Tenant' : 'Next Step'}
+            {loading ? 'Processing...' : step === 5 ? 'Confirm & Create Tenant' : 'Next Step'}
           </Button>
         </div>
       }
@@ -65,10 +146,38 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose }) => {
           <div className="space-y-6">
             <div className="flex items-center gap-2 mb-2"><Building size={16} className="text-accent" /><span className="text-xs font-bold uppercase dark:text-white">Business Details</span></div>
             <div className="grid grid-cols-2 gap-6">
-              <div className="col-span-2"><GlassInput label="Hotel Legal Name *" placeholder="e.g., Royal Orchid Bangalore" /></div>
-              <GlassInput label="GSTIN *" placeholder="29AABCU9603R1ZM" mono maxLength={15} />
-              <GlassInput label="PAN *" placeholder="AABCU9603R" mono maxLength={10} />
-              <div className="col-span-2"><GlassInput label="Registered Address *" placeholder="Full legal address" /></div>
+              <div className="col-span-2">
+                <GlassInput 
+                  label="Hotel Legal Name *" 
+                  placeholder="e.g., Royal Orchid Bangalore" 
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                />
+              </div>
+              <GlassInput 
+                label="GSTIN *" 
+                placeholder="29AABCU9603R1ZM" 
+                mono 
+                maxLength={15} 
+                value={formData.gstin}
+                onChange={(e) => handleChange('gstin', e.target.value)}
+              />
+              <GlassInput 
+                label="PAN *" 
+                placeholder="AABCU9603R" 
+                mono 
+                maxLength={10} 
+                value={formData.pan}
+                onChange={(e) => handleChange('pan', e.target.value)}
+              />
+              <div className="col-span-2">
+                <GlassInput 
+                  label="Registered Address *" 
+                  placeholder="Full legal address" 
+                  value={formData.address}
+                  onChange={(e) => handleChange('address', e.target.value)}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -76,9 +185,28 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose }) => {
           <div className="space-y-6">
             <div className="flex items-center gap-2 mb-2"><User size={16} className="text-accent" /><span className="text-xs font-bold uppercase dark:text-white">Contact Details</span></div>
             <div className="grid grid-cols-2 gap-6">
-              <div className="col-span-2"><GlassInput label="Owner / Manager Name *" placeholder="e.g., Rajesh Malhotra" /></div>
-              <GlassInput label="Mobile Number *" type="tel" placeholder="+91 98860 32101" />
-              <GlassInput label="Email Address *" type="email" placeholder="owner@hotel.com" />
+              <div className="col-span-2">
+                <GlassInput 
+                  label="Owner / Manager Name *" 
+                  placeholder="e.g., Rajesh Malhotra" 
+                  value={formData.owner}
+                  onChange={(e) => handleChange('owner', e.target.value)}
+                />
+              </div>
+              <GlassInput 
+                label="Mobile Number *" 
+                type="tel" 
+                placeholder="+91 98860 32101" 
+                value={formData.mobile}
+                onChange={(e) => handleChange('mobile', e.target.value)}
+              />
+              <GlassInput 
+                label="Email Address *" 
+                type="email" 
+                placeholder="owner@hotel.com" 
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+              />
             </div>
           </div>
         )}
@@ -87,11 +215,22 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose }) => {
             <div className="flex items-center gap-2 mb-2"><CreditCard size={16} className="text-accent" /><span className="text-xs font-bold uppercase dark:text-white">Subscription Setup</span></div>
             <div className="grid grid-cols-1 gap-4">
               {['Starter', 'Professional', 'Enterprise'].map((p) => (
-                <div key={p} className={`p-4 rounded-2xl border cursor-pointer transition-all ${p === 'Enterprise' ? 'border-orange-500/50 bg-accent/5' : 'border-white/10 hover:border-white/20'}`}>
+                <div 
+                  key={p} 
+                  onClick={() => handleChange('plan', p)}
+                  className={`p-4 rounded-2xl border cursor-pointer transition-all ${formData.plan === p ? 'border-orange-500/50 bg-accent/5' : 'border-white/10 hover:border-white/20'}`}
+                >
                   <div className="flex justify-between items-center"><h4 className="font-bold dark:text-white">{p} Plan</h4><span className="text-sm font-bold text-accent">₹{p === 'Starter' ? '4,999' : p === 'Professional' ? '12,999' : '24,999'}/mo</span></div>
                 </div>
               ))}
-              <div className="mt-4"><GlassInput label="Contract Start Date" type="date" /></div>
+              <div className="mt-4">
+                <GlassInput 
+                  label="Contract Start Date" 
+                  type="date" 
+                  value={formData.contractStartDate}
+                  onChange={(e) => handleChange('contractStartDate', e.target.value)}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -100,11 +239,54 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose }) => {
             <div className="flex items-center gap-2 mb-2"><Monitor size={16} className="text-accent" /><span className="text-xs font-bold uppercase dark:text-white">Kiosk Assignment</span></div>
             <div className="space-y-4">
               <div className="flex gap-4 items-end">
-                <div className="flex-1"><GlassInput label="Device Serial Number" placeholder="ATC-K-XXXX" /></div>
-                <div className="flex-1"><GlassInput label="Location Label" placeholder="e.g., Main Lobby" /></div>
-                <Button variant="secondary" size="sm">Add</Button>
+                <div className="flex-1">
+                  <GlassInput 
+                    label="Device Serial Number" 
+                    placeholder="ATC-K-XXXX" 
+                    value={currentKiosk.serialNumber}
+                    onChange={(e) => setCurrentKiosk({ ...currentKiosk, serialNumber: e.target.value })}
+                  />
+                </div>
+                <div className="flex-1">
+                  <GlassInput 
+                    label="Location Label" 
+                    placeholder="e.g., Main Lobby" 
+                    value={currentKiosk.location}
+                    onChange={(e) => setCurrentKiosk({ ...currentKiosk, location: e.target.value })}
+                  />
+                </div>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={handleAddKiosk}
+                  disabled={!currentKiosk.serialNumber || !currentKiosk.location}
+                >
+                  Add
+                </Button>
               </div>
-              <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 border border-dashed border-white/10 text-center text-xs text-gray-500">No kiosks assigned yet. You can assign them later.</div>
+
+              {kiosks.length === 0 ? (
+                <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 border border-dashed border-white/10 text-center text-xs text-gray-500">
+                  No kiosks assigned yet. You can assign them later.
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {kiosks.map((kiosk, index) => (
+                    <div key={index} className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold dark:text-white">{kiosk.serialNumber}</span>
+                        <span className="text-xs text-gray-500">{kiosk.location}</span>
+                      </div>
+                      <button 
+                        onClick={() => handleRemoveKiosk(index)}
+                        className="text-red-400 hover:text-red-300 transition-colors p-1"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -113,6 +295,11 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose }) => {
             <div className="w-20 h-20 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto mb-6"><CheckCircle2 size={48} /></div>
             <h3 className="text-2xl font-bold dark:text-white mb-2">Ready to Go!</h3>
             <p className="text-sm text-gray-500 mb-8 max-w-sm mx-auto">Review the details and confirm to create the tenant. A welcome email with login credentials will be sent automatically.</p>
+            <div className="bg-black/5 dark:bg-white/5 p-4 rounded-xl text-left text-sm space-y-2 mb-4">
+                <div className="flex justify-between"><span>Property:</span> <span className="font-bold dark:text-white">{formData.name}</span></div>
+                <div className="flex justify-between"><span>Owner:</span> <span className="font-bold dark:text-white">{formData.owner}</span></div>
+                <div className="flex justify-between"><span>Plan:</span> <span className="font-bold dark:text-white">{formData.plan}</span></div>
+            </div>
           </div>
         )}
       </div>
