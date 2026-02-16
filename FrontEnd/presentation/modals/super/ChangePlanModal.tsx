@@ -3,6 +3,7 @@ import { Zap, ArrowRight, Info, X, RefreshCcw } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import Button from '../../components/ui/Button';
 import type { Subscription } from '@/domain/entities/Subscription';
+import { usePlans } from '@/application/hooks/usePlans';
 
 interface ChangePlanModalProps {
   isOpen: boolean;
@@ -12,14 +13,17 @@ interface ChangePlanModalProps {
 }
 
 const ChangePlanModal: React.FC<ChangePlanModalProps> = ({ isOpen, onClose, subscription, onUpdate }) => {
+  const { plans: apiPlans, loading: plansLoading } = usePlans();
   const [selectedPlan, setSelectedPlan] = useState(subscription.plan);
   const [loading, setLoading] = useState(false);
 
-  const plans = [
-    { id: 'Starter', price: 3000, color: 'blue', desc: 'Single Kiosk + Basic Ops' },
-    { id: 'Professional', price: 12000, color: 'purple', desc: '5 Kiosks + Analytics' },
-    { id: 'Enterprise', price: 45000, color: 'orange', desc: '15 Kiosks + API Access' },
-  ];
+  // Map API plans to the format used in this modal
+  const plans = apiPlans.map(p => ({
+    id: p.name,
+    price: p.price,
+    color: p.theme,
+    desc: `${p.kiosks} Kiosk${p.kiosks > 1 ? 's' : ''} + ${p.support.split(' ')[0]} support`
+  }));
 
   const currentPlanData = plans.find(p => p.id === subscription.plan);
   const selectedPlanData = plans.find(p => p.id === selectedPlan);

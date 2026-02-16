@@ -48,6 +48,7 @@ import { ApiSubscriptionRepository } from '../repositories/api/ApiSubscriptionRe
 // ... imports
 import { ApiHotelRepository } from '../repositories/api/ApiHotelRepository';
 import { ApiInvoiceRepository } from '../repositories/api/ApiInvoiceRepository';
+import { ApiPlanRepository } from '../repositories/api/ApiPlanRepository';
 
 // ... 
 
@@ -85,7 +86,7 @@ function createRepositories(): Repositories {
       rooms: new MockRoomRepository(),
       users: new MockUserRepository(),
       kiosks: new MockKioskRepository(),
-      plans: new MockPlanRepository(),
+      plans: new ApiPlanRepository(), // Force API repo
       invoices: new ApiInvoiceRepository(), // Force API repo
       tickets: new MockTicketRepository(),
       auditLogs: new MockAuditLogRepository(),
@@ -111,6 +112,7 @@ function createRepositories(): Repositories {
     hotels: new ApiHotelRepository(), // SWAPPED!
     ...commonMockRepos,
     invoices: new ApiInvoiceRepository(), // Override mock
+    plans: new ApiPlanRepository(), // Override mock
   };
 }
 

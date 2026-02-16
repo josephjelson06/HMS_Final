@@ -146,20 +146,21 @@ const PlanCard: React.FC<{
 };
 
 const Plans: React.FC = () => {
-  const { plans: hookPlans } = usePlans();
+  const { plans: hookPlans, createPlan, updatePlan } = usePlans();
   const [plans, setPlans] = useState<PlanData[]>([]);
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const [isUpdatePanelOpen, setIsUpdatePanelOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanData | null>(null);
 
   useEffect(() => {
-    if (hookPlans.length > 0) setPlans(hookPlans);
+    setPlans(hookPlans);
   }, [hookPlans]);
 
-  const handleArchivePlan = (id: string) => {
-    setPlans(prev => prev.map(p => 
-      p.id === id ? { ...p, isArchived: !p.isArchived } : p
-    ));
+  const handleArchivePlan = async (id: string) => {
+    const plan = plans.find(p => p.id === id);
+    if (plan) {
+      await updatePlan(id, { isArchived: !plan.isArchived });
+    }
   };
 
   const handleEditPlan = (plan: PlanData) => {
@@ -167,9 +168,15 @@ const Plans: React.FC = () => {
     setIsUpdatePanelOpen(true);
   };
 
-  const handleUpdatePlan = (updatedPlan: PlanData) => {
-    setPlans(prev => prev.map(p => p.id === updatedPlan.id ? updatedPlan : p));
+  const handleUpdatePlan = async (updatedPlan: PlanData) => {
+    const { id, ...data } = updatedPlan;
+    await updatePlan(id, data);
   };
+
+  const handleCreatePlan = async (data: Omit<PlanData, 'id'>) => {
+    await createPlan(data);
+  };
+
 
   const totalRevenue = plans.reduce((acc, curr) => acc + (curr.price * curr.subscribers), 0);
   const activeTenants = plans.reduce((acc, curr) => acc + curr.subscribers, 0);
@@ -238,20 +245,13 @@ const Plans: React.FC = () => {
             />
           ))}
           
-          {/* Add Plan Placeholder */}
-          <button 
-            onClick={() => setIsCreatePanelOpen(true)}
-            className="group relative flex flex-col items-center justify-center p-12 rounded-[2.5rem] border-2 border-dashed border-gray-200 dark:border-white/10 hover:border-blue-500/50 hover:bg-blue-50/5 transition-all bg-white/40 dark:bg-transparent h-full min-h-[500px]"
-          >
-             <div className="w-20 h-20 rounded-full bg-white/5 dark:bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-accent-strong group-hover:scale-110 transition-all shadow-sm mb-6">
-                <Plus size={40} strokeWidth={2} />
-             </div>
-             <h3 className="text-xl font-black dark:text-white uppercase tracking-widest">Define New Tier</h3>
-             <p className="text-xs font-bold text-gray-500 uppercase mt-2">Initialize catalog item</p>
-          </button>
       </div>
 
-      <CreatePlanPanel isOpen={isCreatePanelOpen} onClose={() => setIsCreatePanelOpen(false)} />
+      <CreatePlanPanel 
+        isOpen={isCreatePanelOpen} 
+        onClose={() => setIsCreatePanelOpen(false)} 
+        onSave={handleCreatePlan}
+      />
       {selectedPlan && (
         <UpdatePlanPanel 
           isOpen={isUpdatePanelOpen} 
