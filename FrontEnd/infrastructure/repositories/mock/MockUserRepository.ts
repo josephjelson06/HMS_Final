@@ -34,6 +34,18 @@ export class MockUserRepository implements IUserRepository {
     return INITIAL_ROLES.map(r => ({ ...r }));
   }
 
+  async createRole(data: Role): Promise<Role> {
+    return data;
+  }
+
+  async updateRole(name: string, data: Partial<Role>): Promise<Role> {
+    return { name, ...data } as Role;
+  }
+
+  async deleteRole(name: string): Promise<void> {
+    console.log(`Mock delete role: ${name}`);
+  }
+
   async getStaff(): Promise<StaffMember[]> {
     return this.data.map(u => ({
       id: u.id,

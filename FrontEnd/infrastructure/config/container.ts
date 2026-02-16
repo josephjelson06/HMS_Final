@@ -49,6 +49,7 @@ import { ApiSubscriptionRepository } from '../repositories/api/ApiSubscriptionRe
 import { ApiHotelRepository } from '../repositories/api/ApiHotelRepository';
 import { ApiInvoiceRepository } from '../repositories/api/ApiInvoiceRepository';
 import { ApiPlanRepository } from '../repositories/api/ApiPlanRepository';
+import { ApiUserRepository } from '../repositories/api/ApiUserRepository';
 
 // ... 
 
@@ -84,7 +85,7 @@ function createRepositories(): Repositories {
   // Common repositories for now (mock)
   const commonMockRepos = {
       rooms: new MockRoomRepository(),
-      users: new MockUserRepository(),
+      users: new ApiUserRepository(), // Force API repo
       kiosks: new MockKioskRepository(),
       plans: new ApiPlanRepository(), // Force API repo
       invoices: new ApiInvoiceRepository(), // Force API repo
@@ -113,6 +114,7 @@ function createRepositories(): Repositories {
     ...commonMockRepos,
     invoices: new ApiInvoiceRepository(), // Override mock
     plans: new ApiPlanRepository(), // Override mock
+    users: new ApiUserRepository(), // Override mock
   };
 }
 

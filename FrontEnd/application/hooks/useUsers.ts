@@ -35,7 +35,24 @@ export function useUsers() {
     setUsers(prev => prev.filter(u => u.id !== id));
   };
 
-  return { users, roles, loading, error, createUser, updateUser, deleteUser };
+  const createRole = async (data: Role) => {
+    const role = await repositories.users.createRole(data);
+    setRoles(prev => [...prev, role]);
+    return role;
+  };
+
+  const updateRole = async (name: string, data: Partial<Role>) => {
+    const role = await repositories.users.updateRole(name, data);
+    setRoles(prev => prev.map(r => r.name === name ? role : r));
+    return role;
+  };
+
+  const deleteRole = async (name: string) => {
+    await repositories.users.deleteRole(name);
+    setRoles(prev => prev.filter(r => r.name !== name));
+  };
+
+  return { users, roles, loading, error, createUser, updateUser, deleteUser, createRole, updateRole, deleteRole };
 }
 
 export function useStaff() {

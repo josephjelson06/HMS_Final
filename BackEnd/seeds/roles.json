@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Super Admin",
+    "description": "Full platform administrative access.",
+    "color": "purple",
+    "status": "Active"
+  },
+  {
+    "name": "Finance",
+    "description": "Access to invoices, billing, and subscription management.",
+    "color": "blue",
+    "status": "Active"
+  },
+  {
+    "name": "Operations",
+    "description": "Manage hotels, kiosks, and support requests.",
+    "color": "emerald",
+    "status": "Active"
+  },
+  {
+    "name": "Support",
+    "description": "L1/L2 technical support and ticketing system.",
+    "color": "amber",
+    "status": "Active"
+  }
+]

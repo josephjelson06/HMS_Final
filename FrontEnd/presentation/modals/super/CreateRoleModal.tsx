@@ -3,6 +3,7 @@ import { Shield, Zap, Copy, ArrowRight, Check, Info } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
+import { useUsers } from '../../../application/hooks/useUsers';
 
 interface CreateRoleModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface CreateRoleModalProps {
 }
 
 const CreateRoleModal: React.FC<CreateRoleModalProps> = ({ isOpen, onClose, onCreated }) => {
+  const { createRole } = useUsers();
   const [step, setStep] = useState(1);
   const [roleName, setRoleName] = useState('');
   const [cloneFrom, setCloneFrom] = useState<string | null>(null);
@@ -25,12 +27,24 @@ const CreateRoleModal: React.FC<CreateRoleModalProps> = ({ isOpen, onClose, onCr
     }
   }, [isOpen]);
 
-  const handleInitialize = () => {
+  const handleInitialize = async () => {
+    if (!roleName) return;
     setStep(2);
-    setTimeout(() => {
-        onCreated?.(roleName || 'New Custom Role');
-        onClose();
-    }, 1200);
+    try {
+      await createRole({
+        name: roleName,
+        desc: `Custom role based on ${cloneFrom || 'scratch'}.`,
+        color: 'blue',
+        status: 'Active'
+      } as any);
+      setTimeout(() => {
+          onCreated?.(roleName);
+          onClose();
+      }, 1200);
+    } catch (err) {
+      console.error("Failed to create role", err);
+      setStep(1);
+    }
   };
 
   return (

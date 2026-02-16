@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Joseph Jelson",
+    "email": "joseph@atc.com",
+    "role": "Super Admin",
+    "mobile": "+91 98765 43210",
+    "department": "Engineering",
+    "status": "Active"
+  },
+  {
+    "name": "Jacob Xavier",
+    "email": "jacob@atc.com",
+    "role": "Finance",
+    "mobile": "+91 98765 43211",
+    "department": "Finance",
+    "status": "Active"
+  },
+  {
+    "name": "Melrick Pereira",
+    "email": "melrick@atc.com",
+    "role": "Operations",
+    "mobile": "+91 98765 43212",
+    "department": "Operations",
+    "status": "Active"
+  }
+]

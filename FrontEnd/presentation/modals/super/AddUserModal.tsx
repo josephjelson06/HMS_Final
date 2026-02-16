@@ -3,6 +3,7 @@ import { User, Mail, Phone, Shield, CheckCircle2, UserPlus, AlertCircle, Briefca
 import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
+import { useUsers } from '../../../application/hooks/useUsers';
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -12,24 +13,48 @@ interface AddUserModalProps {
 const selectClass = `w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-medium border bg-gray-50 dark:bg-black/20 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-accent/50 focus:ring-4 focus:ring-accent/10 appearance-none cursor-pointer`;
 
 const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
+  const { createUser } = useUsers();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [department, setDepartment] = useState('Engineering');
+  const [role, setRole] = useState('Super Admin');
 
   useEffect(() => {
     if (isOpen) {
       setIsSuccess(false);
+      setName('');
+      setEmail('');
+      setMobile('');
+      setDepartment('Engineering');
+      setRole('Super Admin');
     }
   }, [isOpen]);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    if (!name || !email) return;
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await createUser({
+        name,
+        email,
+        mobile,
+        role,
+        status: 'Active',
+        department: department as any
+      } as any);
       setIsSuccess(true);
       setTimeout(() => {
         onClose();
       }, 1500);
-    }, 1000);
+    } catch (err) {
+      console.error("Failed to create user", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -63,35 +88,39 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
               <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">Full Legal Name *</label>
               <div className="relative group">
                 <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors z-10" />
-                <GlassInput placeholder="e.g. Vikram Patel" className="pl-11" />
+                <GlassInput value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vikram Patel" className="pl-11" />
               </div>
             </div>
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">Work Email *</label>
               <div className="relative group">
                 <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors z-10" />
-                <GlassInput type="email" placeholder="v.patel@atc.com" className="pl-11" />
+                <GlassInput type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="v.patel@atc.com" className="pl-11" />
               </div>
             </div>
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">Contact Mobile *</label>
               <div className="relative group">
                 <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors z-10" />
-                <GlassInput type="tel" placeholder="+91 99999 00000" className="pl-11" />
+                <GlassInput type="tel" value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="+91 99999 00000" className="pl-11" />
               </div>
             </div>
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">Internal Employee ID</label>
               <div className="relative group">
-                <Hash size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 z-10" />
-                <GlassInput placeholder="ATC-EMP-000" mono className="pl-11" />
+                <Hash size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
+                <GlassInput placeholder="Auto-generated" disabled mono className="pl-11" />
               </div>
             </div>
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">Primary Department</label>
               <div className="relative group">
                 <Briefcase size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 z-10" />
-                <select className={`${selectClass} pl-11`}>
+                <select 
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  className={`${selectClass} pl-11`}
+                >
                   <option>Engineering</option>
                   <option>Operations</option>
                   <option>Finance</option>
@@ -104,7 +133,11 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
               <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">Assign RBAC Role *</label>
               <div className="relative group">
                 <Shield size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none z-10" />
-                <select className={`${selectClass} pl-11`}>
+                <select 
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className={`${selectClass} pl-11`}
+                >
                   <option>Super Admin</option>
                   <option>Finance Manager</option>
                   <option>Logistics Lead</option>

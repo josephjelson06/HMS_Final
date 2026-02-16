@@ -31,18 +31,22 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, user, onClose, on
     }
   }, [isOpen, user]);
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     setIsSubmitting(true);
-    setTimeout(() => {
-      onUpdate({
+    try {
+      await onUpdate({
         ...user,
         name,
         email,
         mobile,
         role
       });
+      onClose();
+    } catch (err) {
+      console.error("Failed to update user", err);
+    } finally {
       setIsSubmitting(false);
-    }, 800);
+    }
   };
 
   return (

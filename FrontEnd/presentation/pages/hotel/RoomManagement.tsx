@@ -12,6 +12,7 @@ import {
 import GlassCard from '../../components/ui/GlassCard';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import RoomDetailPanel from '../../modals/hotel/RoomDetailPanel';
 import NewBookingWizard from '../../modals/hotel/NewBookingWizard';
 import GuestDetailPanel from '../../modals/hotel/GuestDetailPanel';
@@ -46,6 +47,15 @@ const RoomManagement: React.FC = () => {
   ]);
   const [isManageTypeModalOpen, setIsManageTypeModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<any>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{
+    isOpen: boolean;
+    typeId: string;
+    displayName: string;
+  }>({
+    isOpen: false,
+    typeId: '',
+    displayName: '',
+  });
 
   const handleSaveRoomType = (typeData: any) => {
     if (editingType) {
@@ -56,10 +66,16 @@ const RoomManagement: React.FC = () => {
     setEditingType(null);
   };
 
-  const handleDeleteRoomType = (id: string) => {
-    if (confirm('Are you sure you want to delete this room type?')) {
-        setRoomTypes(prev => prev.filter(rt => rt.id !== id));
-    }
+  const handleDeleteRoomType = (id: string, name: string) => {
+    setConfirmDelete({
+      isOpen: true,
+      typeId: id,
+      displayName: name
+    });
+  };
+
+  const executeDeleteRoomType = () => {
+    setRoomTypes(prev => prev.filter(rt => rt.id !== confirmDelete.typeId));
   };
 
   const filteredRooms = useMemo(() => {
@@ -502,7 +518,7 @@ const RoomManagement: React.FC = () => {
                                     <Edit3 size={14} /> Edit
                                 </button>
                                 <button 
-                                    onClick={() => handleDeleteRoomType(rt.id)}
+                                    onClick={() => handleDeleteRoomType(rt.id, rt.name)}
                                     className="p-2.5 rounded-xl bg-white/5 hover:bg-red-500/10 text-gray-500 hover:text-red-500 transition-all"
                                 >
                                     <Trash2 size={16} />
@@ -540,6 +556,16 @@ const RoomManagement: React.FC = () => {
         onClose={() => setIsManageTypeModalOpen(false)} 
         onSave={handleSaveRoomType}
         initialData={editingType}
+      />
+
+      <ConfirmationModal
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={executeDeleteRoomType}
+        title="Delete Room Category"
+        message={`Are you absolutely sure you want to remove the ${confirmDelete.displayName} category? This will dissolve the classification registry for these units.`}
+        variant="danger"
+        confirmLabel="Remove Category"
       />
 
     </div>

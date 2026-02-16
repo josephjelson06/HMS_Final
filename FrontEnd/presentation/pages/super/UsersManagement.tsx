@@ -2,8 +2,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Users, Shield, Search, UserPlus, MoreHorizontal, Mail, Phone, 
   ChevronDown, ChevronRight, Lock, Edit2, Trash2, 
-  Plus, MoreVertical, KeyRound, ShieldAlert, ShieldCheck, Eye, ArrowLeft
+  Plus, MoreVertical, KeyRound, ShieldAlert, ShieldCheck, Eye, ArrowLeft,
+  UserX, ShieldOff
 } from 'lucide-react';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import GlassCard from '../../components/ui/GlassCard';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import AddUserModal from '../../modals/super/AddUserModal';
@@ -19,24 +21,25 @@ type Tab = 'USERS' | 'ROLES' | 'VIEW_ROLE';
 
 const UsersManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('USERS');
-  const { users: hookUsers, roles: hookRoles } = useUsers();
-  const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const { users, roles, loading, updateUser, deleteUser, createRole, updateRole, deleteRole } = useUsers();
   const [selectedRoleForView, setSelectedRoleForView] = useState<Role | null>(null);
-
-  useEffect(() => {
-    if (hookUsers.length > 0) setUsers(hookUsers);
-  }, [hookUsers]);
-
-  useEffect(() => {
-    if (hookRoles.length > 0) setRoles(hookRoles);
-  }, [hookRoles]);
   
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [isCreateRoleOpen, setIsCreateRoleOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  const [confirmDelete, setConfirmDelete] = useState<{
+    isOpen: boolean;
+    type: 'USER' | 'ROLE';
+    idOrName: string;
+    displayName?: string;
+  }>({
+    isOpen: false,
+    type: 'USER',
+    idOrName: '',
+  });
 
   const filteredUsers = useMemo(() => {
     return users.filter(u => 
@@ -48,7 +51,7 @@ const UsersManagement: React.FC = () => {
   const filteredRoles = useMemo(() => {
     return roles.filter(r => 
       r.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      r.desc.toLowerCase().includes(searchQuery.toLowerCase())
+      (r.desc || r.description || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [searchQuery, roles]);
 
@@ -57,39 +60,59 @@ const UsersManagement: React.FC = () => {
     setActiveTab('VIEW_ROLE');
   };
 
+  const handleToggleUserStatus = async (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    try {
+        await updateUser(userId, { status: user.status === 'Active' ? 'Inactive' : 'Active' });
+    } catch (err) {
+        console.error("Failed to toggle user status", err);
+    }
+  };
+
   const handleRoleCreated = (roleName: string) => {
-    const newRole: Role = {
-      name: roleName,
-      desc: 'No description provided.',
-      color: 'blue',
-      userCount: 0,
-      status: 'Active'
-    };
-    setRoles(prev => [...prev, newRole]);
-    handleViewRole(newRole);
+    // Role management is out of scope for now as per user request
+    console.log("Role creation requested:", roleName);
   };
 
-  const handleToggleUserStatus = (userId: string) => {
-    setUsers(prev => prev.map(u => 
-      u.id === userId ? { ...u, status: u.status === 'Active' ? 'Inactive' : 'Active' } : u
-    ));
-  };
-
-  const handleToggleRoleStatus = (roleName: string) => {
-    setRoles(prev => prev.map(r => 
-      r.name === roleName ? { ...r, status: r.status === 'Active' ? 'Inactive' : 'Active' } : r
-    ));
-  };
-
-  const handleRemoveUser = (userId: string) => {
-    if (window.confirm('Are you sure you want to remove this identity permanently?')) {
-      setUsers(prev => prev.filter(u => u.id !== userId));
+  const handleToggleRoleStatus = async (roleName: string) => {
+    const role = roles.find(r => r.name === roleName);
+    if (!role) return;
+    try {
+        await updateRole(roleName, { status: role.status === 'Active' ? 'Inactive' : 'Active' });
+    } catch (err) {
+        console.error("Failed to toggle role status", err);
     }
   };
 
   const handleRemoveRole = (roleName: string) => {
-    if (window.confirm(`Are you sure you want to delete the ${roleName} role? This might affect assigned users.`)) {
-      setRoles(prev => prev.filter(r => r.name !== roleName));
+    setConfirmDelete({
+      isOpen: true,
+      type: 'ROLE',
+      idOrName: roleName,
+      displayName: roleName
+    });
+  };
+
+  const handleRemoveUser = (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    setConfirmDelete({
+      isOpen: true,
+      type: 'USER',
+      idOrName: userId,
+      displayName: user?.name || userId
+    });
+  };
+
+  const executeDelete = async () => {
+    try {
+      if (confirmDelete.type === 'USER') {
+        await deleteUser(confirmDelete.idOrName);
+      } else {
+        await deleteRole(confirmDelete.idOrName);
+      }
+    } catch (err) {
+      console.error("Deletion failed", err);
     }
   };
 
@@ -98,10 +121,14 @@ const UsersManagement: React.FC = () => {
     setIsEditUserOpen(true);
   };
 
-  const handleUpdateUser = (updatedUser: User) => {
-    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
-    setIsEditUserOpen(false);
-    setUserToEdit(null);
+  const handleUpdateUser = async (updatedUser: User) => {
+    try {
+        await updateUser(updatedUser.id, updatedUser);
+        setIsEditUserOpen(false);
+        setUserToEdit(null);
+    } catch (err) {
+        console.error("Failed to update user", err);
+    }
   };
 
   if (activeTab === 'VIEW_ROLE' && selectedRoleForView) {
@@ -319,6 +346,21 @@ const UsersManagement: React.FC = () => {
         />
       )}
       <CreateRoleModal isOpen={isCreateRoleOpen} onClose={() => setIsCreateRoleOpen(false)} onCreated={handleRoleCreated} />
+
+      <ConfirmationModal
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={executeDelete}
+        title={confirmDelete.type === 'USER' ? 'Remove Identity' : 'Dissolve Role'}
+        message={
+          confirmDelete.type === 'USER' 
+            ? `This will permanently sever all access for ${confirmDelete.displayName}. This action is absolute and cannot be undone.`
+            : `Are you certain you want to dissolve the ${confirmDelete.displayName} role? This may impact multiple identity access patterns.`
+        }
+        confirmLabel={confirmDelete.type === 'USER' ? 'Remove Permanently' : 'Dissolve Role'}
+        variant="danger"
+        icon={confirmDelete.type === 'USER' ? UserX : ShieldOff}
+      />
     </div>
   );
 };
