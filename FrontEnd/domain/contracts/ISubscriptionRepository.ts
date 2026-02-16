@@ -5,4 +5,5 @@ export interface ISubscriptionRepository {
   getById(id: string): Promise<Subscription | null>;
   create(data: Omit<Subscription, 'id'>): Promise<Subscription>;
   update(id: string, data: Partial<Subscription>): Promise<Subscription>;
+  getInvoices(hotelId: string): Promise<any[]>; // Using any[] for now, will define Invoice type locally if needed
 }

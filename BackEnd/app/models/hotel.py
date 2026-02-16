@@ -21,3 +21,14 @@ class Hotel(Base):
     kiosk_list = relationship(
         "Kiosk", back_populates="hotel", cascade="all, delete-orphan"
     )
+
+    # Subscription Fields
+    subscription_start_date = Column(String, nullable=True)  # ISO Date String
+    subscription_end_date = Column(String, nullable=True)  # ISO Date String
+    is_auto_renew = Column(
+        Integer, default=1
+    )  # 0=False, 1=True (SQLite boolean usually)
+
+    invoices = relationship(
+        "Invoice", back_populates="hotel", cascade="all, delete-orphan"
+    )

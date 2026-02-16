@@ -52,6 +52,7 @@ class HttpClient {
       headers: { ...this.defaultHeaders, ...options?.headers },
       body: body ? JSON.stringify(body) : undefined,
       credentials: 'include',
+      cache: 'no-store',
     });
 
     if (!res.ok) {

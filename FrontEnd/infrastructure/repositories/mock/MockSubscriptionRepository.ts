@@ -17,6 +17,11 @@ export class MockSubscriptionRepository implements ISubscriptionRepository {
 
   async update(id: string, data: Partial<Subscription>): Promise<Subscription> {
     const existing = mockSubscriptions.find((s) => s.id === id);
+    // @ts-ignore
     return { ...(existing ?? mockSubscriptions[0]), ...data } as Subscription;
+  }
+
+  async getInvoices(hotelId: string): Promise<any[]> {
+    return [];
   }
 }

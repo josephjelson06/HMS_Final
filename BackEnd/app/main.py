@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import hotels
+from app.routers import hotels, subscriptions
 from app.database import engine, Base
 import app.models.kiosk  # noqa: F401
+import app.models.invoice  # noqa: F401
 
 # Create all tables in the database
 # In production, uses Alebmic for migrations
@@ -30,6 +31,10 @@ app.add_middleware(
 
 
 app.include_router(hotels.router)
+# app.include_router(kiosk.router, prefix="/api/kiosks", tags=["kiosks"])
+app.include_router(
+    subscriptions.router, prefix="/api/subscriptions", tags=["subscriptions"]
+)
 
 
 @app.get("/")

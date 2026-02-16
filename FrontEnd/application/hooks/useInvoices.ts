@@ -20,5 +20,11 @@ export function useInvoices() {
     return invoice;
   };
 
-  return { invoices, loading, error, createInvoice };
+  const updateInvoice = async (id: string, data: Partial<Invoice>) => {
+    const updated = await repositories.invoices.update(id, data);
+    setInvoices(prev => prev.map(inv => inv.id === id ? updated : inv));
+    return updated;
+  };
+
+  return { invoices, loading, error, createInvoice, updateInvoice };
 }

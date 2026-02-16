@@ -10,6 +10,8 @@ import { useTheme } from '../../hooks/useTheme';
 import { useModalVisibility } from '../../hooks/useModalVisibility';
 import type { Invoice } from '@/domain/entities/Invoice';
 
+import { useHotels } from '@/application/hooks/useHotels';
+
 interface LineItem {
   id: string;
   description: string;
@@ -19,15 +21,17 @@ interface LineItem {
 interface InvoiceCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (invoice: Invoice) => void;
+  onSave: (invoice: any) => Promise<void>;
 }
 
 const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose, onSave }) => {
   const { isDarkMode } = useTheme();
   const { isVisible } = useModalVisibility(isOpen);
+  const { hotels } = useHotels();
+  const [loading, setLoading] = useState(false);
   
   // Form State
-  const [selectedHotel, setSelectedHotel] = useState('');
+  const [hotelId, setHotelId] = useState<string>('');
   const [period, setPeriod] = useState('Feb 2026');
   const [dueDate, setDueDate] = useState('');
   const [lineItems, setLineItems] = useState<LineItem[]>([
@@ -37,10 +41,11 @@ const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose
   useEffect(() => {
     if (isOpen) {
       // Reset form on open
-      setSelectedHotel('');
+      setHotelId('');
       setPeriod('Feb 2026');
       setDueDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
       setLineItems([{ id: '1', description: 'Enterprise Plan Subscription', amount: 12711.86 }]);
+      setLoading(false);
     }
   }, [isOpen]);
 
@@ -60,22 +65,26 @@ const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose
     setLineItems(lineItems.map(item => item.id === id ? { ...item, [field]: value } : item));
   };
 
-  const handleConfirm = () => {
-    if (!selectedHotel || total <= 0) return;
+  const handleConfirm = async () => {
+    if (!hotelId || total <= 0) return;
 
-    const newInvoice: Invoice = {
-      id: `ATC-INV-${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${Math.floor(Math.random() * 9000 + 1000)}`,
-      hotel: selectedHotel,
-      period,
-      baseAmount: subtotal,
-      gst,
-      total,
-      dueDate,
-      status: 'pending'
-    };
+    setLoading(true);
+    try {
+        const payload: any = {
+          hotelId: parseInt(hotelId),
+          period,
+          total,
+          dueDate,
+          status: 'pending'
+        };
 
-    onSave(newInvoice);
-    onClose();
+        await onSave(payload);
+        onClose();
+    } catch (err) {
+        console.error("Failed to create invoice", err);
+    } finally {
+        setLoading(false);
+    }
   };
 
   if (!isVisible && !isOpen) return null;
@@ -134,15 +143,14 @@ const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose
                             <label className={labelClass}>Select Hotel Account *</label>
                             <div className="relative">
                                 <select 
-                                    value={selectedHotel}
-                                    onChange={(e) => setSelectedHotel(e.target.value)}
+                                    value={hotelId}
+                                    onChange={(e) => setHotelId(e.target.value)}
                                     className={`${inputClass} appearance-none pr-10`}
                                 >
                                     <option value="">Choose a property...</option>
-                                    <option>Royal Orchid Bangalore</option>
-                                    <option>Lemon Tree Premier</option>
-                                    <option>Ginger Hotel, Panjim</option>
-                                    <option>Taj Palace</option>
+                                    {hotels.map(h => (
+                                        <option key={h.id} value={h.id}>{h.name}</option>
+                                    ))}
                                 </select>
                                 <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                             </div>
@@ -257,10 +265,10 @@ const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose
                 </button>
                 <button 
                   onClick={handleConfirm}
-                  disabled={!selectedHotel || total <= 0}
+                  disabled={!hotelId || total <= 0 || loading}
                   className="px-10 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest bg-accent-strong text-white shadow-xl shadow-accent-strong/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-30 disabled:grayscale"
                 >
-                    <Save size={16} /> Confirm & Publish
+                    <Save size={16} /> {loading ? 'Publishing...' : 'Confirm & Publish'}
                 </button>
             </div>
             

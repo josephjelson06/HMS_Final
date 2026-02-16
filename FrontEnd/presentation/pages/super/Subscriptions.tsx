@@ -9,11 +9,12 @@ import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import ChangePlanModal from '../../modals/super/ChangePlanModal';
 import ExtendSubscriptionModal from '../../modals/super/ExtendSubscriptionModal';
+import InvoiceHistoryModal from '../../modals/super/InvoiceHistoryModal';
 import type { Subscription } from '@/domain/entities/Subscription';
 import { useSubscriptions } from '@/application/hooks/useSubscriptions';
 
 const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onNavigate }) => {
-  const { subscriptions: allSubscriptions } = useSubscriptions();
+  const { subscriptions: allSubscriptions, updateSubscription } = useSubscriptions();
   const [filterPlan, setFilterPlan] = useState('All Plans');
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -23,6 +24,7 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
   const [activeSub, setActiveSub] = useState<Subscription | null>(null);
   const [isChangePlanOpen, setIsChangePlanOpen] = useState(false);
   const [isExtendOpen, setIsExtendOpen] = useState(false);
+  const [isInvoiceHistoryOpen, setIsInvoiceHistoryOpen] = useState(false);
 
   const filteredData = useMemo(() => {
     return allSubscriptions.filter(sub => {
@@ -51,6 +53,14 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
       default: return 'bg-gray-500 text-white';
     }
   };
+
+  const handleUpdateSubscription = async (id: string, data: Partial<Subscription>) => {
+    await updateSubscription(id, data);
+    setDate(new Date()); // Force re-render if needed, though hook state should handle it
+  };
+
+  // Force re-render on updates if needed, but local state in hook should suffice.
+  const [date, setDate] = useState(new Date());
 
   return (
     <div className="p-4 md:p-8 space-y-8 min-h-screen pb-20 animate-in fade-in duration-500">
@@ -125,6 +135,7 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
                       items={[
                         { icon: RefreshCcw, label: 'Change Plan', onClick: () => { setActiveSub(sub); setIsChangePlanOpen(true); } },
                         { icon: Zap, label: 'Extend', onClick: () => { setActiveSub(sub); setIsExtendOpen(true); } },
+                        { icon: AlertCircle, label: 'View Invoices', onClick: () => { setActiveSub(sub); setIsInvoiceHistoryOpen(true); } },
                         { icon: Ban, label: 'Cancel', variant: 'danger' }
                       ]}
                     />
@@ -151,10 +162,17 @@ const Subscriptions: React.FC<{ onNavigate?: (route: string) => void }> = ({ onN
             isOpen={isChangePlanOpen}
             onClose={() => setIsChangePlanOpen(false)}
             subscription={activeSub}
+            onUpdate={handleUpdateSubscription}
           />
           <ExtendSubscriptionModal
             isOpen={isExtendOpen}
             onClose={() => setIsExtendOpen(false)}
+            subscription={activeSub}
+            onUpdate={handleUpdateSubscription}
+          />
+          <InvoiceHistoryModal
+            isOpen={isInvoiceHistoryOpen}
+            onClose={() => setIsInvoiceHistoryOpen(false)}
             subscription={activeSub}
           />
         </>

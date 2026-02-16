@@ -19,8 +19,7 @@ const StatusBadge = ({ status }: { status: string }) => (
 );
 
 const Invoices: React.FC = () => {
-  const { invoices: hookInvoices } = useInvoices();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const { invoices: hookInvoices, updateInvoice, createInvoice, loading } = useInvoices();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -28,21 +27,13 @@ const Invoices: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  useEffect(() => {
-    if (hookInvoices.length > 0) setInvoices(hookInvoices);
-  }, [hookInvoices]);
-
-  const handleAddInvoice = (newInv: Invoice) => {
-    setInvoices(prev => [newInv, ...prev]);
-  };
-
   const filteredInvoices = useMemo(() => {
-    return invoices.filter(inv => {
+    return hookInvoices.filter(inv => {
       const matchesSearch = inv.hotel.toLowerCase().includes(search.toLowerCase()) || inv.id.toLowerCase().includes(search.toLowerCase());
-      const matchesStatus = statusFilter === 'All Status' || inv.status === statusFilter.toLowerCase();
+      const matchesStatus = statusFilter === 'All Status' || inv.status.toLowerCase() === statusFilter.toLowerCase();
       return matchesSearch && matchesStatus;
     });
-  }, [invoices, search, statusFilter]);
+  }, [hookInvoices, search, statusFilter]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -56,14 +47,14 @@ const Invoices: React.FC = () => {
   const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
 
   const totals = useMemo(() => {
-    return invoices.reduce((acc, inv) => {
-      acc.total += inv.total;
-      if (inv.status === 'paid') acc.collected += inv.total;
-      if (inv.status === 'pending') acc.pending += inv.total;
-      if (inv.status === 'overdue') acc.overdue += inv.total;
+    return hookInvoices.reduce((acc, inv) => {
+      acc.total += inv.total || 0;
+      if (inv.status.toLowerCase() === 'paid') acc.collected += inv.total || 0;
+      if (inv.status.toLowerCase() === 'pending') acc.pending += inv.total || 0;
+      if (inv.status.toLowerCase() === 'overdue') acc.overdue += inv.total || 0;
       return acc;
     }, { total: 0, collected: 0, pending: 0, overdue: 0 });
-  }, [invoices]);
+  }, [hookInvoices]);
 
   return (
     <div className="p-4 md:p-8 space-y-8 min-h-screen pb-20 animate-in fade-in duration-500">
@@ -121,7 +112,15 @@ const Invoices: React.FC = () => {
             </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto relative">
+          {loading && (
+            <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-[2px] z-10 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-4 border-accent-strong border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Syncing Ledger...</p>
+                </div>
+            </div>
+          )}
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 dark:bg-white/[0.03] text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 border-b border-white/10">
@@ -182,12 +181,18 @@ const Invoices: React.FC = () => {
         isOpen={!!selectedInvoice} 
         invoice={selectedInvoice} 
         onClose={() => setSelectedInvoice(null)} 
+        onUpdate={async (id, data) => {
+            const updated = await updateInvoice(id, data);
+            setSelectedInvoice(updated);
+        }}
       />
 
       <InvoiceCreateModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onSave={handleAddInvoice}
+        onSave={async (data) => {
+            await createInvoice(data);
+        }}
       />
     </div>
   );

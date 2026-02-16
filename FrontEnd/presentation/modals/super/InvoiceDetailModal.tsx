@@ -14,13 +14,27 @@ interface InvoiceDetailModalProps {
   isOpen: boolean;
   invoice: any;
   onClose: () => void;
+  onUpdate?: (id: string, data: Partial<any>) => Promise<void>;
 }
 
-const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice, onClose }) => {
+const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice, onClose, onUpdate }) => {
   const { isDarkMode } = useTheme();
   const { isVisible } = useModalVisibility(isOpen);
+  const [loading, setLoading] = React.useState(false);
 
   if (!isVisible && !isOpen) return null;
+
+  const handleMarkAsPaid = async () => {
+    if (!onUpdate || !invoice) return;
+    setLoading(true);
+    try {
+        await onUpdate(invoice.id, { status: 'paid' });
+    } catch (err) {
+        console.error("Failed to update invoice status", err);
+    } finally {
+        setLoading(false);
+    }
+  };
 
   return ReactDOM.createPortal(
     <>
@@ -176,10 +190,11 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ isOpen, invoice
                     </button>
                 </div>
                 <button 
-                  onClick={onClose}
-                  className="px-10 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                  onClick={handleMarkAsPaid}
+                  disabled={loading || invoice?.status === 'paid'}
+                  className="px-10 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:grayscale disabled:scale-100"
                 >
-                    <CheckSquare size={16} /> Mark as Paid
+                    <CheckSquare size={16} /> {loading ? 'Processing...' : (invoice?.status === 'paid' ? 'Paid' : 'Mark as Paid')}
                 </button>
             </div>
             

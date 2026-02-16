@@ -8,11 +8,12 @@ interface ChangePlanModalProps {
   isOpen: boolean;
   onClose: () => void;
   subscription: Subscription;
+  onUpdate: (id: string, data: Partial<Subscription>) => Promise<void>;
 }
 
-
-const ChangePlanModal: React.FC<ChangePlanModalProps> = ({ isOpen, onClose, subscription }) => {
+const ChangePlanModal: React.FC<ChangePlanModalProps> = ({ isOpen, onClose, subscription, onUpdate }) => {
   const [selectedPlan, setSelectedPlan] = useState(subscription.plan);
+  const [loading, setLoading] = useState(false);
 
   const plans = [
     { id: 'Starter', price: 3000, color: 'blue', desc: 'Single Kiosk + Basic Ops' },
@@ -23,6 +24,23 @@ const ChangePlanModal: React.FC<ChangePlanModalProps> = ({ isOpen, onClose, subs
   const currentPlanData = plans.find(p => p.id === subscription.plan);
   const selectedPlanData = plans.find(p => p.id === selectedPlan);
   const priceDiff = (selectedPlanData?.price || 0) - (currentPlanData?.price || 0);
+
+  const handleChangePlan = async () => {
+    if (selectedPlan === subscription.plan) return;
+    setLoading(true);
+    try {
+      await onUpdate(subscription.id, {
+        plan: selectedPlan as any, 
+        price: selectedPlanData?.price,
+        invoiceAmount: selectedPlanData?.price // Bill the full amount for the new plan
+      } as any);
+      onClose();
+    } catch (error) {
+      console.error("Failed to change plan", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ModalShell
@@ -44,11 +62,11 @@ const ChangePlanModal: React.FC<ChangePlanModalProps> = ({ isOpen, onClose, subs
           <Button variant="ghost" onClick={onClose}>Discard</Button>
           <Button
             variant="action"
-            onClick={onClose}
-            disabled={selectedPlan === subscription.plan}
+            onClick={handleChangePlan}
+            disabled={selectedPlan === subscription.plan || loading}
             iconRight={<ArrowRight size={16} strokeWidth={3} />}
           >
-            Confirm Migration
+            {loading ? 'Processing...' : 'Confirm Migration'}
           </Button>
         </div>
       }

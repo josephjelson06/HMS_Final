@@ -24,8 +24,14 @@ export function useSubscriptions() {
   useEffect(() => { fetchSubscriptions(); }, [fetchSubscriptions]);
 
   const updateSubscription = useCallback(async (id: string, data: Partial<Subscription>) => {
+    console.log(`Hook: Updating subscription ${id}`, data);
     const updated = await repositories.subscriptions.update(id, data);
-    setSubscriptions((prev) => prev.map((s) => (s.id === id ? updated : s)));
+    console.log(`Hook: Update complete for ${id}, updating local state...`);
+    setSubscriptions((prev) => {
+      const newState = prev.map((s) => (s.id === id ? updated : s));
+      console.log(`Hook: New state count: ${newState.length}`);
+      return newState;
+    });
     return updated;
   }, []);
 

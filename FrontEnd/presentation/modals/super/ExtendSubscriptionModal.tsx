@@ -8,10 +8,12 @@ interface ExtendSubscriptionModalProps {
   isOpen: boolean;
   onClose: () => void;
   subscription: Subscription;
+  onUpdate: (id: string, data: Partial<Subscription>) => Promise<void>;
 }
 
-const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({ isOpen, onClose, subscription }) => {
+const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({ isOpen, onClose, subscription, onUpdate }) => {
   const [months, setMonths] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const options = [
     { label: '1 Month', value: 1, discount: 0 },
@@ -27,6 +29,21 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({ isOpe
   const subtotal = subscription.price * months;
   const discountAmount = (subtotal * (selectedOption?.discount || 0)) / 100;
   const total = subtotal - discountAmount;
+
+  const handleExtend = async () => {
+    setLoading(true);
+    try {
+      await onUpdate(subscription.id, {
+        renewalDate: newRenewalDate.toISOString(),
+        invoiceAmount: total
+      } as any);
+      onClose();
+    } catch (error) {
+      console.error("Failed to extend subscription", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ModalShell
@@ -47,8 +64,13 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({ isOpe
       footer={
         <div className="flex justify-end gap-3">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" onClick={onClose} iconRight={<CheckCircle2 size={16} />}>
-            Execute Extension
+          <Button 
+            variant="primary" 
+            onClick={handleExtend} 
+            disabled={loading}
+            iconRight={<CheckCircle2 size={16} />}
+          >
+            {loading ? 'Processing...' : 'Execute Extension'}
           </Button>
         </div>
       }
@@ -59,7 +81,7 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({ isOpe
               <div className="p-3 rounded-2xl bg-white/5 text-gray-500"><Calendar size={24} /></div>
               <div>
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Current Expiry</p>
-                  <p className="text-lg font-black dark:text-white">{subscription.renewalDate}</p>
+                  <p className="text-lg font-black dark:text-white">{new Date(subscription.renewalDate).toLocaleDateString()}</p>
               </div>
            </div>
            <div className="p-2 rounded-full bg-white/5 text-gray-600"><ArrowRight size={20} /></div>

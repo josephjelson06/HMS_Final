@@ -170,61 +170,6 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin,
         ))}
       </div>
       
-      {/* Danger Zone */}
-      <GlassCard className="border-red-500/20 bg-red-500/5">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div>
-            <h3 className="text-lg font-bold text-red-500 mb-1">Danger Zone</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Irreversible actions for this hotel account. Proceed with caution.
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <button 
-              onClick={() => {
-                const isSuspended = hotelStatus === 'Suspended';
-                openConfirm({
-                  title: isSuspended ? 'Activate Hotel' : 'Suspend Hotel',
-                  message: isSuspended 
-                    ? `Are you sure you want to activate ${hotelName}? This will restore access to all services.`
-                    : `Are you sure you want to suspend ${hotelName}? This will immediately revoke access to all services involved.`,
-                  variant: 'warning',
-                  confirmLabel: isSuspended ? 'Activate' : 'Suspend',
-                  onConfirm: async () => {
-                     const newStatus = isSuspended ? 'Active' : 'Suspended';
-                     if (hotelId) {
-                       await updateHotel(hotelId, { status: newStatus });
-                     }
-                  }
-                });
-              }}
-              className="px-5 py-2.5 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors text-sm font-bold"
-            >
-              {hotelStatus === 'Suspended' ? 'Activate Hotel' : 'Suspend Hotel'}
-            </button>
-            <button 
-               onClick={() => {
-                 openConfirm({
-                   title: 'Delete Hotel',
-                   message: `Are you sure you want to permanently delete ${hotelName}? This action cannot be undone and will remove all associated data including kiosks and invoices.`,
-                   variant: 'danger',
-                   confirmLabel: 'Delete Forever',
-                   onConfirm: async () => {
-                     if (hotelId) {
-                       await deleteHotel(hotelId);
-                       onNavigate('hotels');
-                     }
-                   }
-                 });
-               }}
-              className="px-5 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-colors text-sm font-bold shadow-lg shadow-red-500/20"
-            >
-              Delete Hotel
-            </button>
-          </div>
-        </div>
-      </GlassCard>
-
       {/* Tabs Switcher */}
       <div className="flex overflow-x-auto pb-1 gap-2 no-scrollbar">
         {tabs.map((tab) => (
@@ -278,7 +223,6 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin,
                   </div>
                 ))}
               </div>
-              <button className="w-full py-4 bg-black/5 dark:bg-white/5 text-[10px] font-bold uppercase tracking-widest hover:bg-accent-strong hover:text-white transition-all border-t border-white/5">Change Subscription Plan</button>
             </GlassCard>
           </div>
         )}
@@ -354,6 +298,61 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin,
           </GlassCard>
         )}
       </div>
+
+      {/* Danger Zone */}
+      <GlassCard className="border-red-500/20 bg-red-500/5 mt-12">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div>
+            <h3 className="text-lg font-bold text-red-500 mb-1">Danger Zone</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Irreversible actions for this hotel account. Proceed with caution.
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <button 
+              onClick={() => {
+                const isSuspended = hotelStatus === 'Suspended';
+                openConfirm({
+                  title: isSuspended ? 'Activate Hotel' : 'Suspend Hotel',
+                  message: isSuspended 
+                    ? `Are you sure you want to activate ${hotelName}? This will restore access to all services.`
+                    : `Are you sure you want to suspend ${hotelName}? This will immediately revoke access to all services involved.`,
+                  variant: 'warning',
+                  confirmLabel: isSuspended ? 'Activate' : 'Suspend',
+                  onConfirm: async () => {
+                     const newStatus = isSuspended ? 'Active' : 'Suspended';
+                     if (hotelId) {
+                       await updateHotel(hotelId, { status: newStatus });
+                     }
+                  }
+                });
+              }}
+              className="px-5 py-2.5 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors text-sm font-bold"
+            >
+              {hotelStatus === 'Suspended' ? 'Activate Hotel' : 'Suspend Hotel'}
+            </button>
+            <button 
+               onClick={() => {
+                 openConfirm({
+                   title: 'Delete Hotel',
+                   message: `Are you sure you want to permanently delete ${hotelName}? This action cannot be undone and will remove all associated data including kiosks and invoices.`,
+                   variant: 'danger',
+                   confirmLabel: 'Delete Forever',
+                   onConfirm: async () => {
+                     if (hotelId) {
+                       await deleteHotel(hotelId);
+                       onNavigate('hotels');
+                     }
+                   }
+                 });
+               }}
+              className="px-5 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-colors text-sm font-bold shadow-lg shadow-red-500/20"
+            >
+              Delete Hotel
+            </button>
+          </div>
+        </div>
+      </GlassCard>
       
       <ConfirmationModal
         isOpen={modalConfig.isOpen}

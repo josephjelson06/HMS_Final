@@ -42,10 +42,12 @@ import { MockHotelAuditRepository } from '../repositories/mock/MockHotelAuditRep
 import { MockHotelHelpRepository } from '../repositories/mock/MockHotelHelpRepository';
 import { MockHotelStaffRepository } from '../repositories/mock/MockHotelStaffRepository';
 import { MockIncidentRepository } from '../repositories/mock/MockIncidentRepository';
-import { MockSubscriptionRepository } from '../repositories/mock/MockSubscriptionRepository';
+// import { MockSubscriptionRepository } from '../repositories/mock/MockSubscriptionRepository';
+import { ApiSubscriptionRepository } from '../repositories/api/ApiSubscriptionRepository';
 
 // ... imports
 import { ApiHotelRepository } from '../repositories/api/ApiHotelRepository';
+import { ApiInvoiceRepository } from '../repositories/api/ApiInvoiceRepository';
 
 // ... 
 
@@ -84,7 +86,7 @@ function createRepositories(): Repositories {
       users: new MockUserRepository(),
       kiosks: new MockKioskRepository(),
       plans: new MockPlanRepository(),
-      invoices: new MockInvoiceRepository(),
+      invoices: new ApiInvoiceRepository(), // Force API repo
       tickets: new MockTicketRepository(),
       auditLogs: new MockAuditLogRepository(),
       billing: new MockBillingRepository(),
@@ -94,7 +96,7 @@ function createRepositories(): Repositories {
       hotelHelp: new MockHotelHelpRepository(),
       hotelStaff: new MockHotelStaffRepository(),
       incidents: new MockIncidentRepository(),
-      subscriptions: new MockSubscriptionRepository(),
+      subscriptions: new ApiSubscriptionRepository(), // Force API repo
   };
 
   if (USE_MOCK) {
@@ -107,7 +109,8 @@ function createRepositories(): Repositories {
   // API implementation mixed with mocks (gradual rollout)
   return {
     hotels: new ApiHotelRepository(), // SWAPPED!
-    ...commonMockRepos
+    ...commonMockRepos,
+    invoices: new ApiInvoiceRepository(), // Override mock
   };
 }
 
