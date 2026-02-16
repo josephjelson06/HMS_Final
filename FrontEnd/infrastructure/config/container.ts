@@ -47,9 +47,12 @@ import { ApiSubscriptionRepository } from '../repositories/api/ApiSubscriptionRe
 
 // ... imports
 import { ApiHotelRepository } from '../repositories/api/ApiHotelRepository';
+import { ApiRoomRepository } from '../repositories/api/ApiRoomRepository';
 import { ApiInvoiceRepository } from '../repositories/api/ApiInvoiceRepository';
 import { ApiPlanRepository } from '../repositories/api/ApiPlanRepository';
 import { ApiUserRepository } from '../repositories/api/ApiUserRepository';
+import { ApiIncidentRepository } from '../repositories/api/ApiIncidentRepository';
+import { ApiTicketRepository } from '../repositories/api/ApiTicketRepository';
 
 // ... 
 
@@ -84,12 +87,12 @@ export interface Repositories {
 function createRepositories(): Repositories {
   // Common repositories for now (mock)
   const commonMockRepos = {
-      rooms: new MockRoomRepository(),
+      rooms: new ApiRoomRepository(), // Force API repo
       users: new ApiUserRepository(), // Force API repo
       kiosks: new MockKioskRepository(),
       plans: new ApiPlanRepository(), // Force API repo
       invoices: new ApiInvoiceRepository(), // Force API repo
-      tickets: new MockTicketRepository(),
+      // tickets: new MockTicketRepository(), // Replaced by ApiTicketRepository
       auditLogs: new MockAuditLogRepository(),
       billing: new MockBillingRepository(),
       bookings: new MockBookingRepository(),
@@ -97,8 +100,9 @@ function createRepositories(): Repositories {
       hotelAudit: new MockHotelAuditRepository(),
       hotelHelp: new MockHotelHelpRepository(),
       hotelStaff: new MockHotelStaffRepository(),
-      incidents: new MockIncidentRepository(),
+      incidents: new ApiIncidentRepository(), // Force API repo
       subscriptions: new ApiSubscriptionRepository(), // Force API repo
+      tickets: new ApiTicketRepository(), // Force API repo
   };
 
   if (USE_MOCK) {

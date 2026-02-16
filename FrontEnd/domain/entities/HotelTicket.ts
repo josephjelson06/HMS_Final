@@ -11,4 +11,6 @@ export interface HotelTicket {
   createdAt: string;
   updatedAt: string;
   description: string;
+  hotelId?: number; // Optional as it might not be relevant for hotel view
+  hotelName?: string; // Optional for admin view
 }

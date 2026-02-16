@@ -1,0 +1,23 @@
+[
+  {
+    "id": "STD",
+    "name": "Standard Room",
+    "rate": 2500,
+    "occupancy": 2,
+    "amenities": ["Wi-Fi", "TV", "AC"]
+  },
+  {
+    "id": "DLX",
+    "name": "Deluxe Room",
+    "rate": 4500,
+    "occupancy": 3,
+    "amenities": ["Wi-Fi", "TV", "AC", "Mini Bar", "Balcony"]
+  },
+  {
+    "id": "SUT",
+    "name": "Executive Suite",
+    "rate": 8000,
+    "occupancy": 4,
+    "amenities": ["Wi-Fi", "TV", "AC", "Mini Bar", "Jacuzzi", "Living Area"]
+  }
+]

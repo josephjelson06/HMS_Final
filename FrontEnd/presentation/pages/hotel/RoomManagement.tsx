@@ -19,12 +19,23 @@ import GuestDetailPanel from '../../modals/hotel/GuestDetailPanel';
 import AddRoomModal from '../../modals/hotel/AddRoomModal';
 import AddBuildingModal from '../../modals/hotel/AddBuildingModal';
 import ManageRoomTypeModal from '../../modals/hotel/ManageRoomTypeModal';
+import BatchRoomGeneratorModal from '../../modals/hotel/BatchRoomGeneratorModal';
 import type { RoomStatus, RoomViewMode as ViewMode, Room } from '@/domain/entities/Room';
 import { ROOM_CELL_WIDTH as CELL_WIDTH, ROOM_LIST_WIDTH, ROOM_DAYS_TO_SHOW as DAYS_TO_SHOW } from '@/domain/entities/Room';
 import { useRooms } from '@/application/hooks/useRooms';
 
 const RoomManagement: React.FC = () => {
-  const { rooms: allRooms, bookings: allBookings } = useRooms();
+  const { 
+    rooms: allRooms, 
+    bookings: allBookings, 
+    roomTypes, 
+    buildings, 
+    createRoom, 
+    createBuilding, 
+    createType, 
+    deleteType,
+    batchCreateRooms
+  } = useRooms();
   const [viewMode, setViewMode] = useState<ViewMode>('GRID');
   const [activeBuilding, setActiveBuilding] = useState('Building 01');
   const [activeFloor, setActiveFloor] = useState<number | 'All'>('All');
@@ -37,14 +48,10 @@ const RoomManagement: React.FC = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isAddRoomOpen, setIsAddRoomOpen] = useState(false);
   const [isAddBuildingOpen, setIsAddBuildingOpen] = useState(false);
+  const [isBatchOpen, setIsBatchOpen] = useState(false);
 
   // Room Types State
-  const [roomTypes, setRoomTypes] = useState([
-    { id: 'STD', name: 'Standard Non-AC', rate: 2500, occupancy: 2, units: 12, amenities: ['Fan', 'TV'] },
-    { id: 'DLX', name: 'Deluxe AC', rate: 4500, occupancy: 2, units: 24, amenities: ['AC', 'TV', 'WiFi'] },
-    { id: 'SUI', name: 'Executive Suite', rate: 8500, occupancy: 4, units: 6, amenities: ['AC', 'Bathtub', 'Minibar', 'View'] },
-    { id: 'FAM', name: 'Family Room', rate: 6000, occupancy: 4, units: 8, amenities: ['AC', '2 Beds', 'Kitchenette'] },
-  ]);
+  // Removed local roomTypes state
   const [isManageTypeModalOpen, setIsManageTypeModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<any>(null);
   const [confirmDelete, setConfirmDelete] = useState<{
@@ -57,11 +64,12 @@ const RoomManagement: React.FC = () => {
     displayName: '',
   });
 
-  const handleSaveRoomType = (typeData: any) => {
+  const handleSaveRoomType = async (typeData: any) => {
     if (editingType) {
-      setRoomTypes(prev => prev.map(rt => rt.id === typeData.id ? { ...rt, ...typeData } : rt));
+      // Update not implemented yet in backend/hook for types, skipping
+      console.warn("Update type not supported yet");
     } else {
-      setRoomTypes(prev => [...prev, { ...typeData, units: 0 }]); // New types start with 0 units usually
+        await createType(typeData);
     }
     setEditingType(null);
   };
@@ -74,8 +82,63 @@ const RoomManagement: React.FC = () => {
     });
   };
 
-  const executeDeleteRoomType = () => {
-    setRoomTypes(prev => prev.filter(rt => rt.id !== confirmDelete.typeId));
+  const executeDeleteRoomType = async () => {
+    await deleteType(confirmDelete.typeId);
+    setConfirmDelete(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const handleBatchGenerate = async (config: any) => {
+    let buildingName = config.building;
+    // Try to find existing ID
+    let buildingId = buildings.find(b => b.name === buildingName)?.id;
+
+    // Create building if new mode
+    if (config.buildingMode === 'NEW') {
+        try {
+            const newB = await createBuilding(buildingName);
+            buildingName = newB.name;
+            buildingId = newB.id; 
+        } catch (e) {
+            console.error("Failed to create building", e);
+            alert("Failed to create new building");
+            return;
+        }
+    }
+
+    if (!buildingId) {
+         // Should have been found or created
+         const found = buildings.find(b => b.name === buildingName);
+         if (found) buildingId = found.id;
+         // If still not found, we might need to rely on backend lookup or fail
+         // But createBuilding updates hook state, so it should be there? 
+         // Actually hook updates might not be immediate in 'buildings' list in this closure if it's from state.
+         // But await createBuilding returns the new building object.
+    }
+
+    // Map rooms
+    const roomsToCreate = config.rooms.map((r: any) => {
+        const cat = roomTypes.find(c => c.name === r.category);
+        return {
+            id: r.id,
+            floor: r.floor,
+            category: r.category,
+            building: buildingName,
+            status: 'CLEAN_VACANT',
+            type: 'Hostel Room',
+            lastUpdate: new Date().toISOString(),
+            // Backend fields
+            category_id: cat?.id,
+            building_id: buildingId 
+        };
+    });
+
+    try {
+        await batchCreateRooms(roomsToCreate);
+        setIsBatchOpen(false);
+    } catch (e) {
+        console.error("Batch create failed", e);
+        alert("Batch create failed");
+    }
   };
 
   const filteredRooms = useMemo(() => {
@@ -153,6 +216,16 @@ const RoomManagement: React.FC = () => {
     </div>
   );
 
+  const availableFloors = useMemo(() => {
+    const floors = new Set<number>();
+    allRooms.forEach(room => {
+        if (room.building === activeBuilding) {
+            floors.add(room.floor);
+        }
+    });
+    return ['All', ...Array.from(floors).sort((a, b) => a - b)];
+  }, [allRooms, activeBuilding]);
+
   return (
     <div className="p-4 md:p-8 space-y-8 min-h-screen pb-32 animate-in fade-in duration-500">
       
@@ -165,7 +238,7 @@ const RoomManagement: React.FC = () => {
                 <ViewSwitcher />
             </div>
 
-            {viewMode === 'TYPES' ? (
+            {viewMode === 'TYPES' && (
                 <Button
                   variant="secondary"
                   size="lg"
@@ -173,15 +246,6 @@ const RoomManagement: React.FC = () => {
                   icon={<Plus size={18} strokeWidth={3} />}
                 >
                   Create Category
-                </Button>
-            ) : (
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={() => setIsWizardOpen(true)}
-                  icon={<Plus size={18} strokeWidth={3} />}
-                >
-                  Create Booking
                 </Button>
             )}
         </div>
@@ -191,13 +255,13 @@ const RoomManagement: React.FC = () => {
       {viewMode !== 'TYPES' && viewMode !== 'TIMELINE' && (
         <div className="flex flex-col xl:flex-row gap-6 items-center animate-in fade-in duration-500">
             <div className="flex p-1.5 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/5 w-full xl:w-auto overflow-x-auto no-scrollbar items-center">
-                {['Building 01', 'Building 02'].map(b => (
+                {(buildings.length > 0 ? buildings : [{name: 'Building 01'}]).map(b => (
                     <button 
-                        key={b}
-                        onClick={() => setActiveBuilding(b)}
-                        className={`px-10 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeBuilding === b ? 'bg-gray-900 text-white dark:bg-white dark:text-black shadow-lg' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'}`}
+                        key={b.name}
+                        onClick={() => setActiveBuilding(b.name)}
+                        className={`px-10 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeBuilding === b.name ? 'bg-gray-900 text-white dark:bg-white dark:text-black shadow-lg' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'}`}
                     >
-                        {b}
+                        {b.name}
                     </button>
                 ))}
                 {/* Add Building Button */}
@@ -206,6 +270,13 @@ const RoomManagement: React.FC = () => {
                     className="px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-accent-strong hover:bg-white/5 transition-all whitespace-nowrap flex items-center gap-2"
                 >
                     <Plus size={14} strokeWidth={3} /> Add
+                </button>
+                {/* Batch Button */}
+                <button 
+                    onClick={() => setIsBatchOpen(true)}
+                    className="px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-blue-500 hover:bg-white/5 transition-all whitespace-nowrap flex items-center gap-2"
+                >
+                    <Layers size={14} strokeWidth={3} /> Auto Gen
                 </button>
             </div>
 
@@ -228,7 +299,7 @@ const RoomManagement: React.FC = () => {
            <GlassCard className="border border-white/5 bg-black/5 dark:bg-white/[0.01]" noPadding>
               <div className="px-6 py-4 flex items-center justify-between border-b border-white/5">
                 <div className="flex gap-10 overflow-x-auto no-scrollbar">
-                    {['All', 1, 2, 3, 4, 5, 6].map(f => (
+                    {availableFloors.map(f => (
                         <button 
                             key={f} 
                             onClick={() => setActiveFloor(f as any)}
@@ -548,8 +619,49 @@ const RoomManagement: React.FC = () => {
         onClose={() => setIsWizardOpen(false)} 
       />
 
-      <AddRoomModal isOpen={isAddRoomOpen} onClose={() => setIsAddRoomOpen(false)} />
-      <AddBuildingModal isOpen={isAddBuildingOpen} onClose={() => setIsAddBuildingOpen(false)} />
+      <AddRoomModal 
+        isOpen={isAddRoomOpen} 
+        onClose={() => setIsAddRoomOpen(false)} 
+        onAdd={async (data) => {
+            // Map names to IDs
+            const bld = buildings.find(b => b.name === data.building);
+            const cat = roomTypes.find(c => c.name === data.category);
+            
+            if (!bld || !cat) {
+                alert("Invalid Building or Category selected");
+                return;
+            }
+
+            await createRoom({
+                ...data,
+                id: data.roomNumber,
+                floor: parseInt(data.floor),
+                category: cat.name,
+                building: bld.name,
+                status: 'CLEAN_VACANT',
+                type: 'Hostel Room',
+                lastUpdate: new Date().toISOString(),
+                // Hidden fields for backend:
+                category_id: cat.id,
+                building_id: bld.id
+            } as any);
+        }}
+      />
+      <AddBuildingModal 
+        isOpen={isAddBuildingOpen} 
+        onClose={() => setIsAddBuildingOpen(false)} 
+        onAdd={async (data) => {
+            await createBuilding(data.name);
+        }}
+      />
+      
+      <BatchRoomGeneratorModal 
+        isOpen={isBatchOpen} 
+        onClose={() => setIsBatchOpen(false)} 
+        buildings={buildings}
+        categories={roomTypes}
+        onGenerate={handleBatchGenerate}
+      />
       
       <ManageRoomTypeModal 
         isOpen={isManageTypeModalOpen} 

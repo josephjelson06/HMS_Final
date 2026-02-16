@@ -1,5 +1,12 @@
 // Room domain entities — pure TypeScript, no framework dependencies
 
+
+export interface Building {
+  id: number;
+  name: string;
+  hotel_id: number;
+}
+
 export type RoomStatus = 'CLEAN_VACANT' | 'DIRTY_VACANT' | 'CLEAN_OCCUPIED' | 'DIRTY_OCCUPIED' | 'MAINTENANCE';
 export type RoomViewMode = 'GRID' | 'TIMELINE' | 'TYPES';
 

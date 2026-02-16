@@ -1,17 +1,50 @@
-import React from 'react';
-import { Send, Camera, Info, Plus, ChevronDown } from 'lucide-react';
+import React, { useState } from 'react';
+import { Send, Camera, Info, Plus, ChevronDown, Loader2 } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
+import type { HotelTicketCategory, HotelTicketPriority } from '@/domain/entities/HotelTicket';
 
 interface NewTicketModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmit: (data: any) => Promise<any>;
 }
 
 const selectClass = `w-full px-4 py-3.5 rounded-2xl outline-none transition-all duration-200 text-sm font-medium border bg-gray-50 dark:bg-black/20 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-accent/50 focus:ring-4 focus:ring-accent/10 appearance-none`;
 
-const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose }) => {
+const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose, onSubmit }) => {
+  const [subject, setSubject] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<HotelTicketCategory>('General');
+  const [priority, setPriority] = useState<HotelTicketPriority>('Low');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!subject || !description) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onSubmit({
+        subject,
+        description,
+        category,
+        priority,
+        status: 'Open'
+      });
+      // Reset form
+      setSubject('');
+      setDescription('');
+      setCategory('General');
+      setPriority('Low');
+      onClose();
+    } catch (error) {
+      console.error("Failed to submit ticket", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <ModalShell
       isOpen={isOpen}
@@ -25,8 +58,16 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose }) => {
               <span className="text-[10px] font-bold uppercase tracking-tight">Our team responds within 60 mins</span>
            </div>
            <div className="flex gap-3">
-              <Button variant="ghost" onClick={onClose}>Discard</Button>
-              <Button variant="action" size="lg" onClick={onClose} icon={<Send size={18} />}>Initialize Ticket</Button>
+              <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>Discard</Button>
+              <Button 
+                variant="action" 
+                size="lg" 
+                onClick={handleSubmit} 
+                disabled={isSubmitting || !subject || !description}
+                icon={isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+              >
+                {isSubmitting ? 'Submitting...' : 'Initialize Ticket'}
+              </Button>
            </div>
         </div>
       }
@@ -36,10 +77,15 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose }) => {
             <div>
                <label className="block text-[10px] font-bold uppercase tracking-widest mb-3 text-gray-500 dark:text-gray-400">Issue Category</label>
                <div className="relative">
-                  <select className={`${selectClass} pr-10`}>
-                     <option>Software (Bug/Logic)</option>
-                     <option>Billing (Invoice/Payment)</option>
-                     <option>General Support</option>
+                  <select 
+                    className={`${selectClass} pr-10`}
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as HotelTicketCategory)}
+                  >
+                     <option value="Software">Software (Bug/Logic)</option>
+                     <option value="Billing">Billing (Invoice/Payment)</option>
+                     <option value="Hardware">Hardware (Kiosk/Device)</option>
+                     <option value="General">General Support</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                </div>
@@ -47,21 +93,36 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose }) => {
             <div>
                <label className="block text-[10px] font-bold uppercase tracking-widest mb-3 text-gray-500 dark:text-gray-400">Operational Priority</label>
                <div className="relative">
-                  <select className={`${selectClass} pr-10`}>
-                     <option className="text-gray-500">Low — Request doc/info</option>
-                     <option className="text-accent">Medium — Minor glitch</option>
-                     <option className="text-accent">High — Process impact</option>
-                     <option className="text-red-500">Critical — Site down</option>
+                  <select 
+                    className={`${selectClass} pr-10`}
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value as HotelTicketPriority)}
+                  >
+                     <option value="Low" className="text-gray-500">Low — Request doc/info</option>
+                     <option value="Medium" className="text-accent">Medium — Minor glitch</option>
+                     <option value="High" className="text-accent">High — Process impact</option>
+                     <option value="Critical" className="text-red-500">Critical — Site down</option>
                   </select>
                   <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                </div>
             </div>
             <div className="col-span-2">
-               <GlassInput label="Subject Summary" placeholder="e.g. Rate parity issue on mobile view" />
+               <GlassInput 
+                  label="Subject Summary" 
+                  placeholder="e.g. Rate parity issue on mobile view" 
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+               />
             </div>
             <div className="col-span-2">
                <label className="block text-[10px] font-bold uppercase tracking-widest mb-3 text-gray-500 dark:text-gray-400">Issue Description</label>
-               <textarea rows={4} placeholder="Describe exactly what happened and when..." className={`${selectClass} resize-none`} />
+               <textarea 
+                  rows={4} 
+                  placeholder="Describe exactly what happened and when..." 
+                  className={`${selectClass} resize-none`} 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+               />
             </div>
          </div>
 

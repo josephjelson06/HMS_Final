@@ -2,30 +2,33 @@ import React, { useState, useMemo } from 'react';
 import { 
   CheckCircle2
 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import HelpdeskDetailModal from '../../modals/super/HelpdeskDetailModal';
-import type { HelpdeskTicket as Ticket, HelpdeskPriority as Priority, HelpdeskStatus as Status } from '@/domain/entities/Ticket';
-import { useTickets } from '@/application/hooks/useTickets';
+import { useAdminTickets } from '@/application/hooks/useAdminTickets';
+// import { useAdminIncidents } from '@/application/hooks/useAdminIncidents'; // Removed
+import type { IncidentPriority, IncidentStatus } from '@/domain/entities/Incident';
+import type { HotelTicket as Ticket, HotelTicketStatus as Status } from '@/domain/entities/HotelTicket';
 
-const PriorityBadge = ({ priority }: { priority: Priority }) => {
-  const styles = {
+const PriorityBadge = ({ priority }: { priority: string }) => {
+  const styles: Record<string, string> = {
     Low: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
     Medium: 'bg-blue-500/10 text-accent border-accent/20',
     High: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
     Critical: 'bg-red-600 text-white shadow-lg shadow-red-900/40 font-black border-transparent',
   };
   return (
-    <span className={`inline-block px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest border leading-none whitespace-nowrap ${styles[priority]}`}>
+    <span className={`inline-block px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest border leading-none whitespace-nowrap ${styles[priority] || styles.Low}`}>
       {priority}
     </span>
   );
 };
 
 const Helpdesk: React.FC = () => {
-  const { tickets: allTickets } = useTickets();
+  const { tickets: allTickets, loading, error } = useAdminTickets();
   const [search, setSearch] = useState('');
-  const [activeTab] = useState<Status | 'All'>('All');
+  const [activeTab] = useState<IncidentStatus | 'All'>('All'); // Changed Status to IncidentStatus
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -33,8 +36,8 @@ const Helpdesk: React.FC = () => {
   const filteredTickets = useMemo(() => {
     return (allTickets as unknown as Ticket[]).filter(t => {
       const matchesSearch = t.subject.toLowerCase().includes(search.toLowerCase()) || 
-                           t.id.toLowerCase().includes(search.toLowerCase()) ||
-                           t.hotel.toLowerCase().includes(search.toLowerCase());
+                           t.id.toString().toLowerCase().includes(search.toLowerCase()) ||
+                           (t as any).hotelName?.toLowerCase().includes(search.toLowerCase());
       const matchesTab = activeTab === 'All' || t.status === activeTab;
       return matchesSearch && matchesTab;
     });
@@ -54,7 +57,6 @@ const Helpdesk: React.FC = () => {
       <PageHeader
         title="Support Helpdesk"
         subtitle="Active Infrastructure Issue Tracking"
-        badge="Dummy Data Page"
       />
 
       {/* Kanban View */}
@@ -68,13 +70,13 @@ const Helpdesk: React.FC = () => {
                   <span className="text-[10px] font-black text-gray-400 bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-full">{ticketsInColumn.length}</span>
                 </div>
                 <div className="space-y-4">
-                   {ticketsInColumn.map(t => (
+                   {ticketsInColumn.map((t: any) => (
                       <div key={t.id} onClick={() => setSelectedTicket(t)} className="glass-card p-5 rounded-[1.5rem] border border-white/5 hover:border-blue-500/30 cursor-pointer shadow-sm group">
                          <div className="flex justify-between mb-3"><PriorityBadge priority={t.priority} /></div>
                          <h4 className="text-sm font-black dark:text-white leading-snug group-hover:text-accent transition-colors">{t.subject}</h4>
                          <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-[10px] font-bold text-gray-500 uppercase">
-                            <span>{t.hotel}</span>
-                            <span>{t.lastUpdated}</span>
+                            <span>{t.hotelName}</span>
+                            <span>{t.createdAt ? formatDistanceToNow(new Date(t.createdAt), { addSuffix: true }) : 'Just now'}</span>
                          </div>
                       </div>
                    ))}

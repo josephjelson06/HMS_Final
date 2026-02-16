@@ -14,7 +14,7 @@ import type { HotelTicketCategory as TicketCategory, HotelTicketPriority as Tick
 import { useHotelHelp } from '@/application/hooks/useHotelHelp';
 
 const HotelHelp: React.FC = () => {
-  const { tickets: allTickets } = useHotelHelp();
+  const { tickets: allTickets, createTicket } = useHotelHelp();
   const [search, setSearch] = useState('');
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
@@ -154,7 +154,11 @@ const HotelHelp: React.FC = () => {
           </div>
       </div>
 
-      <NewTicketModal isOpen={isNewModalOpen} onClose={() => setIsNewModalOpen(false)} />
+      <NewTicketModal 
+        isOpen={isNewModalOpen} 
+        onClose={() => setIsNewModalOpen(false)} 
+        onSubmit={createTicket}
+      />
       <HotelTicketDetailModal isOpen={!!selectedTicket} ticket={selectedTicket} onClose={() => setSelectedTicket(null)} />
 
     </div>

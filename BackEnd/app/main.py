@@ -1,12 +1,24 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import hotels, subscriptions, plans, users, roles
+from app.routers import (
+    hotels,
+    subscriptions,
+    plans,
+    users,
+    roles,
+    rooms,
+    incidents,
+    tickets,
+)
 from app.database import engine, Base
 import app.models.kiosk  # noqa: F401
 import app.models.invoice  # noqa: F401
 import app.models.plan  # noqa: F401
 import app.models.user  # noqa: F401
 import app.models.role  # noqa: F401
+import app.models.room  # noqa: F401
+import app.models.incident  # noqa: F401
+import app.models.ticket  # noqa: F401
 
 # Create all tables in the database
 # In production, uses Alebmic for migrations
@@ -41,6 +53,9 @@ app.include_router(
 app.include_router(plans.router, prefix="/api/plans", tags=["plans"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(roles.router, prefix="/api/roles", tags=["roles"])
+app.include_router(rooms.router, prefix="/api", tags=["rooms"])
+app.include_router(incidents.router, prefix="/api", tags=["incidents"])
+app.include_router(tickets.router, prefix="/api", tags=["tickets"])
 
 
 @app.get("/")

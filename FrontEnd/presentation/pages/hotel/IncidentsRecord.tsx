@@ -11,24 +11,34 @@ import GlassCard from '../../components/ui/GlassCard';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import IncidentDetailModal from '../../modals/hotel/IncidentDetailModal';
+import CreateIncidentModal from '../../modals/hotel/CreateIncidentModal';
 import type { IncidentCategory, IncidentPriority, IncidentStatus, Incident } from '@/domain/entities/Incident';
 import { useIncidents } from '@/application/hooks/useIncidents';
 
 const IncidentsRecord: React.FC = () => {
-  const { incidents: allIncidents } = useIncidents();
+  const { incidents: allIncidents, updateIncident, createIncident } = useIncidents();
   const [activeTab, setActiveTab] = useState<IncidentStatus | 'All'>('All');
   const [search, setSearch] = useState('');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const filteredIncidents = useMemo(() => {
     return allIncidents.filter(inc => {
       const matchesSearch = inc.subject.toLowerCase().includes(search.toLowerCase()) || 
-                           inc.id.toLowerCase().includes(search.toLowerCase()) ||
+                           inc.id.toString().toLowerCase().includes(search.toLowerCase()) || // ID might be number
                            inc.room.includes(search);
       const matchesStatus = activeTab === 'All' || inc.status === activeTab;
       return matchesSearch && matchesStatus;
     });
   }, [allIncidents, search, activeTab]);
+
+  const stats = useMemo(() => {
+    const openCritical = allIncidents.filter(i => i.status === 'Open' && i.priority === 'Critical').length;
+    const maintenance = allIncidents.filter(i => i.category === 'Maintenance' && i.status !== 'Closed').length;
+    const housekeeping = allIncidents.filter(i => i.category === 'Housekeeping' && i.status !== 'Closed').length;
+    // MTTR placeholder - hard to calc without history
+    return { openCritical, maintenance, housekeeping };
+  }, [allIncidents]);
 
   const PriorityBadge = ({ level }: { level: IncidentPriority }) => {
     const styles = {
@@ -77,7 +87,9 @@ const IncidentsRecord: React.FC = () => {
                   </div>
                   <span className="text-[10px] font-black dark:text-gray-300">#{inc.room}</span>
                 </div>
-                <span className="text-[9px] font-bold text-gray-500 uppercase">{inc.createdAt.split(',')[1]}</span>
+                <span className="text-[9px] font-bold text-gray-500 uppercase">
+                  {new Date(inc.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
               </div>
             </GlassCard>
           ))}
@@ -90,14 +102,22 @@ const IncidentsRecord: React.FC = () => {
     <div className="p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
       
       {/* Header Context */}
-      <PageHeader title="Incident Records" subtitle="Operational Issue & Problem Tracker" />
+      <PageHeader title="Incident Records" subtitle="Operational Issue & Problem Tracker">
+         <Button 
+            variant="primary" 
+            onClick={() => setIsCreateModalOpen(true)}
+            icon={<Plus size={16} />}
+         >
+            Report Incident
+         </Button>
+      </PageHeader>
 
       {/* Analytics Strip */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-         <SummaryCard label="Open Critical" value="01" sub="Resolution Overdue" icon={ShieldAlert} color="text-red-500" />
-         <SummaryCard label="Maintenance" value="08" sub="On-going repair" icon={Wrench} color="text-accent" />
-         <SummaryCard label="Housekeeping" value="14" sub="Priority Cleaning" icon={Brush} color="text-accent" />
-         <SummaryCard label="MTTR (Today)" value="42m" sub="Mean Time To Resolve" icon={Clock} color="text-emerald-500" />
+         <SummaryCard label="Open Critical" value={stats.openCritical.toString().padStart(2, '0')} sub="Resolution Overdue" icon={ShieldAlert} color="text-red-500" />
+         <SummaryCard label="Maintenance" value={stats.maintenance.toString().padStart(2, '0')} sub="On-going repair" icon={Wrench} color="text-accent" />
+         <SummaryCard label="Housekeeping" value={stats.housekeeping.toString().padStart(2, '0')} sub="Priority Cleaning" icon={Brush} color="text-accent" />
+         <SummaryCard label="MTTR (Today)" value="--" sub="Not available" icon={Clock} color="text-emerald-500" />
       </div>
 
       {/* Filter Bar */}
@@ -136,7 +156,18 @@ const IncidentsRecord: React.FC = () => {
         <KanbanColumn status="Closed" />
       </div>
 
-      <IncidentDetailModal isOpen={!!selectedIncident} incident={selectedIncident} onClose={() => setSelectedIncident(null)} />
+      <IncidentDetailModal 
+        isOpen={!!selectedIncident} 
+        incident={selectedIncident} 
+        onClose={() => setSelectedIncident(null)} 
+        onUpdate={updateIncident as any}
+      />
+      
+      <CreateIncidentModal 
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={async (data) => { await createIncident(data); }}
+      />
 
     </div>
   );

@@ -3,8 +3,7 @@ import {
   ShieldAlert, DoorOpen, User, 
   CheckCircle2, 
   Camera, X,
-  ChevronRight,
-  AlertIndicator
+  ChevronRight
 } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import type { Incident } from '@/domain/entities/Incident';
@@ -13,10 +12,18 @@ interface IncidentDetailModalProps {
   isOpen: boolean;
   incident: Incident | null;
   onClose: () => void;
+  onUpdate?: (id: string, data: Partial<Incident>) => Promise<void>;
 }
 
-const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({ isOpen, incident, onClose }) => {
+const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({ isOpen, incident, onClose, onUpdate }) => {
   if (!incident) return null;
+
+  const handleStatusChange = async (newStatus: 'Resolved' | 'Closed') => {
+    if (onUpdate && incident) {
+        await onUpdate(incident.id, { status: newStatus });
+        onClose();
+    }
+  };
 
   return (
     <ModalShell
@@ -77,7 +84,9 @@ const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({ isOpen, incid
                 <div className="grid grid-cols-2 gap-6">
                    <div className="p-6 rounded-3xl bg-black/5 dark:bg-white/[0.02] border border-white/5">
                       <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Timestamp</p>
-                      <p className="text-sm font-black dark:text-white">{incident.createdAt}</p>
+                      <p className="text-sm font-black dark:text-white">
+                        {new Date(incident.createdAt).toLocaleString()}
+                      </p>
                    </div>
                    <div className="p-6 rounded-3xl bg-black/5 dark:bg-white/[0.02] border border-white/5">
                       <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Category</p>
@@ -119,18 +128,18 @@ const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({ isOpen, incid
            {/* SLA Assessment */}
            <section>
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-6">SLA Status</h3>
-              <div className="p-6 rounded-[2rem] bg-black/5 dark:bg-white/5 border border-white/5">
-                 <div className="flex justify-between items-center mb-4">
-                    <span className="text-[9px] font-medium text-gray-500 uppercase">Target (Critical)</span>
-                    <span className="text-[10px] font-bold dark:text-white">60 Minutes</span>
+              <div className={`p-6 rounded-[2rem] border border-white/5 ${incident.slaBreached ? 'bg-red-500/10' : 'bg-emerald-500/10'}`}>
+                 <div className="flex justify-between items-center mb-2">
+                    <span className="text-[9px] font-medium text-gray-500 uppercase">Status</span>
+                    <span className={`text-[10px] font-bold uppercase ${incident.slaBreached ? 'text-red-500' : 'text-emerald-500'}`}>
+                        {incident.slaBreached ? 'Breached' : 'On Track'}
+                    </span>
                  </div>
-                 <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-4">
-                    <div className="h-full bg-emerald-500 w-[42%]"></div>
-                 </div>
-                 <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-medium text-gray-500 uppercase">Time Elapsed</span>
-                    <span className="text-[10px] font-bold text-emerald-500 uppercase italic">On-Track</span>
-                 </div>
+                 <p className="text-[10px] font-medium text-gray-400">
+                    {incident.slaBreached 
+                        ? 'Resolution time has exceeded the service level agreement.' 
+                        : 'Incident is being handled within the expected timeframe.'}
+                 </p>
               </div>
            </section>
 
@@ -151,10 +160,16 @@ const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({ isOpen, incid
 
            {/* Final Resolution Control */}
            <div className="pt-10 border-t border-white/10 flex flex-col gap-3">
-              <button className="w-full py-4 rounded-2xl bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest shadow-xl shadow-emerald-900/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+              <button 
+                onClick={() => handleStatusChange('Resolved')}
+                className="w-full py-4 rounded-2xl bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest shadow-xl shadow-emerald-900/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+              >
                  <CheckCircle2 size={16} /> Resolve Incident
               </button>
-              <button className="w-full py-3 rounded-2xl border border-white/10 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
+              <button 
+                onClick={() => handleStatusChange('Closed')}
+                className="w-full py-3 rounded-2xl border border-white/10 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+              >
                  Close Ticket
               </button>
            </div>

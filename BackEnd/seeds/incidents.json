@@ -1,0 +1,72 @@
+[
+  {
+    "hotel_id": 1,
+    "subject": "AC Not Cooling in Room 101",
+    "description": "Guest reported that the AC is running but not cooling the room.",
+    "room": "101",
+    "priority": "High",
+    "status": "Open",
+    "category": "Maintenance",
+    "guest_name": "John Doe",
+    "reported_by": "Reception",
+    "assigned_to": "Maintenance Team",
+    "created_at": "2023-10-26T10:00:00",
+    "updated_at": "2023-10-26T10:00:00"
+  },
+  {
+    "hotel_id": 1,
+    "subject": "Extra Towels Request",
+    "description": "Guest needs 2 extra bath towels.",
+    "room": "205",
+    "priority": "Low",
+    "status": "Resolved",
+    "category": "Housekeeping",
+    "guest_name": "Jane Smith",
+    "reported_by": "Jane Smith",
+    "assigned_to": "Housekeeping",
+    "created_at": "2023-10-25T14:30:00",
+    "updated_at": "2023-10-25T15:00:00"
+  },
+  {
+    "hotel_id": 1,
+    "subject": "Wi-Fi Connectivity Issue",
+    "description": "Signal is very weak in the corner room.",
+    "room": "302",
+    "priority": "Medium",
+    "status": "In Progress",
+    "category": "IT",
+    "guest_name": "Robert Brown",
+    "reported_by": "Robert Brown",
+    "assigned_to": "IT Support",
+    "created_at": "2023-10-26T09:15:00",
+    "updated_at": "2023-10-26T09:45:00"
+  },
+  {
+    "hotel_id": 1,
+    "subject": "Noise Complaint",
+    "description": "Loud music from neighboring room.",
+    "room": "104",
+    "priority": "High",
+    "status": "Closed",
+    "category": "Guest Complaint",
+    "guest_name": "Emily White",
+    "reported_by": "Front Desk",
+    "assigned_to": "Security",
+    "created_at": "2023-10-24T22:00:00",
+    "updated_at": "2023-10-24T23:00:00"
+  },
+  {
+    "hotel_id": 1,
+    "subject": "Leaky Faucet",
+    "description": "Bathroom sink faucet is dripping continuously.",
+    "room": "110",
+    "priority": "Medium",
+    "status": "Open",
+    "category": "Maintenance",
+    "guest_name": "Michael Green",
+    "reported_by": "Housekeeping",
+    "assigned_to": "Plumber",
+    "created_at": "2023-10-26T11:00:00",
+    "updated_at": "2023-10-26T11:00:00"
+  }
+]
