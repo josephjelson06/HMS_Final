@@ -68,10 +68,10 @@ const AddFirmwareModal: React.FC<AddFirmwareModalProps> = ({ isOpen, onClose }) 
                   </div>
                   <div>
                       <label className={labelClass}>Release Channel</label>
-                      <select className={inputClass}>
+                      <select className={inputClass} defaultValue="Stable (Production)">
                          <option>Alpha (Internal)</option>
                          <option>Beta (Testing)</option>
-                         <option selected>Stable (Production)</option>
+                         <option>Stable (Production)</option>
                       </select>
                   </div>
                   <div className="col-span-2">

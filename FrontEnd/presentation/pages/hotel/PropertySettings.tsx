@@ -210,15 +210,15 @@ const PropertySettings: React.FC = () => {
                          <div className="grid grid-cols-2 gap-6">
                             <div>
                                 <label className={labelClass}>Restaurant GST %</label>
-                                <select className={inputClass}>
+                                <select className={inputClass} defaultValue="18% (Luxury Property)">
                                    <option>5% (Non-AC/Standard)</option>
-                                   <option selected>18% (Luxury Property)</option>
+                                   <option >18% (Luxury Property)</option>
                                 </select>
                             </div>
                             <div>
                                 <label className={labelClass}>Other Services %</label>
                                 <select className={inputClass}>
-                                   <option selected>18% (Default)</option>
+                                   <option >18% (Default)</option>
                                    <option>12%</option>
                                 </select>
                             </div>
@@ -272,7 +272,7 @@ const PropertySettings: React.FC = () => {
                       <div>
                          <label className={labelClass}>Default Meal Plan Basis</label>
                          <select className={inputClass}>
-                            <option selected>EP (Room Only)</option>
+                            <option >EP (Room Only)</option>
                             <option>CP (Bed & Breakfast)</option>
                             <option>MAP (Breakfast + Dinner)</option>
                             <option>AP (All Meals)</option>

@@ -1,0 +1,74 @@
+[
+  {
+    "hotel_id": 2,
+    "subject": "Champagne unavailable in minibar",
+    "description": "Guest in 1001 complained about missing vintage champagne.",
+    "room": "1001",
+    "priority": "High",
+    "status": "Open",
+    "category": "Guest Service",
+    "guest_name": "Mr. Bond",
+    "reported_by": "Concierge Mary",
+    "assigned_to": "Room Service"
+  },
+  {
+    "hotel_id": 2,
+    "subject": "Valet delay",
+    "description": "Fetching Ferrari took 15 minutes.",
+    "room": "Lobby",
+    "priority": "Medium",
+    "status": "Resolved",
+    "category": "Complaint",
+    "guest_name": "Ms. Vesper",
+    "reported_by": "Valet John",
+    "assigned_to": "Valet Team"
+  },
+  {
+    "hotel_id": 3,
+    "subject": "Heater broken",
+    "description": "Radiator in Family Room C1 is making noise.",
+    "room": "C1",
+    "priority": "High",
+    "status": "In Progress",
+    "category": "Maintenance",
+    "guest_name": "The Smiths",
+    "reported_by": "Host Alice",
+    "assigned_to": "Maintenance"
+  },
+  {
+    "hotel_id": 3,
+    "subject": "Key stuck",
+    "description": "Key jammed in C3 lock.",
+    "room": "C3",
+    "priority": "Urgent",
+    "status": "Open",
+    "category": "Maintenance",
+    "guest_name": "Bob Jones",
+    "reported_by": "Cleaner Bob",
+    "assigned_to": "Locksmith"
+  },
+  {
+    "hotel_id": 4,
+    "subject": "Wi-Fi slow",
+    "description": "Guest can't stream video.",
+    "room": "A101",
+    "priority": "Low",
+    "status": "Open",
+    "category": "IT",
+    "guest_name": "Student A",
+    "reported_by": "Guard Mike",
+    "assigned_to": "IT Support"
+  },
+  {
+    "hotel_id": 4,
+    "subject": "Leaky tap",
+    "description": "Dripping tap in A104 bathroom.",
+    "room": "A104",
+    "priority": "Medium",
+    "status": "Resolved",
+    "category": "Maintenance",
+    "guest_name": "Traveler B",
+    "reported_by": "Cleaner Sarah",
+    "assigned_to": "Plumber"
+  }
+]

@@ -47,10 +47,10 @@ const KioskSupportTicketModal: React.FC<KioskSupportTicketModalProps> = ({ isOpe
           <div>
              <label className={labelClass}>Escalation Level</label>
              <div className="relative">
-                <select className={`${inputClass} appearance-none pr-10`}>
+                <select className={`${inputClass} appearance-none pr-10`} defaultValue="Critical — Unit Offline">
                    <option>Normal — Maintenance</option>
                    <option>High — Process Degraded</option>
-                   <option selected>Critical — Unit Offline</option>
+                   <option >Critical — Unit Offline</option>
                 </select>
                 <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
              </div>

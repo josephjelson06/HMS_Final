@@ -1,0 +1,21 @@
+{
+  "common": [
+    { "name": "Manager", "color": "purple", "description": "General Manager with full access" },
+    { "name": "Receptionist", "color": "blue", "description": "Front desk operations" }
+  ],
+  "specific": {
+    "2": [
+      { "name": "Concierge", "color": "gold", "description": "Guest services and bookings" },
+      { "name": "Head Chef", "color": "red", "description": "Kitchen management" },
+      { "name": "Valet Lead", "color": "slate", "description": "Parking operations" }
+    ],
+    "3": [
+      { "name": "Host", "color": "orange", "description": "Welcoming guests and dining" },
+      { "name": "Housekeeper", "color": "cyan", "description": "Room cleaning and maintenance" }
+    ],
+    "4": [
+      { "name": "Night Guard", "color": "slate", "description": "Security and night shift" },
+      { "name": "Cleaner", "color": "green", "description": "General cleaning" }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "hotel_id": 2,
+    "users": [
+      { "name": "Valet John", "email": "john.valet@grand.com", "role": "Valet Lead", "password": "password123", "mobile": "+91 999 888 7771", "department": "Front Office" },
+      { "name": "Chef Gordon", "email": "gordon@grand.com", "role": "Head Chef", "password": "password123", "mobile": "+91 999 888 7772", "department": "Kitchen" },
+      { "name": "Concierge Mary", "email": "mary@grand.com", "role": "Concierge", "password": "password123", "mobile": "+91 999 888 7773", "department": "Front Office" }
+    ]
+  },
+  {
+    "hotel_id": 3,
+    "users": [
+      { "name": "Host Alice", "email": "alice@cozy.com", "role": "Host", "password": "password123", "mobile": "+91 888 777 6661", "department": "Operations" },
+      { "name": "Cleaner Bob", "email": "bob@cozy.com", "role": "Housekeeper", "password": "password123", "mobile": "+91 888 777 6662", "department": "Housekeeping" }
+    ]
+  },
+  {
+    "hotel_id": 4,
+    "users": [
+      { "name": "Guard Mike", "email": "mike@budget.com", "role": "Night Guard", "password": "password123", "mobile": "+91 777 666 5551", "department": "Security" },
+      { "name": "Cleaner Sarah", "email": "sarah@budget.com", "role": "Cleaner", "password": "password123", "mobile": "+91 777 666 5552", "department": "Housekeeping" }
+    ]
+  }
+]

@@ -157,9 +157,9 @@ const PlatformSettings: React.FC = () => {
                   <div>
                     <label className={labelClass}>Default Payment Terms</label>
                     <div className="relative">
-                      <select className={`${inputClass} appearance-none cursor-pointer pr-12`}>
+                      <select className={`${inputClass} appearance-none cursor-pointer pr-12`} defaultValue="Net 15 Days">
                         <option>Net 7 Days</option>
-                        <option selected>Net 15 Days</option>
+                        <option >Net 15 Days</option>
                         <option>Net 30 Days</option>
                         <option>Due on Receipt</option>
                       </select>
