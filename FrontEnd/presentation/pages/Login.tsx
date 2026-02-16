@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Shield } from 'lucide-react';
 import GlassCard from '../components/ui/GlassCard';
 import GlassInput from '../components/ui/GlassInput';
 import Button from '../components/ui/Button';
@@ -13,15 +13,18 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const { isDarkMode, toggleTheme } = useTheme();
-  const { quickLogin } = useAuth();
+  const { login, error: loginError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const role = email.toLowerCase().includes('hotel') ? 'hotel' : 'super';
-    quickLogin(role);
-    onLogin(role);
+    try {
+      const user = await login(email, password);
+      onLogin(user.role);
+    } catch (err) {
+      // Error is handled by useAuth
+    }
   };
 
   return (
@@ -50,6 +53,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 <p className="text-sm font-medium text-slate-500 dark:text-gray-400">Sign in to manage your platform or hotel workspace.</p>
               </div>
             </div>
+
+            {/* Error Message */}
+            {loginError && (
+              <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 text-red-600 dark:text-red-400 text-sm font-bold flex items-center gap-2 animate-in slide-in-from-top-2">
+                <Shield size={16} />
+                {loginError.message}
+              </div>
+            )}
 
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-8">

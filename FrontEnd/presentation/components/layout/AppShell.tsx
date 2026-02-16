@@ -13,8 +13,6 @@ interface AppShellProps {
   isImpersonating: boolean;
   impersonatedHotel: string | null;
   onNavigate: (route: string) => void;
-  onSwitchBack: () => void;
-  onSwitchToHotel: () => void;
   onToggleCollapse: () => void;
   onCloseMobile: () => void;
   onOpenMobileMenu: () => void;
@@ -30,8 +28,6 @@ const AppShell: React.FC<AppShellProps> = ({
   isImpersonating,
   impersonatedHotel,
   onNavigate,
-  onSwitchBack,
-  onSwitchToHotel,
   onToggleCollapse,
   onCloseMobile,
   onOpenMobileMenu,
@@ -48,7 +44,7 @@ const AppShell: React.FC<AppShellProps> = ({
       {isImpersonating && impersonatedHotel && (
         <ImpersonationBanner 
           hotelName={impersonatedHotel} 
-          onExit={onSwitchBack} 
+          onExit={onLogout} // For now, exit impersonation by logging out or we can re-add handle
         />
       )}
 
@@ -64,8 +60,6 @@ const AppShell: React.FC<AppShellProps> = ({
         currentRoute={currentRoute} 
         onNavigate={onNavigate}
         viewMode={viewMode} 
-        onSwitchBack={onSwitchBack}
-        onSwitchToHotel={onSwitchToHotel}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={onToggleCollapse}
         isMobileOpen={isMobileMenuOpen}

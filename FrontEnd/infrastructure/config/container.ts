@@ -53,6 +53,7 @@ import { ApiPlanRepository } from '../repositories/api/ApiPlanRepository';
 import { ApiUserRepository } from '../repositories/api/ApiUserRepository';
 import { ApiIncidentRepository } from '../repositories/api/ApiIncidentRepository';
 import { ApiTicketRepository } from '../repositories/api/ApiTicketRepository';
+import { ApiAuthService } from '../services/ApiAuthService';
 
 // ... 
 
@@ -127,4 +128,4 @@ export const repositories = createRepositories();
 
 export const authService: IAuthService = USE_MOCK
   ? new MockAuthService()
-  : new MockAuthService(); // swap to ApiAuthService when backend is ready
+  : new ApiAuthService(); 

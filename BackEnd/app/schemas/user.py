@@ -9,10 +9,11 @@ class UserBase(BaseModel):
     status: Optional[str] = "Active"
     mobile: Optional[str] = None
     department: Optional[str] = None
+    hotel_id: Optional[int] = None
 
 
 class UserCreate(UserBase):
-    pass
+    password: str
 
 
 class UserUpdate(BaseModel):
@@ -21,6 +22,8 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
     mobile: Optional[str] = None
     department: Optional[str] = None
+    password: Optional[str] = None
+    hotel_id: Optional[int] = None
 
 
 class User(UserBase):

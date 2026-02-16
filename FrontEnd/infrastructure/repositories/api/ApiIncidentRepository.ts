@@ -4,35 +4,31 @@ import { httpClient } from '../../http/client';
 
 export class ApiIncidentRepository implements IIncidentRepository {
   private baseUrl = 'api/hotels/';
-  private hotelId = 1;
 
-  async getAll(): Promise<Incident[]> {
-    const data = await httpClient.get<any[]>(`${this.baseUrl}${this.hotelId}/incidents`);
+  async getAll(hotelId: string): Promise<Incident[]> {
+    const data = await httpClient.get<any[]>(`${this.baseUrl}${hotelId}/incidents`);
     return data.map(this.mapToEntity);
   }
 
-  async getById(id: string): Promise<Incident | null> {
-    const data = await httpClient.get<any>(`${this.baseUrl}${this.hotelId}/incidents/${id}`);
+  async getById(id: string, hotelId: string): Promise<Incident | null> {
+    const data = await httpClient.get<any>(`${this.baseUrl}${hotelId}/incidents/${id}`);
     return this.mapToEntity(data);
   }
 
-  async create(data: Omit<Incident, 'id'>): Promise<Incident> {
-    // Backend expects snake_case for creation? 
-    // Schema IncidentCreate uses snake_case fields (from IncidentBase).
-    // So we need to map camelCase -> snake_case for request, and snake_case -> camelCase for response.
+  async create(data: Omit<Incident, 'id'>, hotelId: string): Promise<Incident> {
     const payload = this.mapToPayload(data);
-    const response = await httpClient.post<any>(`${this.baseUrl}${this.hotelId}/incidents`, payload);
+    const response = await httpClient.post<any>(`${this.baseUrl}${hotelId}/incidents`, payload);
     return this.mapToEntity(response);
   }
 
-  async update(id: string, data: Partial<Incident>): Promise<Incident> {
+  async update(id: string, data: Partial<Incident>, hotelId: string): Promise<Incident> {
     const payload = this.mapToPayload(data);
-    const response = await httpClient.put<any>(`${this.baseUrl}${this.hotelId}/incidents/${id}`, payload);
+    const response = await httpClient.put<any>(`${this.baseUrl}${hotelId}/incidents/${id}`, payload);
     return this.mapToEntity(response);
   }
 
-  async delete(id: string): Promise<void> {
-    return httpClient.delete(`${this.baseUrl}${this.hotelId}/incidents/${id}`);
+  async delete(id: string, hotelId: string): Promise<void> {
+    return httpClient.delete(`${this.baseUrl}${hotelId}/incidents/${id}`);
   }
 
   private mapToEntity(data: any): Incident {

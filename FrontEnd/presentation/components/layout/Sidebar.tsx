@@ -102,8 +102,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   currentRoute, 
   onNavigate, 
   viewMode = 'super', 
-  onSwitchBack, 
-  onSwitchToHotel,
   isCollapsed = false,
   onToggleCollapse,
   isMobileOpen = false,
@@ -183,25 +181,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
 
-          <div className={`mt-4 pt-6 border-t border-black/5 dark:border-white/10 space-y-2 ${isCollapsed ? 'px-0' : ''}`}>
-              {!isHotelMode ? (
-                <button 
-                  onClick={onSwitchToHotel}
-                  className={`w-full flex items-center gap-3 px-4 py-3 bg-accent-muted text-accent-strong rounded-xl transition-all shadow-lg shadow-accent/10 hover:scale-[1.02] active:scale-95 group ${isCollapsed ? 'justify-center px-0 mx-2 w-auto' : ''}`}
-                >
-                    <ArrowRightLeft size={18} strokeWidth={2.5} className="group-hover:rotate-180 transition-transform duration-500" />
-                    {!isCollapsed && <span className="text-[13px] font-bold uppercase tracking-widest">Hotel Panel</span>}
-                </button>
-              ) : (
-                <button 
-                  onClick={onSwitchBack}
-                  className={`w-full flex items-center gap-3 px-4 py-3 bg-accent-muted text-accent-strong rounded-xl transition-all shadow-lg shadow-accent/10 hover:scale-[1.02] active:scale-95 group ${isCollapsed ? 'justify-center px-0 mx-2 w-auto' : ''}`}
-                >
-                    <ShieldCheck size={18} strokeWidth={2.5} className="group-hover:scale-110 transition-transform duration-300" />
-                    {!isCollapsed && <span className="text-[13px] font-bold uppercase tracking-widest">Admin View</span>}
-                </button>
-              )}
-              
+          <div className={`mt-4 pt-6 border-t border-black/5 dark:border-white/10 ${isCollapsed ? 'px-0' : ''}`}>
               <div 
                 onClick={onLogout}
                 className={`cursor-pointer flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors ${isCollapsed ? 'justify-center px-0 mx-2' : ''}`}

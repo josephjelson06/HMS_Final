@@ -9,6 +9,7 @@ from app.routers import (
     rooms,
     incidents,
     tickets,
+    auth,
 )
 from app.database import engine, Base
 import app.models.kiosk  # noqa: F401
@@ -56,6 +57,7 @@ app.include_router(roles.router, prefix="/api/roles", tags=["roles"])
 app.include_router(rooms.router, prefix="/api", tags=["rooms"])
 app.include_router(incidents.router, prefix="/api", tags=["incidents"])
 app.include_router(tickets.router, prefix="/api", tags=["tickets"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 
 
 @app.get("/")

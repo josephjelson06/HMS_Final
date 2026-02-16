@@ -2,25 +2,41 @@
   {
     "name": "Joseph Jelson",
     "email": "joseph@atc.com",
+    "password": "password123",
     "role": "Super Admin",
     "mobile": "+91 98765 43210",
     "department": "Engineering",
-    "status": "Active"
+    "status": "Active",
+    "hotel_id": null
   },
   {
     "name": "Jacob Xavier",
     "email": "jacob@atc.com",
+    "password": "password123",
     "role": "Finance",
     "mobile": "+91 98765 43211",
     "department": "Finance",
-    "status": "Active"
+    "status": "Active",
+    "hotel_id": 1
   },
   {
     "name": "Melrick Pereira",
     "email": "melrick@atc.com",
+    "password": "password123",
     "role": "Operations",
     "mobile": "+91 98765 43212",
     "department": "Operations",
-    "status": "Active"
+    "status": "Active",
+    "hotel_id": 2
+  },
+  {
+    "name": "Hotel Manager 3",
+    "email": "hotel3@test.com",
+    "password": "password123",
+    "role": "Support",
+    "mobile": "+91 98765 43213",
+    "department": "Support",
+    "status": "Active",
+    "hotel_id": 3
   }
 ]

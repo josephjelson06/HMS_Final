@@ -1,12 +1,24 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { AuthUser } from '../../domain/contracts/IAuthService';
 import { authService } from '../../infrastructure/config/container';
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Default to true while checking session
   const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    async function checkSession() {
+      const currentUser = await authService.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+        setIsAuthenticated(true);
+      }
+      setLoading(false);
+    }
+    checkSession();
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
@@ -30,18 +42,5 @@ export function useAuth() {
     setIsAuthenticated(false);
   }, []);
 
-  // Quick login for current SPA (preserves existing behavior)
-  const quickLogin = useCallback((role: 'super' | 'hotel') => {
-    const mockUser: AuthUser = {
-      id: role === 'super' ? 'U-9021' : 'H-001',
-      name: role === 'super' ? 'Aditya Sharma' : 'Hotel Manager',
-      email: role === 'super' ? 'admin@atc.com' : 'front@hotel.com',
-      role,
-    };
-    setUser(mockUser);
-    setIsAuthenticated(true);
-    return mockUser;
-  }, []);
-
-  return { user, isAuthenticated, loading, error, login, logout, quickLogin };
+  return { user, isAuthenticated, loading, error, login, logout };
 }

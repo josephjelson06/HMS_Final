@@ -45,9 +45,25 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
 
   useEffect(() => {
     const isAuthed = getCookie(AUTH_COOKIE) === "1";
+    const role = getCookie(ROLE_COOKIE) as ViewMode;
+
     if (!isAuthed) {
       router.replace("/login");
       return;
+    }
+
+    // Role Enforcement: If user is in wrong section, redirect them to their correct dashboard
+    if (role === "hotel" && viewMode === "super") {
+      router.replace("/hotel/dashboard");
+      return;
+    }
+    if (role === "super" && viewMode === "hotel") {
+      // Allow 'super' to access hotel pages ONLY if they are impersonating.
+      const isImp = getCookie(IMPERSONATING_COOKIE) === "1";
+      if (!isImp) {
+        router.replace("/super/dashboard");
+        return;
+      }
     }
 
     const isImp = getCookie(IMPERSONATING_COOKIE) === "1";
@@ -56,7 +72,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
     setImpersonatedHotel(hotel);
 
     setReady(true);
-  }, [router]);
+  }, [router, viewMode]);
 
   const startImpersonation = useCallback((hotelName: string) => {
     setImpersonatedHotel(hotelName);
@@ -85,18 +101,6 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
     [router, viewMode],
   );
 
-  const onSwitchToHotel = useCallback(() => {
-    router.push("/hotel/dashboard");
-  }, [router]);
-
-  const onSwitchBack = useCallback(() => {
-    deleteCookie(IMPERSONATING_COOKIE);
-    deleteCookie(IMPERSONATED_HOTEL_COOKIE);
-    setIsImpersonating(false);
-    setImpersonatedHotel(null);
-    router.push("/super/dashboard");
-  }, [router]);
-
   const onLogout = useCallback(() => {
     deleteCookie(AUTH_COOKIE);
     deleteCookie(ROLE_COOKIE);
@@ -121,8 +125,6 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           isImpersonating={isImpersonating}
           impersonatedHotel={impersonatedHotel}
           onNavigate={onNavigate}
-          onSwitchBack={onSwitchBack}
-          onSwitchToHotel={onSwitchToHotel}
           onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
           onCloseMobile={() => setIsMobileMenuOpen(false)}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}

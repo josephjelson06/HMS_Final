@@ -27,22 +27,21 @@ def seed_users():
     current_count = db.query(User).count()
 
     for i, user_data in enumerate(users_data):
-        # Check if exists by email to avoid duplicates
-        existing = db.query(User).filter(User.email == user_data["email"]).first()
-        if existing:
-            print(f"Skipping {user_data['name']} (already exists)")
-            continue
+        # Check if exists by email
+        user = db.query(User).filter(User.email == user_data["email"]).first()
 
-        print(f"Seeding user: {user_data['name']}")
+        if user:
+            print(f"Updating user: {user_data['name']}")
+            for key, value in user_data.items():
+                setattr(user, key, value)
+        else:
+            print(f"Seeding user: {user_data['name']}")
+            # Generate Employee ID
+            employee_id = f"ATC-EMP-{(current_count + i + 1):03d}"
+            user = User(**user_data, employee_id=employee_id, last_login="Never")
+            db.add(user)
 
-        # Generate Employee ID
-        employee_id = f"ATC-EMP-{(current_count + i + 1):03d}"
-
-        # Create User
-        user = User(**user_data, employee_id=employee_id, last_login="Never")
-        db.add(user)
         db.commit()
-        db.refresh(user)
 
     db.close()
     print("User seeding completed successfully!")

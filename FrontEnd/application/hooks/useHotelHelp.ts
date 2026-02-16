@@ -1,36 +1,35 @@
-'use client';
-
 import { useState, useEffect, useCallback } from 'react';
 import type { HotelTicket } from '@/domain/entities/HotelTicket';
 import { repositories } from '@/infrastructure/config/container';
+import { useAuth } from './useAuth';
 
 export function useHotelHelp() {
+  const { user } = useAuth();
   const [tickets, setTickets] = useState<HotelTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchTickets = useCallback(async () => {
+    if (!user?.hotelId) return;
     try {
       setLoading(true);
-      // Hardcoded hotel ID '1' for now as auth doesn't provide it yet
-      // In a real app, we'd get this from useAuth().user.hotelId
-      const data = await repositories.tickets.getHotelTickets('1');
+      const data = await repositories.tickets.getHotelTickets(user.hotelId);
       setTickets(data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch hotel tickets'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.hotelId]);
 
   useEffect(() => { fetchTickets(); }, [fetchTickets]);
 
   const createTicket = useCallback(async (data: Omit<HotelTicket, 'id'>) => {
-    // Hardcoded hotel ID '1'
-    const created = await repositories.tickets.createTicket('1', data);
+    if (!user?.hotelId) throw new Error('Unauthorized');
+    const created = await repositories.tickets.createTicket(user.hotelId, data);
     setTickets((prev) => [...prev, created]);
     return created;
-  }, []);
+  }, [user?.hotelId]);
 
   const updateTicket = useCallback(async (id: string, data: Partial<HotelTicket>) => {
     // Admin uses updateTicket, but maybe hotel can too?

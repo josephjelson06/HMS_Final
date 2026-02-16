@@ -1,10 +1,10 @@
 import type { HotelStaffMember, HotelRole } from '../entities/HotelStaff';
 
 export interface IHotelStaffRepository {
-  getAllStaff(): Promise<HotelStaffMember[]>;
-  getAllRoles(): Promise<HotelRole[]>;
-  getStaffById(id: string): Promise<HotelStaffMember | null>;
-  createStaff(data: Omit<HotelStaffMember, 'id'>): Promise<HotelStaffMember>;
-  updateStaff(id: string, data: Partial<HotelStaffMember>): Promise<HotelStaffMember>;
-  deleteStaff(id: string): Promise<void>;
+  getAllStaff(hotelId: string): Promise<HotelStaffMember[]>;
+  getAllRoles(hotelId: string): Promise<HotelRole[]>;
+  getStaffById(id: string, hotelId: string): Promise<HotelStaffMember | null>;
+  createStaff(data: Omit<HotelStaffMember, 'id'>, hotelId: string): Promise<HotelStaffMember>;
+  updateStaff(id: string, data: Partial<HotelStaffMember>, hotelId: string): Promise<HotelStaffMember>;
+  deleteStaff(id: string, hotelId: string): Promise<void>;
 }

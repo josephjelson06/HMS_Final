@@ -3,24 +3,24 @@ import type { Guest } from '@/domain/entities/Guest';
 import { mockGuests } from '@/data/guests';
 
 export class MockGuestRepository implements IGuestRepository {
-  async getAll(): Promise<Guest[]> {
+  async getAll(_hotelId: string): Promise<Guest[]> {
     return mockGuests;
   }
 
-  async getById(id: string): Promise<Guest | null> {
+  async getById(id: string, _hotelId: string): Promise<Guest | null> {
     return mockGuests.find((g) => g.id === id) ?? null;
   }
 
-  async create(data: Omit<Guest, 'id'>): Promise<Guest> {
+  async create(data: Omit<Guest, 'id'>, _hotelId: string): Promise<Guest> {
     return { id: String(Date.now()), ...data };
   }
 
-  async update(id: string, data: Partial<Guest>): Promise<Guest> {
+  async update(id: string, data: Partial<Guest>, _hotelId: string): Promise<Guest> {
     const existing = mockGuests.find((g) => g.id === id);
     return { ...(existing ?? mockGuests[0]), ...data } as Guest;
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(_id: string, _hotelId: string): Promise<void> {
     /* no-op in mock */
   }
 }
