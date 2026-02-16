@@ -74,16 +74,16 @@ const AppShell: React.FC<AppShellProps> = ({
       />
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <Header 
+          viewMode={viewMode} 
+          onNavigate={onNavigate} 
+          onOpenMobileMenu={onOpenMobileMenu}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onToggleSidebar={onToggleCollapse}
+          onLogout={onLogout}
+        />
+        
         <main className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth custom-scrollbar">
-          <Header 
-            viewMode={viewMode} 
-            onNavigate={onNavigate} 
-            onOpenMobileMenu={onOpenMobileMenu}
-            isSidebarCollapsed={isSidebarCollapsed}
-            onToggleSidebar={onToggleCollapse}
-            onLogout={onLogout}
-          />
-          
           <div className="p-2 md:p-4 pb-10 max-w-[1600px] mx-auto">
             {children}
           </div>

@@ -55,18 +55,13 @@ const KioskFleet: React.FC<KioskFleetProps> = ({ onNavigateDetail }) => {
   const { isDarkMode } = useTheme();
   const { kiosks: allKiosks } = useKiosks();
   const [activeTab, setActiveTab] = useState<FleetTab>('DEVICES');
-  const [view, setView] = useState<'grid' | 'table'>('table');
-  const [selectedKiosks, setSelectedKiosks] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('ALL STATUS');
   const [filterHotel, setFilterHotel] = useState('ALL HOTELS');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const toggleSelect = (id: string) => {
-    setSelectedKiosks(prev => prev.includes(id) ? prev.filter(k => k !== id) : [...prev, id]);
-  };
 
   const filteredData = useMemo(() => {
     return allKiosks.filter(k => {
@@ -187,16 +182,6 @@ const KioskFleet: React.FC<KioskFleetProps> = ({ onNavigateDetail }) => {
                           ]}
                       />
                       
-                      <div className="h-10 w-px bg-black/5 dark:bg-white/10 mx-2 hidden md:block"></div>
-                      
-                      <div className="flex bg-black/5 dark:bg-white/5 rounded-2xl p-1.5 border border-white/10">
-                          <button onClick={() => setView('grid')} className={`p-3 rounded-xl transition-all ${view === 'grid' ? 'bg-white dark:bg-white/10 shadow-lg text-accent-strong' : 'text-gray-400 hover:text-white'}`}>
-                              <LayoutGrid size={20} />
-                          </button>
-                          <button onClick={() => setView('table')} className={`p-3 rounded-xl transition-all ${view === 'table' ? 'bg-white dark:bg-white/10 shadow-lg text-accent-strong' : 'text-gray-400 hover:text-white'}`}>
-                              <List size={20} />
-                          </button>
-                      </div>
                   </div>
               </div>
             </GlassCard>
@@ -204,7 +189,6 @@ const KioskFleet: React.FC<KioskFleetProps> = ({ onNavigateDetail }) => {
 
           {/* Main Content View */}
           <div className="relative z-10">
-            {view === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
                 {paginatedData.map((kiosk) => {
                   const isCritical = kiosk.status === 'CRITICAL';
@@ -259,101 +243,7 @@ const KioskFleet: React.FC<KioskFleetProps> = ({ onNavigateDetail }) => {
                   );
                 })}
               </div>
-            ) : (
-              <GlassCard noPadding clipContent className="overflow-hidden border-white/10 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-                {/* Unified Table Header */}
-                <div className="px-10 py-6 grid grid-cols-12 gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 bg-black/5 dark:bg-white/[0.03] border-b border-white/10">
-                    <div className="col-span-1 flex items-center">
-                        <CheckSquare size={16} className="opacity-30" />
-                    </div>
-                    <div className="col-span-2 flex items-center">DEVICE ID</div>
-                    <div className="col-span-3 flex items-center">HOTEL IDENTITY</div>
-                    <div className="col-span-1 flex items-center">STATUS</div>
-                    <div className="col-span-1 flex items-center justify-center">LAST HEARTBEAT</div>
-                    <div className="col-span-2 flex items-center justify-center px-4">PAPER LEVEL</div>
-                    <div className="col-span-1 flex items-center justify-center">FIRMWARE</div>
-                    <div className="col-span-1 flex items-center justify-end pr-2">ACTION</div>
-                </div>
-
-                {/* High Density Unified Data Rows */}
-                <div className="divide-y divide-white/5">
-                    {paginatedData.map((k) => (
-                      <div 
-                        key={k.id}
-                        onClick={() => onNavigateDetail?.(k.id)}
-                        className="group grid grid-cols-12 gap-4 items-center px-10 py-5 hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer border-l-4 border-transparent hover:border-accent-strong"
-                      >
-                        <div className="col-span-1" onClick={(e) => { e.stopPropagation(); toggleSelect(k.id); }}>
-                            {selectedKiosks.includes(k.id) ? <CheckSquare size={20} className="text-accent-strong" /> : <Square size={20} className="text-gray-500" />}
-                        </div>
-                        <div className="col-span-2 text-sm font-black dark:text-white font-mono uppercase tracking-tighter">{k.id}</div>
-                        <div className="col-span-3">
-                            <span className="text-sm font-black dark:text-gray-300 leading-tight block truncate uppercase tracking-tight">{k.hotel}</span>
-                        </div>
-                        <div className="col-span-1">
-                            <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full ${k.status === 'ONLINE' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
-                                <span className={`text-[10px] font-bold uppercase tracking-widest ${k.status === 'ONLINE' ? 'text-gray-500' : 'text-red-500'}`}>{k.status}</span>
-                            </div>
-                        </div>
-                        <div className="col-span-1 text-center text-[10px] font-black text-gray-500 uppercase tracking-tighter">{k.lastSeen}</div>
-                        <div className="col-span-2 px-8">
-                            <PaperLevel level={k.paper} compact={true} />
-                        </div>
-                        <div className="col-span-1 flex justify-center">
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-mono font-black text-gray-500">{k.firmware}</span>
-                                {k.update && <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_5px_currentColor]"></div>}
-                            </div>
-                        </div>
-                        <div className="col-span-1 flex justify-end">
-                            <GlassDropdown 
-                                trigger={
-                                    <button className="p-2.5 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all bg-black/5 dark:bg-white/5"><MoreVertical size={22} /></button>
-                                }
-                                items={[
-                                    { icon: ExternalLink, label: 'Full Diagnostics', onClick: () => onNavigateDetail?.(k.id), variant: 'primary' },
-                                    { icon: Clock, label: 'Shift Logs', onClick: () => {} },
-                                    { icon: Download, label: 'Update Firmware', onClick: () => {}, variant: 'warning' },
-                                    { icon: WifiOff, label: 'Force Reboot', onClick: () => {}, variant: 'danger' },
-                                ]}
-                            />
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </GlassCard>
-            )}
           </div>
-
-          <Pagination 
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            itemsPerPage={itemsPerPage}
-            onItemsPerPageChange={setItemsPerPage}
-            totalItems={filteredData.length}
-          />
-
-          {/* Bulk Action Footer */}
-          {selectedKiosks.length > 0 && (
-              <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-2xl px-4 animate-in slide-in-from-bottom-10">
-                  <div className="bg-gray-900 dark:bg-accent-strong p-6 rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] border border-white/20 flex justify-between items-center">
-                      <div className="flex items-center gap-4 pl-4">
-                          <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white">
-                            <ShieldCheck size={24} />
-                          </div>
-                          <span className="text-sm font-black uppercase tracking-[0.2em] text-white">{selectedKiosks.length} Devices Mapped</span>
-                      </div>
-                      <div className="flex gap-3">
-                          <button className="px-8 py-3.5 bg-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest text-white hover:bg-white/20 transition-all flex items-center gap-2">
-                              <Download size={16} /> Bulk Firmware
-                          </button>
-                          <button className="px-8 py-3.5 bg-white text-black rounded-xl text-[10px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">Reboot Fleet</button>
-                      </div>
-                  </div>
-              </div>
-          )}
         </>
       ) : (
         /* Render new Firmware Management Tab */

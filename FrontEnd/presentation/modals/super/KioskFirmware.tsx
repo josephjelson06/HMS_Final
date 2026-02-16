@@ -76,101 +76,95 @@ const KioskFirmware: React.FC = () => {
         />
       </div>
 
-      {/* Release Management Table */}
-      <GlassCard noPadding className="overflow-hidden border-white/10 shadow-2xl">
-        <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 bg-black/5 dark:bg-white/[0.02]">
-           <div className="flex items-center gap-6 w-full md:w-auto">
-              <div className="relative group flex-1 md:w-80">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-accent transition-colors" />
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="block w-full pl-11 pr-4 py-2.5 rounded-xl border border-white/10 bg-black/5 dark:bg-white/5 text-sm dark:text-white placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-accent/10 transition-all"
-                    placeholder="Search version or channel..."
-                  />
-              </div>
-              <button className="flex items-center gap-2 text-[10px] font-bold uppercase text-gray-500 hover:text-white transition-colors">
-                <Filter size={14} /> Filter Releases
-              </button>
-           </div>
-           
-           <button 
-             onClick={() => setIsAddModalOpen(true)}
-             className="w-full md:w-auto flex items-center justify-center gap-2 bg-accent-strong text-white px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
-           >
-              <Plus size={18} strokeWidth={3} />
-              Upload New Build
-           </button>
-        </div>
+      {/* Release Management Search/Action Bar */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-6 w-full md:w-auto">
+            <div className="relative group flex-1 md:w-80">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-accent transition-colors" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="block w-full pl-11 pr-4 py-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/5 text-sm dark:text-white placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-accent/10 transition-all font-bold"
+                  placeholder="Search version or channel..."
+                />
+            </div>
+            <button className="flex items-center gap-2 text-[10px] font-bold uppercase text-gray-500 hover:text-white transition-colors">
+              <Filter size={14} /> Filter Releases
+            </button>
+          </div>
+          
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="w-full md:w-auto flex items-center justify-center gap-2 bg-accent-strong text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
+          >
+            <Plus size={18} strokeWidth={3} />
+            Upload New Build
+          </button>
+      </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-black/10 dark:bg-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-500 border-b border-white/10">
-                <th className="px-10 py-5">Version Identifier</th>
-                <th className="px-8 py-5">Release Channel</th>
-                <th className="px-8 py-5">Publication Date</th>
-                <th className="px-8 py-5">Hardware Logic</th>
-                <th className="px-8 py-5 text-center">Coverage</th>
-                <th className="px-8 py-5">Lifecycle Status</th>
-                <th className="px-8 py-5 text-right pr-10">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {allFirmware.map((f) => (
-                <tr key={f.version} className="hover:bg-white/5 transition-all group">
-                  <td className="px-10 py-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-black/10 dark:bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-accent transition-colors">
-                            <BinaryIcon size={20} />
-                        </div>
-                        <span className="text-sm font-black dark:text-white font-mono uppercase tracking-tighter">{f.version}</span>
+      {/* Release Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {allFirmware.map((f) => (
+          <div key={f.version} className="glass-card p-8 rounded-[2.5rem] border border-white/5 hover:border-accent-strong/30 transition-all group relative overflow-hidden">
+            <div className="flex justify-between items-start mb-6">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-black/10 dark:bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-accent transition-colors shadow-inner">
+                        <BinaryIcon size={24} />
                     </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <ChannelBadge channel={f.channel} />
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
-                        <Clock size={14} />
-                        {f.releaseDate}
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-2">
-                        <Cpu size={14} className="text-gray-400" />
-                        <span className="text-[10px] font-bold uppercase text-gray-400">{f.compatibility}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 text-center">
-                    <div className="flex flex-col items-center gap-1.5">
-                        <span className="text-sm font-black dark:text-white">{f.activeDevices} Units</span>
-                        <div className="h-1 w-16 bg-black/10 dark:bg-white/5 rounded-full overflow-hidden">
-                           <div className="h-full bg-accent" style={{ width: `${(f.activeDevices / 65) * 100}%` }}></div>
+                    <div>
+                        <h4 className="text-lg font-black dark:text-white font-mono uppercase tracking-tighter">{f.version}</h4>
+                        <div className="flex gap-2 mt-1">
+                            <ChannelBadge channel={f.channel} />
+                            <StatusBadge status={f.status} />
                         </div>
                     </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <StatusBadge status={f.status} />
-                  </td>
-                  <td className="px-8 py-6 text-right pr-10">
-                    <GlassDropdown 
-                      trigger={<button className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-gray-500 transition-all"><MoreVertical size={20} /></button>}
-                      items={[
-                        { icon: Download, label: 'Download Binary', onClick: () => {} },
-                        { icon: Activity, label: 'Release Notes', onClick: () => {} },
-                        { icon: ShieldCheck, label: 'Verify Checksum', onClick: () => {}, hasSeparatorAfter: true },
-                        { icon: AlertTriangle, label: 'Deprecate Build', onClick: () => {}, variant: 'danger' }
-                      ]}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </GlassCard>
+                </div>
+                <GlassDropdown 
+                    trigger={<button className="p-2 rounded-xl hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 transition-all"><MoreVertical size={20} /></button>}
+                    items={[
+                      { icon: Download, label: 'Download Binary', onClick: () => {} },
+                      { icon: Activity, label: 'Release Notes', onClick: () => {} },
+                      { icon: ShieldCheck, label: 'Verify Checksum', onClick: () => {}, hasSeparatorAfter: true },
+                      { icon: AlertTriangle, label: 'Deprecate Build', onClick: () => {}, variant: 'danger' }
+                    ]}
+                />
+            </div>
+
+            <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4 py-4 border-y border-white/5">
+                    <div>
+                        <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1">Release Date</p>
+                        <div className="flex items-center gap-2 text-[10px] font-bold dark:text-gray-300">
+                            <Clock size={12} className="text-gray-400" />
+                            {f.releaseDate}
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1">Hardware ID</p>
+                        <div className="flex items-center gap-2 text-[10px] font-bold dark:text-gray-300">
+                            <Cpu size={12} className="text-gray-400" />
+                            {f.compatibility}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div className="flex justify-between items-center mb-2">
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Fleet Adoption</p>
+                        <span className="text-[11px] font-black dark:text-white">{f.activeDevices} Units</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-black/10 dark:bg-white/5 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-accent transition-all duration-1000" 
+                          style={{ width: `${(f.activeDevices / 65) * 100}%` }}
+                        ></div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Forge Policy Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

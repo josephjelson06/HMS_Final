@@ -53,8 +53,8 @@ button:focus-visible {
 
 :root {
   /* ── Accent Palette: BLUE (Light Mode) ── */
-  --accent: #3b82f6;               /* blue-500 */
-  --accent-strong: #2563eb;        /* blue-600 */
+  --accent: #3b82f6; /* blue-500 */
+  --accent-strong: #2563eb; /* blue-600 */
   --accent-muted: rgba(59, 130, 246, 0.1);
   --accent-ring: rgba(59, 130, 246, 0.3);
 
@@ -75,8 +75,8 @@ button:focus-visible {
 /* DARK MODE - Clean, Flat Glass */
 .dark {
   /* ── Accent Palette: ORANGE (Dark Mode) ── */
-  --accent: #f97316;               /* orange-500 */
-  --accent-strong: #ea580c;        /* orange-600 */
+  --accent: #f97316; /* orange-500 */
+  --accent-strong: #ea580c; /* orange-600 */
   --accent-muted: rgba(249, 115, 22, 0.1);
   --accent-ring: rgba(249, 115, 22, 0.3);
 
@@ -237,4 +237,13 @@ input[type="number"] {
 }
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }

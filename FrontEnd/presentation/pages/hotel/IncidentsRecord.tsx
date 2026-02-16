@@ -3,28 +3,22 @@ import {
   ShieldAlert, Search, Filter, Plus, Clock, 
   MessageSquare, User, DoorOpen, ChevronRight,
   AlertTriangle, CheckCircle2, History, Wrench,
-  Zap, Info, Flag, LayoutGrid, List, AlertCircle,
+  Zap, Info, LayoutGrid, AlertCircle,
   Link as LinkIcon, Camera, MousePointer2, UserPlus,
   Monitor, Brush, Lock
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
-import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
-import NewIncidentModal from '../../modals/hotel/NewIncidentModal';
 import IncidentDetailModal from '../../modals/hotel/IncidentDetailModal';
 import type { IncidentCategory, IncidentPriority, IncidentStatus, Incident } from '@/domain/entities/Incident';
 import { useIncidents } from '@/application/hooks/useIncidents';
 
 const IncidentsRecord: React.FC = () => {
   const { incidents: allIncidents } = useIncidents();
-  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('kanban');
   const [activeTab, setActiveTab] = useState<IncidentStatus | 'All'>('All');
   const [search, setSearch] = useState('');
-  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const filteredIncidents = useMemo(() => {
     return allIncidents.filter(inc => {
@@ -35,17 +29,6 @@ const IncidentsRecord: React.FC = () => {
       return matchesSearch && matchesStatus;
     });
   }, [allIncidents, search, activeTab]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, activeTab, viewMode, itemsPerPage]);
-
-  const paginatedIncidents = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredIncidents.slice(start, start + itemsPerPage);
-  }, [filteredIncidents, currentPage, itemsPerPage]);
-
-  const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage);
 
   const PriorityBadge = ({ level }: { level: IncidentPriority }) => {
     const styles = {
@@ -107,30 +90,7 @@ const IncidentsRecord: React.FC = () => {
     <div className="p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
       
       {/* Header Context */}
-      <PageHeader title="Incident Records" subtitle="Operational Issue & Problem Tracker">
-        <div className="flex bg-black/5 dark:bg-white/5 rounded-2xl p-1.5 border border-white/5">
-          <button 
-            onClick={() => setViewMode('table')} 
-            className={`p-2 rounded-xl transition-all ${viewMode === 'table' ? 'bg-white dark:bg-white/10 shadow-lg text-accent-strong' : 'text-gray-400 hover:text-white'}`}
-          >
-            <List size={20} />
-          </button>
-          <button 
-            onClick={() => setViewMode('kanban')} 
-            className={`p-2 rounded-xl transition-all ${viewMode === 'kanban' ? 'bg-white dark:bg-white/10 shadow-lg text-accent-strong' : 'text-gray-400 hover:text-white'}`}
-          >
-            <LayoutGrid size={20} />
-          </button>
-        </div>
-        <Button
-          variant="danger"
-          size="md"
-          onClick={() => setIsNewModalOpen(true)}
-          icon={<Flag size={18} strokeWidth={3} />}
-        >
-          Raise New Incident
-        </Button>
-      </PageHeader>
+      <PageHeader title="Incident Records" subtitle="Operational Issue & Problem Tracker" />
 
       {/* Analytics Strip */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -168,75 +128,14 @@ const IncidentsRecord: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content Rendering */}
-      {viewMode === 'kanban' ? (
-        <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar">
-          <KanbanColumn status="Open" />
-          <KanbanColumn status="In Progress" />
-          <KanbanColumn status="Resolved" />
-          <KanbanColumn status="Closed" />
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <GlassCard noPadding className="overflow-hidden border-white/10 shadow-2xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-black/10 dark:bg-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 border-b border-white/5">
-                    <th className="px-8 py-6">Incident ID</th>
-                    <th className="px-8 py-6">Priority</th>
-                    <th className="px-8 py-6">Subject / Room</th>
-                    <th className="px-8 py-6">Category</th>
-                    <th className="px-8 py-6">Reported By</th>
-                    <th className="px-8 py-6">Owner</th>
-                    <th className="px-8 py-6 text-right pr-10">Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {paginatedIncidents.map((inc) => (
-                    <tr 
-                      key={inc.id} 
-                      onClick={() => setSelectedIncident(inc)}
-                      className="hover:bg-white/5 transition-all group cursor-pointer border-l-4 border-transparent hover:border-red-600"
-                    >
-                      <td className="px-8 py-6">
-                        <span className="text-xs font-mono font-bold text-red-600 group-hover:underline">{inc.id}</span>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-2">
-                          <PriorityBadge level={inc.priority} />
-                          {inc.slaBreached && <div className="w-1.5 h-1.5 rounded-full bg-red-600 shadow-[0_0_8px_currentColor] animate-pulse"></div>}
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex flex-col">
-                           <span className="text-sm font-black dark:text-white mb-1 group-hover:text-accent transition-colors uppercase tracking-tight">{inc.subject}</span>
-                           <span className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1"><DoorOpen size={10} /> Room #{inc.room}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6"><span className="inline-block px-2 py-1 text-[10px] font-bold uppercase text-gray-400 bg-black/5 dark:bg-white/5 border border-white/5 rounded leading-none whitespace-nowrap">{inc.category}</span></td>
-                      <td className="px-8 py-6 text-xs font-bold dark:text-gray-300">{inc.reportedBy}</td>
-                      <td className="px-8 py-6 text-xs font-bold dark:text-gray-300">{inc.assignedTo}</td>
-                      <td className="px-8 py-6 text-right pr-10 text-[10px] font-bold text-gray-500 uppercase">{inc.createdAt}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </GlassCard>
-          
-          <Pagination 
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            itemsPerPage={itemsPerPage}
-            onItemsPerPageChange={setItemsPerPage}
-            totalItems={filteredIncidents.length}
-          />
-        </div>
-      )}
+      {/* Main Content Rendering - Kanban View Only */}
+      <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar">
+        <KanbanColumn status="Open" />
+        <KanbanColumn status="In Progress" />
+        <KanbanColumn status="Resolved" />
+        <KanbanColumn status="Closed" />
+      </div>
 
-      <NewIncidentModal isOpen={isNewModalOpen} onClose={() => setIsNewModalOpen(false)} />
       <IncidentDetailModal isOpen={!!selectedIncident} incident={selectedIncident} onClose={() => setSelectedIncident(null)} />
 
     </div>

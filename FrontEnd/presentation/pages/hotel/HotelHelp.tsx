@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   LifeBuoy, MessageSquare, Plus, FileQuestion, Monitor, 
   Phone, ChevronRight, Search, Filter, Clock, 
-  CheckCircle2, AlertTriangle, MessageCircle, ArrowRight,
+  CheckCircle2, AlertTriangle, ArrowRight,
   ShieldAlert, Headphones, IndianRupee, HelpCircle, Info
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
@@ -54,7 +54,7 @@ const HotelHelp: React.FC = () => {
       <PageHeader
         title="Support Helpdesk"
         subtitle="Direct Lifeline to ATC Platform Team"
-        badge="Dummy Data Page"
+        badge="Platform Support"
       >
         <Button
           variant="primary"
@@ -74,96 +74,84 @@ const HotelHelp: React.FC = () => {
          <SummaryItem label="Avg Response" value="42m" icon={MessageSquare} color="text-purple-500" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Main Ticket List */}
-        <div className="lg:col-span-8 space-y-6">
-          <GlassCard noPadding className="overflow-hidden border-white/10 shadow-2xl">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between bg-black/5 dark:bg-white/[0.02]">
-                <div className="relative w-64 group">
-                    <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                    <input 
-                        type="text" 
-                        placeholder="Search ticket # or subject..." 
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-black/5 dark:bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs font-bold dark:text-white focus:outline-none"
-                    />
+      <div className="flex flex-col space-y-6">
+        {/* Search & Filter Bar */}
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="relative w-full md:w-96 group">
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors" />
+                <input 
+                    type="text" 
+                    placeholder="Search ticket # or subject..." 
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full bg-black/5 dark:bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-accent/20 transition-all placeholder:text-gray-500"
+                />
+            </div>
+            <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-black/5 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white hover:bg-black/10 transition-all border border-white/5">
+                <Filter size={14} /> Filter All Status
+            </button>
+        </div>
+
+        {/* Card-Based Ticket Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredTickets.map(t => (
+            <GlassCard 
+              key={t.id} 
+              onClick={() => setSelectedTicket(t)}
+              className="p-6 group cursor-pointer hover:scale-[1.02] transition-all border border-white/5 hover:border-accent/30 relative overflow-hidden"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-[10px] font-mono font-black text-accent-strong tracking-tighter opacity-70">#{t.id}</span>
+                <StatusBadge status={t.status} />
+              </div>
+              
+              <h4 className="text-base font-black dark:text-white leading-tight mb-4 group-hover:text-accent transition-colors line-clamp-2 min-h-[2.5rem]">
+                {t.subject}
+              </h4>
+
+              <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">{t.category}</span>
+                  <PriorityBadge level={t.priority} />
                 </div>
-                <button className="flex items-center gap-2 text-[10px] font-bold uppercase text-gray-500 hover:text-white transition-colors">
-                    <Filter size={14} /> Filter All Status
-                </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-black/10 dark:bg-white/5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500">
-                  <tr>
-                    <th className="px-8 py-5">Ticket ID</th>
-                    <th className="px-8 py-5">Issue Subject</th>
-                    <th className="px-8 py-5">Category</th>
-                    <th className="px-8 py-5">Priority</th>
-                    <th className="px-8 py-5">Status</th>
-                    <th className="px-8 py-5 text-right pr-10">Last Update</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {filteredTickets.map(t => (
-                    <tr 
-                      key={t.id} 
-                      onClick={() => setSelectedTicket(t)}
-                      className="hover:bg-white/5 transition-all group cursor-pointer border-l-4 border-transparent hover:border-accent-strong"
-                    >
-                      <td className="px-8 py-6">
-                        <span className="text-xs font-mono font-bold text-accent-strong group-hover:underline">{t.id}</span>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span className="text-sm font-black dark:text-white group-hover:text-accent transition-colors">{t.subject}</span>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span className="text-[10px] font-bold uppercase text-gray-400">{t.category}</span>
-                      </td>
-                      <td className="px-8 py-6"><PriorityBadge level={t.priority} /></td>
-                      <td className="px-8 py-6"><StatusBadge status={t.status} /></td>
-                      <td className="px-8 py-6 text-right pr-10 text-[10px] font-bold text-gray-500 uppercase">{t.updatedAt}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </GlassCard>
+                <div className="text-right">
+                  <p className="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">Last Update</p>
+                  <p className="text-[10px] font-black dark:text-gray-300">{t.updatedAt.split(',')[0]}</p>
+                </div>
+              </div>
+
+              {/* Decorative accent */}
+              <div className="absolute top-0 right-0 w-16 h-16 bg-accent opacity-0 group-hover:opacity-[0.03] rounded-full blur-2xl transition-opacity translate-x-1/2 -translate-y-1/2"></div>
+            </GlassCard>
+          ))}
         </div>
 
-        {/* Support Resources Sidebar */}
-        <div className="lg:col-span-4 space-y-6">
-           <GlassCard className="border-white/5">
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 mb-6">Staff Training & Docs</h3>
-              <div className="space-y-3">
-                 {[
-                   { l: 'Billing & GST Logic', i: IndianRupee },
-                   { l: 'KYC Compliance Guide', i: HelpCircle },
-                   { l: 'Platform Release Notes', i: FileQuestion }
-                 ].map((res, i) => (
-                   <button key={i} className="w-full flex items-center justify-between p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/5 hover:bg-white/10 transition-all group">
-                      <div className="flex items-center gap-3">
-                         <div className="p-2 rounded-xl bg-white/5 text-gray-500 group-hover:text-accent transition-colors"><res.i size={16} /></div>
-                         <span className="text-xs font-black uppercase dark:text-gray-300">{res.l}</span>
-                      </div>
-                      <ChevronRight size={14} className="text-gray-700 group-hover:translate-x-1 transition-all" />
-                   </button>
-                 ))}
-              </div>
-           </GlassCard>
+        {filteredTickets.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="w-20 h-20 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-gray-500 mb-6">
+              <LifeBuoy size={40} />
+            </div>
+            <h3 className="text-xl font-black dark:text-white mb-2">No tickets found</h3>
+            <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Try adjusting your search or filters</p>
+          </div>
+        )}
+      </div>
 
-           <div className="p-10 rounded-[2.5rem] bg-accent-strong text-white shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
-              <h4 className="text-xl font-black tracking-tighter mb-2 uppercase italic">Need Urgent Help?</h4>
-              <p className="text-sm font-medium opacity-80 mb-8 leading-relaxed">Our platform engineers are available 24/7 for critical system failures.</p>
-              <div className="p-5 rounded-3xl bg-black/20 text-center space-y-1 group hover:bg-black/30 transition-all cursor-pointer">
-                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Emergency Line</p>
-                 <p className="text-2xl font-black tracking-widest">+91 1800-ATC-HMS</p>
-              </div>
-           </div>
-        </div>
+      {/* Emergency Contact Strip */}
+      <div className="p-8 rounded-[3rem] bg-accent-strong/90 dark:bg-accent-strong/20 text-white shadow-2xl relative overflow-hidden border border-white/10 mt-12">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+            <div className="text-center md:text-left">
+              <h4 className="text-2xl font-black tracking-tighter mb-2 uppercase italic">Critical System Failure?</h4>
+              <p className="text-base font-medium opacity-80 leading-relaxed max-w-xl">Our high-priority engineers are on standby 24/7 to ensure your hotel operations never skip a beat.</p>
+            </div>
+            <div className="p-8 rounded-[2rem] bg-black/20 backdrop-blur-md text-center space-y-1 group hover:bg-black/40 transition-all cursor-pointer border border-white/10 min-w-[300px]">
+                <p className="text-[11px] font-black uppercase tracking-[0.3em] opacity-60 flex items-center justify-center gap-2">
+                  <Phone size={12} /> Emergency Priority Line
+                </p>
+                <p className="text-2xl font-black tracking-widest text-white shadow-sm">+91 1800-ATC-HMS</p>
+            </div>
+          </div>
       </div>
 
       <NewTicketModal isOpen={isNewModalOpen} onClose={() => setIsNewModalOpen(false)} />

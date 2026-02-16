@@ -65,9 +65,9 @@ const SidebarItem = ({
         ? 'bg-white text-accent-strong shadow-[0_10px_20px_-5px_rgba(0,0,0,0.1)] dark:bg-white/10 dark:text-white dark:shadow-none' 
         : 'text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5'
       }
-      ${collapsed ? 'justify-center px-0 mx-2' : ''}
+      ${collapsed ? 'justify-center px-0 mx-2 w-12 h-12 self-center' : ''}
     `}>
-      <Icon size={collapsed ? 22 : 20} className={`
+      <Icon size={collapsed ? 24 : 20} strokeWidth={2.5} className={`
         ${active ? 'text-accent-strong' : 'group-hover:scale-110 transition-transform text-gray-500 dark:text-gray-400'}
         ${collapsed ? 'shrink-0' : ''}
       `} />
@@ -120,12 +120,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         lg:rounded-[2.5rem] lg:m-4 lg:h-[calc(100vh-2rem)] overflow-hidden
       `}>
-        <div className="p-4 md:p-6 h-full flex flex-col custom-sidebar-scrollbar overflow-x-hidden">
+        <div className="p-4 md:p-6 h-full flex flex-col scrollbar-none overflow-x-hidden">
           
           {/* Brand Section */}
           <div className={`flex items-center gap-3 mb-10 mt-2 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'px-2'}`}>
-            <div className={`rounded-xl bg-accent-strong flex items-center justify-center text-white shadow-xl shadow-accent-strong/20 transition-all ${isCollapsed ? 'w-10 h-10' : 'w-11 h-11'}`}>
-              <Zap size={22} fill="currentColor" strokeWidth={0} />
+            <div className={`rounded-xl bg-accent-strong flex items-center justify-center text-white shadow-xl shadow-accent-strong/20 transition-all shrink-0 w-11 h-11`}>
+              <Zap size={24} fill="currentColor" strokeWidth={0} className="relative z-10" />
             </div>
             {!isCollapsed && (
               <span className="text-[20px] font-black text-[#1e293b] dark:text-white tracking-tight whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-300">
@@ -153,7 +153,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                 <SidebarSection title="Insights" collapsed={isCollapsed}>
                   <SidebarItem icon={HelpCircle} label="Help & Support" active={currentRoute === 'help'} onClick={() => onNavigate('help')} collapsed={isCollapsed} />
-                  <SidebarItem icon={CalendarDays} label="Audit Trail" active={currentRoute === 'hotel-audit'} onClick={() => onNavigate('hotel-audit')} collapsed={isCollapsed} />
                   <SidebarItem icon={BarChart3} label="Reports" active={currentRoute === 'hotel-reports'} onClick={() => onNavigate('hotel-reports')} collapsed={isCollapsed} />
                 </SidebarSection>
               </>
@@ -190,7 +189,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   onClick={onSwitchToHotel}
                   className={`w-full flex items-center gap-3 px-4 py-3 bg-accent-muted text-accent-strong rounded-xl transition-all shadow-lg shadow-accent/10 hover:scale-[1.02] active:scale-95 group ${isCollapsed ? 'justify-center px-0 mx-2 w-auto' : ''}`}
                 >
-                    <ArrowRightLeft size={18} className="group-hover:rotate-180 transition-transform duration-500" />
+                    <ArrowRightLeft size={18} strokeWidth={2.5} className="group-hover:rotate-180 transition-transform duration-500" />
                     {!isCollapsed && <span className="text-[13px] font-bold uppercase tracking-widest">Hotel Panel</span>}
                 </button>
               ) : (
@@ -198,7 +197,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   onClick={onSwitchBack}
                   className={`w-full flex items-center gap-3 px-4 py-3 bg-accent-muted text-accent-strong rounded-xl transition-all shadow-lg shadow-accent/10 hover:scale-[1.02] active:scale-95 group ${isCollapsed ? 'justify-center px-0 mx-2 w-auto' : ''}`}
                 >
-                    <ShieldCheck size={18} className="group-hover:scale-110 transition-transform duration-300" />
+                    <ShieldCheck size={18} strokeWidth={2.5} className="group-hover:scale-110 transition-transform duration-300" />
                     {!isCollapsed && <span className="text-[13px] font-bold uppercase tracking-widest">Admin View</span>}
                 </button>
               )}
@@ -207,7 +206,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onClick={onLogout}
                 className={`cursor-pointer flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors ${isCollapsed ? 'justify-center px-0 mx-2' : ''}`}
               >
-                  <LogOut size={20} />
+                  <LogOut size={20} strokeWidth={2.5} />
                   {!isCollapsed && <span className="text-[14px] font-black">Log Out</span>}
               </div>
           </div>
