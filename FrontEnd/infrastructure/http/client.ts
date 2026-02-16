@@ -88,7 +88,7 @@ class HttpClient {
 // Singleton instance — all API repositories import this
 const API_URL = typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL
   ? process.env.NEXT_PUBLIC_API_URL
-  : 'http://localhost:5000';
+  : 'http://localhost:8000';
 
 export const httpClient = new HttpClient(API_URL);
 export default HttpClient;

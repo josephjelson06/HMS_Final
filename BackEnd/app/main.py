@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.auth.middleware import TenantContextMiddleware
 from app.routers import (
+    auth_simple,  # New simplified auth
     hotels,
     subscriptions,
     plans,
@@ -9,7 +11,7 @@ from app.routers import (
     rooms,
     incidents,
     tickets,
-    auth,
+    # auth, # Disable old auth
 )
 from app.database import engine, Base
 import app.models.kiosk  # noqa: F401
@@ -31,10 +33,15 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Add Tenant Context Middleware
+app.add_middleware(TenantContextMiddleware)
+
 # Configure CORS to allow requests from the frontend
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(
@@ -57,7 +64,7 @@ app.include_router(roles.router, prefix="/api/roles", tags=["roles"])
 app.include_router(rooms.router, prefix="/api", tags=["rooms"])
 app.include_router(incidents.router, prefix="/api", tags=["incidents"])
 app.include_router(tickets.router, prefix="/api", tags=["tickets"])
-app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(auth_simple.router)  # Mounts at /auth/login etc.
 
 
 @app.get("/")

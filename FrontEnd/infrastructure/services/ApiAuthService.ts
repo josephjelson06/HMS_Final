@@ -3,54 +3,76 @@ import { httpClient } from '../http/client';
 
 export class ApiAuthService implements IAuthService {
   private currentUser: AuthUser | null = null;
-  private readonly STORAGE_KEY = 'hms_user';
+  private readonly STORAGE_KEY = 'hms_user'; // Deprecated but kept for cleanup
 
   constructor() {
-    this.loadFromStorage();
-  }
-
-  private loadFromStorage() {
-    if (typeof window === 'undefined') return;
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    if (stored) {
-      try {
-        this.currentUser = JSON.parse(stored);
-      } catch (e) {
-        localStorage.removeItem(this.STORAGE_KEY);
-      }
+    // Clean up old storage if present
+    if (typeof window !== 'undefined') {
+       localStorage.removeItem(this.STORAGE_KEY);
     }
   }
 
   async login(credentials: LoginCredentials): Promise<AuthUser> {
     try {
-      const response = await httpClient.post<any>('api/auth/login', credentials);
+      // POST /auth/login returns the user object and sets the HttpOnly cookie
+      const response = await httpClient.post<any>('/auth/login', credentials);
       
+      const role = response.user_type === 'platform' ? 'super' : 'hotel';
+
       const user: AuthUser = {
         id: response.id.toString(),
         name: response.name,
         email: response.email,
-        role: response.role as 'super' | 'hotel',
-        hotelId: response.hotel_id?.toString()
+        role: role,
+        // Map user_type/tenant fields if needed, but UI seems to rely on 'role' string or hotelId
+        hotelId: response.tenant_id?.toString()
       };
 
       this.currentUser = user;
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(user));
       return user;
     } catch (error) {
+       console.error("Login error", error);
        throw new Error('Invalid email or password');
     }
   }
 
   async logout(): Promise<void> {
+    try {
+        await httpClient.post('/auth/logout', {});
+    } catch(e) {
+        console.warn("Logout failed", e);
+    }
     this.currentUser = null;
-    localStorage.removeItem(this.STORAGE_KEY);
   }
 
   async getCurrentUser(): Promise<AuthUser | null> {
-    return this.currentUser;
+    if (this.currentUser) return this.currentUser;
+    
+    try {
+        // Fetch from /auth/me (cookie is sent automatically)
+        const response = await httpClient.get<any>('/auth/me');
+        
+      const role = response.user_type === 'platform' ? 'super' : 'hotel';
+      
+      const user: AuthUser = {
+        id: response.id.toString(),
+        name: response.name,
+        email: response.email,
+        role: role,
+        // Map user_type/tenant fields if needed, but UI seems to rely on 'role' string or hotelId
+        hotelId: response.tenant_id?.toString()
+      };
+        this.currentUser = user;
+        return user;
+    } catch (error) {
+        // Not authenticated
+        return null;
+    }
   }
 
   async isAuthenticated(): Promise<boolean> {
-    return this.currentUser !== null;
+     if (this.currentUser) return true;
+     const user = await this.getCurrentUser();
+     return user !== null;
   }
 }

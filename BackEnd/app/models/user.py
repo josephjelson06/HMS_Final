@@ -13,6 +13,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String)  # Matching email and password as requested
     role = Column(String)
+    user_type = Column(String, default="hotel")  # 'platform' or 'hotel'
     status = Column(String, default="Active")
     mobile = Column(String, nullable=True)
     department = Column(String, nullable=True)

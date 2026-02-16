@@ -29,6 +29,10 @@ class Hotel(Base):
         Integer, default=1
     )  # 0=False, 1=True (SQLite boolean usually)
 
+    # AuthModule Tenant Fields
+    tenant_key = Column(String, unique=True, nullable=True)
+    tenant_type = Column(String, default="hotel")  # 'platform' or 'hotel'
+
     invoices = relationship(
         "Invoice", back_populates="hotel", cascade="all, delete-orphan"
     )

@@ -1,0 +1,66 @@
+{
+  "tenants": [
+    {
+      "name": "HMS Foundation",
+      "email": "admin@hms.com",
+      "tenant_type": "platform",
+      "tenant_key": "platform",
+      "status": "Active"
+    },
+    {
+      "name": "Grand Hotel",
+      "email": "contact@grandhotel.com",
+      "tenant_type": "hotel",
+      "tenant_key": "grand_hotel",
+      "status": "Active"
+    },
+    {
+      "name": "Cozy Stay",
+      "email": "contact@cozystay.com",
+      "tenant_type": "hotel",
+      "tenant_key": "cozy_stay",
+      "status": "Active"
+    },
+    {
+      "name": "Budget Inn",
+      "email": "contact@budgetinn.com",
+      "tenant_type": "hotel",
+      "tenant_key": "budget_inn",
+      "status": "Active"
+    }
+  ],
+  "users": [
+    {
+      "name": "Super Admin",
+      "email": "joseph@atc.com",
+      "password": "password123",
+      "role": "Super Admin",
+      "user_type": "platform",
+      "tenant_key": "platform"
+    },
+    {
+      "name": "Jacob Xavier",
+      "email": "jacob@atc.com",
+      "password": "password123",
+      "role": "Admin",
+      "user_type": "hotel",
+      "tenant_key": "grand_hotel"
+    },
+    {
+      "name": "Melrick Pereira",
+      "email": "melrick@atc.com",
+      "password": "password123",
+      "role": "Admin",
+      "user_type": "hotel",
+      "tenant_key": "cozy_stay"
+    },
+    {
+      "name": "Hotel Manager 3",
+      "email": "hotel3@test.com",
+      "password": "password123",
+      "role": "Admin",
+      "user_type": "hotel",
+      "tenant_key": "budget_inn"
+    }
+  ]
+}
