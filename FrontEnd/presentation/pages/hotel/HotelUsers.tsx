@@ -60,6 +60,14 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
     handleViewRole(newRole);
   };
 
+  const handlePrimaryAction = () => {
+    if (activeTab === 'STAFF') {
+      setIsAddModalOpen(true);
+    } else {
+      setIsRoleModalOpen(true);
+    }
+  };
+
   useEffect(() => {
     setCurrentPage(1);
   }, [search, activeTab, itemsPerPage]);
@@ -88,49 +96,47 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
 
   return (
     <div className="p-4 md:p-8 space-y-8 animate-in fade-in duration-700 max-w-[1600px] mx-auto min-h-full">
-      <div className="flex flex-col lg:flex-row gap-10 lg:items-start justify-between">
-        <div className="flex-1 space-y-6 max-w-2xl">
-          <PageHeader
-            title="Team Sovereignty"
-            subtitle="Staff Access & RBAC Configuration"
-          >
-            <Button
-              variant="custom"
-              className="bg-[#f97316] text-white shadow-xl shadow-orange-500/30 hover:scale-[1.02] active:scale-95"
-              onClick={() => setIsAddModalOpen(true)}
-              icon={<UserPlus size={20} strokeWidth={3} />}
+      {/* Header with Integrated Action */}
+      <PageHeader
+        title="Team Sovereignty"
+        subtitle="Staff Access & RBAC Configuration"
+      >
+        <Button
+          variant="custom"
+          className="bg-[#f97316] text-white shadow-xl shadow-orange-500/30 hover:scale-[1.02] active:scale-95 px-8"
+          onClick={handlePrimaryAction}
+          icon={activeTab === 'STAFF' ? <UserPlus size={20} strokeWidth={3} /> : <Shield size={20} strokeWidth={3} />}
+        >
+          {activeTab === 'STAFF' ? 'Add Member' : 'Add New Role'}
+        </Button>
+      </PageHeader>
+
+      {/* Navigation & Search Area */}
+      <div className="flex flex-col md:flex-row gap-6 items-center justify-between pt-2">
+        <div className="flex p-1.5 rounded-[1.5rem] bg-black/5 dark:bg-white/5 border border-white/5 shadow-inner backdrop-blur-md">
+            <button 
+            onClick={() => setActiveTab('STAFF')}
+            className={`px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'STAFF' ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-xl' : 'text-gray-500 hover:text-white'}`}
             >
-              Add Member
-            </Button>
-          </PageHeader>
+            Staff Registry
+            </button>
+            <button 
+            onClick={() => setActiveTab('ROLES')}
+            className={`px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'ROLES' ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-xl' : 'text-gray-500 hover:text-white'}`}
+            >
+            Access Roles
+            </button>
+        </div>
 
-          <div className="space-y-4 pt-4 max-w-xl">
-            <div className="flex p-1.5 rounded-[1.5rem] bg-black/5 dark:bg-white/5 border border-white/5 w-fit">
-                <button 
-                onClick={() => setActiveTab('STAFF')}
-                className={`px-8 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === 'STAFF' ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
-                >
-                Staff Registry
-                </button>
-                <button 
-                onClick={() => setActiveTab('ROLES')}
-                className={`px-8 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === 'ROLES' ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
-                >
-                Access Roles
-                </button>
-            </div>
-
-            <div className="relative w-full group">
-                <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-accent transition-colors" />
-                <input 
-                    type="text" 
-                    placeholder={`Search ${activeTab === 'STAFF' ? 'Staff Identity' : 'Role Type'}...`} 
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full bg-white/40 dark:bg-black/40 border border-white/10 rounded-[1.5rem] py-4 pl-14 pr-6 text-sm font-bold dark:text-white focus:outline-none focus:ring-4 focus:ring-accent/10 transition-all backdrop-blur-md shadow-sm"
-                />
-            </div>
-          </div>
+        <div className="relative w-full md:w-96 group">
+            <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-accent transition-colors" />
+            <input 
+                type="text" 
+                placeholder={`Search ${activeTab === 'STAFF' ? 'Staff Identity' : 'Role Type'}...`} 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-white dark:bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-sm font-bold dark:text-white focus:outline-none focus:ring-2 focus:ring-accent/20 transition-all shadow-sm placeholder:text-gray-500/50"
+            />
         </div>
       </div>
 

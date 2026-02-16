@@ -1,12 +1,11 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { 
   CreditCard, Zap, Calendar, CheckCircle2, Download, 
-  ArrowRightLeft, ShieldCheck, Info, Package, 
+  ArrowRightLeft, Package, ShieldCheck,
   Clock, IndianRupee, FileText, ChevronRight, 
-  Check, ArrowUpRight, HelpCircle, History,
-  Layout, Monitor, Users, Plus, ShieldAlert,
-  Wallet, PieChart as PieChartIcon, TrendingUp,
-  Globe, MessageSquare, AlertCircle
+  ArrowUpRight, HelpCircle, History,
+  Layout, Monitor, Users, Plus,
+  Wallet, PieChart as PieChartIcon
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import PageHeader from '../../components/ui/PageHeader';
@@ -49,7 +48,7 @@ const AddonCard = ({ title, price, icon: Icon }: any) => (
       </div>
       <div>
         <p className="text-[11px] font-black dark:text-white uppercase tracking-tight">{title}</p>
-        <p className="text-[9px] font-bold text-gray-500 uppercase">â‚¹{price} / mo</p>
+        <p className="text-[9px] font-bold text-gray-500 uppercase">₹{price} / mo</p>
       </div>
     </div>
     <Plus size={16} className="text-gray-600 group-hover:text-accent transition-colors" />
@@ -86,13 +85,12 @@ const SubscriptionBilling: React.FC = () => {
   ];
 
   return (
-    <div className="p-4 md:p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-700">
+    <div className="p-4 md:p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-700 max-w-[1600px] mx-auto">
       
       {/* Header */}
       <PageHeader
         title="Subscription Hub"
         subtitle="Manage Property License & Billing Operations"
-        badge="Dummy Data Page"
       >
         <div className="flex gap-3">
           <Button
@@ -121,7 +119,7 @@ const SubscriptionBilling: React.FC = () => {
           
           {/* Main Plan Information */}
           <GlassCard noPadding className="border-t-8 border-t-orange-500 overflow-hidden shadow-2xl relative">
-            <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
+            <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none text-orange-500">
               <Zap size={200} fill="currentColor" />
             </div>
             
@@ -133,7 +131,7 @@ const SubscriptionBilling: React.FC = () => {
                   </div>
                   <div>
                     <h2 className="text-3xl font-black dark:text-white tracking-tighter uppercase leading-none">{subscriptionPlan} Tier</h2>
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-2">Unlimited Mappings â€¢ Priority Hardware logic</p>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-2">Unlimited Mappings • Priority Hardware logic</p>
                   </div>
                 </div>
 
@@ -176,8 +174,8 @@ const SubscriptionBilling: React.FC = () => {
                       <div className="flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-black/40 border border-white/10 shadow-sm">
                          <div className="p-2 rounded-xl bg-blue-500/10 text-accent"><CreditCard size={18} /></div>
                          <div className="min-w-0">
-                            <p className="text-xs font-black dark:text-white leading-none mb-1">â€¢â€¢â€¢â€¢ 4412</p>
-                            <p className="text-[8px] font-bold text-gray-500 uppercase">Visa â€¢ Exp 08/28</p>
+                            <p className="text-xs font-black dark:text-white leading-none mb-1">•••• 4412</p>
+                            <p className="text-[8px] font-bold text-gray-500 uppercase">Visa • Exp 08/28</p>
                          </div>
                       </div>
                     </div>
@@ -228,7 +226,7 @@ const SubscriptionBilling: React.FC = () => {
                         <tr key={inv.id} className="hover:bg-white/5 transition-colors group">
                            <td className="px-10 py-6 text-xs font-mono font-black dark:text-white uppercase tracking-tighter">{inv.id}</td>
                            <td className="px-8 py-6 text-sm font-bold dark:text-gray-400 uppercase tracking-tight">{inv.period}</td>
-                           <td className="px-8 py-6 text-right text-sm font-black dark:text-white tracking-tighter">â‚¹{inv.amount.toLocaleString()}</td>
+                           <td className="px-8 py-6 text-right text-sm font-black dark:text-white tracking-tighter">₹{inv.amount.toLocaleString()}</td>
                            <td className="px-8 py-6 text-center">
                               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-bold uppercase">
                                  <CheckCircle2 size={10} strokeWidth={4} /> {inv.status}
@@ -243,12 +241,12 @@ const SubscriptionBilling: React.FC = () => {
                         </tr>
                       ))}
                    </tbody>
-                </table>
+                 </table>
              </div>
           </GlassCard>
         </div>
 
-        {/* Right Column: Add-ons & Secondary Info */}
+        {/* Right Column: Add-ons */}
         <div className="xl:col-span-4 space-y-6">
           
           {/* Add-on Marketplace */}
@@ -268,62 +266,35 @@ const SubscriptionBilling: React.FC = () => {
             </div>
             <div className="mt-8 pt-6 border-t border-white/5">
                 <button className="w-full flex items-center justify-between p-5 rounded-[1.5rem] bg-accent-strong text-white shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
-                  <span className="text-xs font-black uppercase tracking-widest">Open Marketplace</span>
-                  <ChevronRight size={18} />
+                   <span className="text-xs font-black uppercase tracking-widest">Open Marketplace</span>
+                   <ChevronRight size={18} />
                 </button>
             </div>
           </GlassCard>
 
-          {/* Tax Benefit High-Vis Card */}
-          <div className="p-10 rounded-[3rem] bg-accent-strong text-white shadow-2xl relative overflow-hidden group hover:scale-[1.01] transition-transform">
-             <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-             <div className="flex items-center gap-6 mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center border border-white/20 shadow-lg">
-                   <IndianRupee size={32} />
+          {/* Service Commitment Information */}
+          <GlassCard className="border-white/5 bg-black/5 dark:bg-white/[0.01]">
+             <div className="space-y-4">
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/5">
+                   <ShieldCheck className="text-emerald-500 mt-1 shrink-0" size={18} />
+                   <div className="min-w-0">
+                      <p className="text-[10px] font-black dark:text-white uppercase mb-1">Commercial Integrity</p>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tight leading-relaxed">
+                        Secure settlements via 256-bit encrypted gateways.
+                      </p>
+                   </div>
                 </div>
-                <div>
-                  <h4 className="text-xl font-black uppercase italic tracking-tighter leading-tight">Tax Yield Alert</h4>
-                  <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mt-1">Gst Input Savings</p>
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/5">
+                   <FileText className="text-accent mt-1 shrink-0" size={18} />
+                   <div className="min-w-0">
+                      <p className="text-[10px] font-black dark:text-white uppercase mb-1">Billing Policy</p>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tight leading-relaxed">
+                        30-day notice for deactivation. Data stored for 6 months post-exit.
+                      </p>
+                   </div>
                 </div>
-             </div>
-             <p className="text-sm font-medium leading-relaxed mb-8">
-               You are eligible for up to <span className="font-black underline decoration-2">â‚¹2,700</span> monthly in Input Tax Credit (ITC) for this property using your verified GSTIN.
-             </p>
-             <button className="w-full py-4 rounded-2xl bg-white text-accent-strong text-[10px] font-bold uppercase tracking-widest hover:shadow-2xl transition-all">
-                Validate Gstin Status
-             </button>
-          </div>
-
-          {/* Billing Help/Support */}
-          <GlassCard className="border-l-4 border-l-accent-strong bg-accent-strong/5">
-             <div className="flex items-center gap-3 mb-6">
-                <ShieldCheck size={18} className="text-accent" />
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-accent-strong">Commercial Lock</h3>
-             </div>
-             <p className="text-[11px] font-medium text-gray-500 leading-relaxed mb-6">
-                Financial data is encrypted using AES-256 protocols. ATC Platform complies with all local GST regulations and B2B settlement standards.
-             </p>
-             <div className="space-y-2">
-                <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all text-[10px] font-bold uppercase text-gray-500 group">
-                   <span>Contact Billing Dept</span>
-                   <MessageSquare size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
-                </button>
-                <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all text-[10px] font-bold uppercase text-gray-500 group">
-                   <span>Platform Policy FAQ</span>
-                   <Globe size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
-                </button>
              </div>
           </GlassCard>
-
-          {/* Cancellation Context */}
-          <div className="p-8 flex flex-col items-center justify-center text-center space-y-4">
-             <button className="text-[9px] font-black text-red-500/60 uppercase tracking-widest hover:text-red-500 transition-colors flex items-center gap-2 group">
-                <AlertCircle size={12} className="opacity-60 group-hover:opacity-100" /> Deactivate Account Node
-             </button>
-             <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter max-w-[200px]">
-                Notice period: 30 days prior to contract cycle end. All data remains stored for 6 months post-exit.
-             </p>
-          </div>
 
         </div>
 
@@ -333,4 +304,3 @@ const SubscriptionBilling: React.FC = () => {
 };
 
 export default SubscriptionBilling;
-
