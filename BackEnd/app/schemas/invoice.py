@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel
 from typing import Optional
 
@@ -12,7 +13,7 @@ class InvoiceBase(BaseModel):
 
 
 class InvoiceCreate(InvoiceBase):
-    hotel_id: int
+    hotel_id: UUID
 
 
 class InvoiceUpdate(BaseModel):
@@ -22,8 +23,8 @@ class InvoiceUpdate(BaseModel):
 
 
 class Invoice(InvoiceBase):
-    id: int
-    hotel_id: int
+    id: UUID
+    hotel_id: UUID
     hotel_name: Optional[str] = None
     invoice_number: Optional[str] = None
 

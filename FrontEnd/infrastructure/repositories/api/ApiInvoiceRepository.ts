@@ -10,8 +10,8 @@ export class ApiInvoiceRepository implements IInvoiceRepository {
     console.log("Fetching all invoices from API...");
     const data = await httpClient.get<any[]>(this.baseUrl);
     return data.map(d => ({
-      id: d.invoice_number || `INV-${String(d.id).padStart(4, '0')}`, 
-      numericId: d.id,
+      id: d.id, // UUID
+      invoiceNumber: d.invoice_number,
       hotel: d.hotel_name || 'Unknown',
       amount: d.amount,
       baseAmount: d.amount, 
@@ -25,16 +25,29 @@ export class ApiInvoiceRepository implements IInvoiceRepository {
   }
 
   async getById(id: string): Promise<Invoice | null> {
-    const all = await this.getAll();
-    return all.find(i => i.id === id) || null;
+    try {
+        const d = await httpClient.get<any>(`${this.baseUrl}/${id}`);
+        return {
+          id: d.id,
+          invoiceNumber: d.invoice_number,
+          hotel: d.hotel_name || 'Unknown',
+          amount: d.amount,
+          baseAmount: d.amount,
+          gst: 0,
+          total: d.amount,
+          status: d.status,
+          dueDate: new Date(d.due_date).toLocaleDateString(),
+          issuedDate: new Date(d.generated_on).toLocaleDateString(),
+          daysOverdue: 0
+        };
+    } catch (error) {
+        return null;
+    }
   }
 
   async create(data: Omit<Invoice, 'id'>): Promise<Invoice> {
-    console.log("Creating manual invoice via API...", data);
-    
-    // Map frontend entity to backend schema
     const payload = {
-      hotel_id: (data as any).hotelId || (data as any).hotel_id, // ensure we have hotel_id
+      hotel_id: (data as any).hotelId || (data as any).hotel_id,
       amount: data.total || data.amount,
       status: data.status || 'Pending',
       period_start: data.period || 'Unknown',
@@ -42,12 +55,11 @@ export class ApiInvoiceRepository implements IInvoiceRepository {
       due_date: data.dueDate,
     };
 
-    console.log("Invoice creation payload:", payload);
     const result = await httpClient.post<any>(this.baseUrl, payload);
     
     return {
-      id: result.invoice_number || `INV-${String(result.id).padStart(4, '0')}`,
-      numericId: result.id,
+      id: result.id,
+      invoiceNumber: result.invoice_number,
       hotel: result.hotel_name || 'Unknown',
       amount: result.amount,
       baseAmount: result.amount,
@@ -60,35 +72,16 @@ export class ApiInvoiceRepository implements IInvoiceRepository {
   }
 
   async update(id: string, data: Partial<Invoice>): Promise<Invoice> {
-      console.log(`Updating invoice ${id}`, data);
-      
-      // We need the numeric ID. If data.numericId is not there, we find it.
-      let numericId = (data as any).numericId;
-      if (!numericId) {
-          const inv = await this.getById(id);
-          numericId = inv?.numericId;
-      }
-
-      if (!numericId) {
-          // Fallback: try to parse from ID string e.g. INV-2026-0001
-          const parts = id.split('-');
-          const lastPart = parts[parts.length - 1];
-          numericId = parseInt(lastPart);
-      }
-
-      console.log(`Numeric ID for update: ${numericId}`);
-      
       const payload: any = {};
       if (data.status) payload.status = data.status;
       if (data.amount !== undefined) payload.amount = data.amount;
       if (data.dueDate) payload.due_date = data.dueDate;
 
-      const result = await httpClient.patch<any>(`${this.baseUrl}/${numericId}`, payload);
+      const result = await httpClient.patch<any>(`${this.baseUrl}/${id}`, payload);
       
-      // Map back to entity
       return {
-          id: result.invoice_number || `INV-${String(result.id).padStart(4, '0')}`,
-          numericId: result.id,
+          id: result.id,
+          invoiceNumber: result.invoice_number,
           hotel: result.hotel_name || 'Unknown',
           amount: result.amount,
           baseAmount: result.amount,
@@ -101,24 +94,6 @@ export class ApiInvoiceRepository implements IInvoiceRepository {
   }
 
   async delete(id: string): Promise<void> {
-    console.log(`Deleting invoice ${id}`);
-    
-    // Resolve numeric ID
-    let numericId: number | undefined;
-    
-    const parts = id.split('-');
-    const lastPart = parts[parts.length - 1];
-    numericId = parseInt(lastPart);
-
-    if (isNaN(numericId)) {
-        const inv = await this.getById(id);
-        numericId = inv?.numericId;
-    }
-
-    if (!numericId) {
-        throw new Error(`Could not resolve numeric ID for invoice ${id}`);
-    }
-
-    await httpClient.delete(`${this.baseUrl}/${numericId}`);
+    await httpClient.delete(`${this.baseUrl}/${id}`);
   }
 }

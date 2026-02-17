@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -9,6 +10,6 @@ class Kiosk(Base):
     id = Column(Integer, primary_key=True, index=True)
     serial_number = Column(String, index=True)
     location = Column(String)
-    hotel_id = Column(Integer, ForeignKey("hotels.id"))
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"))
 
-    hotel = relationship("Hotel", back_populates="kiosk_list")
+    tenant = relationship("Tenant", backref="kiosk_list")

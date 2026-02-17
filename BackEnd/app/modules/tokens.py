@@ -66,7 +66,9 @@ def create_access_token(
     if actor_user_id is not None or acting_as_user_id is not None:
         payload["impersonation"] = {
             "actor_user_id": str(actor_user_id) if actor_user_id is not None else None,
-            "acting_as_user_id": str(acting_as_user_id) if acting_as_user_id is not None else None,
+            "acting_as_user_id": str(acting_as_user_id)
+            if acting_as_user_id is not None
+            else None,
         }
 
     encoded = jwt.encode(payload, jwt_secret, algorithm=JWT_ALGORITHM)
@@ -91,7 +93,17 @@ def decode_access_token(token: str, *, jwt_secret: str) -> AccessTokenClaims:
             token,
             jwt_secret,
             algorithms=[JWT_ALGORITHM],
-            options={"require": ["user_id", "tenant_id", "tenant_type", "roles", "jti", "iat", "exp"]},
+            options={
+                "require": [
+                    "user_id",
+                    "tenant_id",
+                    "tenant_type",
+                    "roles",
+                    "jti",
+                    "iat",
+                    "exp",
+                ]
+            },
         )
     except InvalidTokenError as exc:
         raise AccessTokenError("Invalid or expired access token.") from exc
@@ -101,7 +113,9 @@ def decode_access_token(token: str, *, jwt_secret: str) -> AccessTokenClaims:
         tenant_id = UUID(str(payload["tenant_id"]))
         tenant_type = str(payload["tenant_type"])
         roles_raw = payload["roles"]
-        if not isinstance(roles_raw, list) or not all(isinstance(role, str) for role in roles_raw):
+        if not isinstance(roles_raw, list) or not all(
+            isinstance(role, str) for role in roles_raw
+        ):
             raise ValueError("roles must be a list of strings.")
         jti = UUID(str(payload["jti"]))
         issued_at = datetime.fromtimestamp(int(payload["iat"]), UTC)
@@ -122,7 +136,9 @@ def decode_access_token(token: str, *, jwt_secret: str) -> AccessTokenClaims:
             actor_user_id = UUID(actor_raw) if actor_raw else None
             acting_as_user_id = UUID(acting_raw) if acting_raw else None
         except (ValueError, TypeError) as exc:
-            raise AccessTokenError("Access token impersonation IDs are malformed.") from exc
+            raise AccessTokenError(
+                "Access token impersonation IDs are malformed."
+            ) from exc
 
     return AccessTokenClaims(
         user_id=user_id,
@@ -137,7 +153,9 @@ def decode_access_token(token: str, *, jwt_secret: str) -> AccessTokenClaims:
     )
 
 
-def set_access_token_cookie(response: Response, *, token: str, settings: Settings) -> None:
+def set_access_token_cookie(
+    response: Response, *, token: str, settings: Settings
+) -> None:
     max_age = settings.access_token_minutes * 60
     response.set_cookie(
         key=settings.access_token_cookie_name,
@@ -151,7 +169,9 @@ def set_access_token_cookie(response: Response, *, token: str, settings: Setting
     )
 
 
-def set_refresh_token_cookie(response: Response, *, token: str, settings: Settings) -> None:
+def set_refresh_token_cookie(
+    response: Response, *, token: str, settings: Settings
+) -> None:
     max_age = settings.refresh_token_days * 24 * 60 * 60
     response.set_cookie(
         key=settings.refresh_token_cookie_name,

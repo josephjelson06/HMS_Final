@@ -9,7 +9,7 @@ export class ApiHotelRepository implements IHotelRepository {
     return httpClient.get<Hotel[]>(this.baseUrl);
   }
 
-  async getById(id: number): Promise<Hotel | null> {
+  async getById(id: string): Promise<Hotel | null> {
     try {
       return await httpClient.get<Hotel>(`${this.baseUrl}${id}`);
     } catch (error) {
@@ -22,11 +22,11 @@ export class ApiHotelRepository implements IHotelRepository {
     return httpClient.post<Hotel>(this.baseUrl, data);
   }
 
-  async update(id: number, data: Partial<Hotel>): Promise<Hotel> {
+  async update(id: string, data: Partial<Hotel>): Promise<Hotel> {
     return httpClient.patch<Hotel>(`${this.baseUrl}${id}`, data);
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     return httpClient.delete(`${this.baseUrl}${id}`);
   }
 

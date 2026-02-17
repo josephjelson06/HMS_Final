@@ -10,15 +10,17 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app.database import Base
 from app.core.config import get_settings
-from app.models.hotel import Hotel
-from app.models.user import User
+from app.models.auth import Tenant, User
+
+# from app.models.hotel import Hotel # Deprecated alias
 from app.models.role import Role
 from app.models.room import Room, RoomCategory, Building
+from app.models.room import Room, RoomCategory, Building
 from app.models.incident import Incident
-from app.models.invoice import Invoice
 from app.models.plan import Plan
 from app.models.kiosk import Kiosk
 from app.models.ticket import Ticket
+from app.models.invoice import Invoice
 from app.core.auth.security import get_password_hash
 
 settings = get_settings()
@@ -37,9 +39,15 @@ def load_json(filename):
         return json.load(f)
 
 
+from sqlalchemy.orm import configure_mappers
+
+
 def seed_all():
-    print("Starting Master Seeding Process...")
+    print("Starting Master Seeding Process (Refactored)...")
     engine, db = get_db_session()
+
+    # Ensure all mappers are configured
+    configure_mappers()
 
     # 1. Reset Schema
     print("Dropping and Recreating Tables...")
@@ -47,7 +55,7 @@ def seed_all():
     Base.metadata.create_all(bind=engine)
     print("Schema Reset Complete.")
 
-    tenant_map = {}  # Key -> ID
+    tenant_map = {}  # tenant_key -> hotel_id (UUID)
 
     try:
         # 2. Seed Tenants (Hotels + Platform)
@@ -56,32 +64,25 @@ def seed_all():
         tenants = auth_data.get("tenants", [])
 
         for t_data in tenants:
-            # Create ALL tenants, including Platform
-            hotel = Hotel(
+            hotel = Tenant(
                 name=t_data["name"],
                 email=t_data["email"],
                 tenant_key=t_data["tenant_key"],
-                tenant_type=t_data["tenant_type"],  # 'hotel' or 'platform'
-                status="Active",
-                address="Level 4, Sky Tower, Business Bay, Pune, Maharashtra 411001, India"
-                if t_data["tenant_type"] == "platform"
-                else "123 Seed Street",
-                mobile="+91 99988 77766"
-                if t_data["tenant_type"] == "platform"
-                else "+1234567890",
-                owner="Seed Owner",
-                gstin=f"27AABCU1234A1Z5"
-                if t_data["tenant_type"] == "platform"
-                else f"GSTIN-{t_data['tenant_key'].upper()}",
-                pan="AABCU1234A" if t_data["tenant_type"] == "platform" else None,
-                plan="Pro",
-                is_auto_renew=1,
-                kiosks=0,
-                mrr=0.0,
+                tenant_type=t_data["tenant_type"],
+                status=t_data.get("status", "Active"),
+                address=t_data.get("address"),
+                mobile=t_data.get("mobile"),
+                owner=t_data.get("owner"),
+                gstin=t_data.get("gstin"),
+                pan=t_data.get("pan"),
+                plan=t_data.get("plan", "Pro"),
+                is_auto_renew=t_data.get("is_auto_renew", 1),
+                kiosks=t_data.get("kiosks", 0),
+                mrr=t_data.get("mrr", 0.0),
             )
             db.add(hotel)
             db.flush()  # get ID
-            tenant_map[t_data["tenant_key"]] = hotel.id
+            tenant_map[t_data["tenant_key"]] = str(hotel.id)
             print(
                 f"Created Tenant: {hotel.name} (Type: {hotel.tenant_type}, ID: {hotel.id})"
             )
@@ -94,65 +95,55 @@ def seed_all():
         common_roles = roles_data.get("common", [])
         specific_roles = roles_data.get("specific", {})
 
-        # Get all HOTELS (exclude platform for role seeding if needed, or include if desired)
-        # Assuming roles are primarily for hotels. Platform roles (Super Admin) handled implicitly or manually?
-        # Let's seed common roles for hotels.
-        hotels = db.query(Hotel).filter(Hotel.tenant_type == "hotel").all()
+        # Iterate all hotels mapped in tenant_map
+        for t_key, hotel_id in tenant_map.items():
+            # Skip if no roles defined for this tenant in specific_roles AND common roles generally apply to all hotels
+            # But usually we want common roles for ALL hotels.
+            # Let's check if it is a hotel type if we want to distinguish platform?
+            # For now, apply to all in tenant_map except maybe platform if desired, but code applies to all.
 
-        def create_role(name, color, description, hotel_id):
-            role = Role(
-                name=name,
-                color=color,
-                description=description,
-                hotel_id=hotel_id,
-                status="Active",
-            )
-            db.add(role)
+            # Simple check: if tenant_type is platform, maybe skip?
+            # The previous code filtered `Hotel.tenant_type == "hotel"`.
+            # We can check the tenant object from DB or just assume all for now.
+            # Let's re-fetch the hotel to check type.
+            hotel = db.get(Tenant, hotel_id)
+            if not hotel or hotel.tenant_type != "hotel":
+                continue
 
-        for hotel in hotels:
-            print(f"Seeding Roles for Hotel ID {hotel.id}...")
+            print(f"Seeding Roles for Tenant {t_key} ({hotel_id})...")
+
             # Set RLS Context
-            db.execute(text(f"SET LOCAL app.tenant_id = '{hotel.id}'"))
+            db.execute(text(f"SET LOCAL app.tenant_id = '{hotel_id}'"))
 
             # Common Roles
             for r in common_roles:
-                create_role(r["name"], r["color"], r["description"], hotel.id)
+                role = Role(
+                    name=r["name"],
+                    color=r["color"],
+                    description=r["description"],
+                    tenant_id=hotel_id,
+                    status="Active",
+                )
+                db.add(role)
 
             # Specific Roles
-            # keys in JSON are likely string "2", "3". Let's try to match by ID string if possible.
-            # But IDs changed because we added Platform (ID 1 maybe?).
-            # Tenant Map: platform=1, grand_hotel=2... ?
-            # Let's use tenant_map and JSON hardcoded IDs map logic.
-            # Hardcoded mapping for this task:
-            # 2 -> grand_hotel
-            # 3 -> cozy_stay
-            # 4 -> budget_inn
-
-            # Find which 'key' this hotel corresponds to
-            # Iterate map
-            json_key = None
-            for k, stored_id in tenant_map.items():
-                if stored_id == hotel.id:
-                    # found key, e.g. 'grand_hotel'
-                    # map back to JSON ID
-                    if k == "grand_hotel":
-                        json_key = "2"
-                    elif k == "cozy_stay":
-                        json_key = "3"
-                    elif k == "budget_inn":
-                        json_key = "4"
-                    break
-
-            if json_key:
-                s_roles = specific_roles.get(json_key, [])
-                for r in s_roles:
-                    create_role(r["name"], r["color"], r["description"], hotel.id)
+            if t_key in specific_roles:
+                for r in specific_roles[t_key]:
+                    role = Role(
+                        name=r["name"],
+                        color=r["color"],
+                        description=r["description"],
+                        tenant_id=hotel_id,
+                        status="Active",
+                    )
+                    db.add(role)
 
         db.commit()
 
         # 4. Seed Users (Admins + Staff)
         print("\n--- Seeding Users ---")
-        # seed admins from auth_data
+
+        # Admin Users
         auth_users = auth_data.get("users", [])
         for u in auth_users:
             t_key = u.get("tenant_key")
@@ -171,47 +162,45 @@ def seed_all():
             user = User(
                 name=u["name"],
                 email=u["email"],
-                password=get_password_hash(u["password"]),
-                role=u["role"],
+                username=u["email"],
+                password_hash=get_password_hash(u["password"]),
                 user_type=u["user_type"],
-                hotel_id=h_id,
-                mobile=f"+1 555 000 {h_id}",
-                status="Active",
+                tenant_id=h_id,
+                mobile=f"+1 555 000 {t_key[:3]}",  # Simple dynamic mobile
+                is_active=True,
                 department="Management",
                 employee_id=f"EMP-{u['email'][:3].upper()}",
             )
             db.add(user)
-            print(f"Created User: {user.name} (Tenant: {h_id})")
+            print(f"Created Admin: {user.name} (Tenant: {t_key})")
 
-        # seed staff from data_staff
+        # Staff Users
         staff_data = load_json("data_staff.json")
         for hotel_group in staff_data:
-            target_id = hotel_group["hotel_id"]
-            key_map = {2: "grand_hotel", 3: "cozy_stay", 4: "budget_inn"}
-            t_key = key_map.get(target_id)
-            real_h_id = tenant_map.get(t_key)
+            t_key = hotel_group.get("tenant_key")
+            h_id = tenant_map.get(t_key)
 
-            if not real_h_id:
-                print(f"Skipping staff group {target_id} - no db match")
+            if not h_id:
+                print(f"Skipping staff group for {t_key} - no db match")
                 continue
 
-            db.execute(text(f"SET LOCAL app.tenant_id = '{real_h_id}'"))
+            db.execute(text(f"SET LOCAL app.tenant_id = '{h_id}'"))
 
             for u in hotel_group["users"]:
                 user = User(
                     name=u["name"],
                     email=u["email"],
-                    password=get_password_hash(u["password"]),
-                    role=u["role"],
+                    username=u["email"],
+                    password_hash=get_password_hash(u["password"]),
                     user_type="hotel",
-                    hotel_id=real_h_id,
+                    tenant_id=h_id,
                     mobile=u["mobile"],
                     department=u["department"],
-                    status="Active",
-                    employee_id=f"STF-{real_h_id}-{u['name'][:3].upper()}",
+                    is_active=True,
+                    employee_id=f"STF-{h_id[:4]}-{u['name'][:3].upper()}",
                 )
                 db.add(user)
-                print(f"Created Staff: {user.name} for Hotel {real_h_id}")
+                print(f"Created Staff: {user.name} for {t_key}")
 
         db.commit()
 
@@ -219,15 +208,13 @@ def seed_all():
         print("\n--- Seeding Rooms ---")
         rooms_data = load_json("data_rooms.json")
         for hotel_group in rooms_data:
-            target_id = hotel_group["hotel_id"]
-            key_map = {2: "grand_hotel", 3: "cozy_stay", 4: "budget_inn"}
-            t_key = key_map.get(target_id)
-            real_h_id = tenant_map.get(t_key)
+            t_key = hotel_group.get("tenant_key")
+            h_id = tenant_map.get(t_key)
 
-            if not real_h_id:
+            if not h_id:
                 continue
 
-            db.execute(text(f"SET LOCAL app.tenant_id = '{real_h_id}'"))
+            db.execute(text(f"SET LOCAL app.tenant_id = '{h_id}'"))
 
             # Categories
             for c in hotel_group.get("categories", []):
@@ -237,7 +224,7 @@ def seed_all():
                     rate=c["rate"],
                     occupancy=c["occupancy"],
                     amenities=",".join(c["amenities"]),
-                    hotel_id=real_h_id,
+                    tenant_id=h_id,
                 )
                 db.add(cat)
 
@@ -245,7 +232,7 @@ def seed_all():
 
             # Building
             b_name = hotel_group.get("building", "Main Building")
-            building = Building(name=b_name, hotel_id=real_h_id)
+            building = Building(name=b_name, tenant_id=h_id)
             db.add(building)
             db.flush()
 
@@ -258,11 +245,11 @@ def seed_all():
                     type="Room",
                     building_id=building.id,
                     category_id=r["category_id"],
-                    hotel_id=real_h_id,
+                    tenant_id=h_id,
                 )
                 db.add(room)
 
-            print(f"Seeded Rooms for Hotel {real_h_id}")
+            print(f"Seeded Rooms for {t_key}")
 
         db.commit()
 
@@ -270,15 +257,13 @@ def seed_all():
         print("\n--- Seeding Incidents ---")
         incidents_data = load_json("data_incidents.json")
         for inc in incidents_data:
-            target_id = inc["hotel_id"]
-            key_map = {2: "grand_hotel", 3: "cozy_stay", 4: "budget_inn"}
-            t_key = key_map.get(target_id)
-            real_h_id = tenant_map.get(t_key)
+            t_key = inc.get("tenant_key")
+            h_id = tenant_map.get(t_key)
 
-            if not real_h_id:
+            if not h_id:
                 continue
 
-            db.execute(text(f"SET LOCAL app.tenant_id = '{real_h_id}'"))
+            db.execute(text(f"SET LOCAL app.tenant_id = '{h_id}'"))
 
             incident = Incident(
                 subject=inc["subject"],
@@ -290,7 +275,7 @@ def seed_all():
                 guest_name=inc["guest_name"],
                 reported_by=inc["reported_by"],
                 assigned_to=inc["assigned_to"],
-                hotel_id=real_h_id,
+                tenant_id=h_id,
                 created_at=datetime.utcnow().isoformat(),
                 updated_at=datetime.utcnow().isoformat(),
             )
@@ -298,6 +283,60 @@ def seed_all():
 
         db.commit()
         print("Incidents Seeding Complete.")
+
+        # 7. Seed Tickets (Hotel -> Platform Support)
+        print("\n--- Seeding Tickets ---")
+        tickets_path = os.path.join(os.path.dirname(__file__), "seeds", "tickets.json")
+        if os.path.exists(tickets_path):
+            tickets_data = load_json("tickets.json")
+            for t_data in tickets_data:
+                t_key = t_data.get("tenant_key")
+                h_id = tenant_map.get(t_key)
+
+                if not h_id:
+                    continue
+
+                db.execute(text(f"SET LOCAL app.tenant_id = '{h_id}'"))
+
+                ticket = Ticket(
+                    subject=t_data["subject"],
+                    description=t_data["description"],
+                    priority=t_data["priority"],
+                    status=t_data["status"],
+                    category=t_data["category"],
+                    tenant_id=h_id,
+                    created_at=datetime.utcnow(),
+                    updated_at=datetime.utcnow(),
+                )
+                db.add(ticket)
+            db.commit()
+            print("Tickets Seeded.")
+        else:
+            print("tickets.json not found, skipping.")
+
+        # 6a. Seed Plans (Optional, if not handled by planseed.py separately)
+        # Assuming planseed.py exists and works, we can either call it here or leave it.
+        # But for 'seed_all', let's include Plans since we have models for it.
+        try:
+            print("\n--- Seeding Plans ---")
+            p_data_list = load_json("plans_data.json")
+
+            for p_data in p_data_list:
+                plan = Plan(
+                    name=p_data["name"],
+                    price=p_data["price"],
+                    rooms=p_data["rooms"],
+                    kiosks=p_data["kiosks"],
+                    subscribers=p_data["subscribers"],
+                    support=p_data["support"],
+                    included=p_data["included"],
+                    theme=p_data["theme"],
+                )
+                db.add(plan)
+            db.commit()
+            print("Plans Seeded.")
+        except Exception as e:
+            print(f"Plan seeding error: {e}")
 
     except Exception as e:
         print(f"CRITICAL ERROR SEEDING: {e}")

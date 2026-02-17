@@ -1,6 +1,6 @@
 [
   {
-    "hotel_id": 2,
+    "tenant_key": "grand_hotel",
     "users": [
       { "name": "Riya Mehta", "email": "riya.m@grandhotel.com", "role": "General Manager", "password": "password123", "mobile": "+91 98860 32101", "department": "Front Office" },
       { "name": "Suresh Kumar", "email": "suresh.k@grandhotel.com", "role": "Housekeeping Lead", "password": "password123", "mobile": "+91 91234 56789", "department": "Housekeeping" },
@@ -10,7 +10,7 @@
     ]
   },
   {
-    "hotel_id": 3,
+    "tenant_key": "cozy_stay",
     "users": [
       { "name": "Vikram Singh", "email": "vikram@cozystay.com", "role": "Property Manager", "password": "password123", "mobile": "+91 999 000 1111", "department": "Management" },
       { "name": "Maya Sharma", "email": "maya@cozystay.com", "role": "Guest Relations", "password": "password123", "mobile": "+91 999 000 1112", "department": "Front Office" },
@@ -20,7 +20,7 @@
     ]
   },
   {
-    "hotel_id": 4,
+    "tenant_key": "budget_inn",
     "users": [
       { "name": "Amit Patel", "email": "amit@budgetinn.com", "role": "Supervisor", "password": "password123", "mobile": "+91 888 111 2221", "department": "Operations" },
       { "name": "Sunita Rao", "email": "sunita@budgetinn.com", "role": "Cleaner", "password": "password123", "mobile": "+91 888 111 2222", "department": "Housekeeping" },

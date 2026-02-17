@@ -5,9 +5,9 @@ from fastapi import HTTPException
 from fastapi import Request
 
 from app.core.config import get_settings
-from app.modules.auth.tokens import AccessTokenClaims
-from app.modules.auth.tokens import AccessTokenError
-from app.modules.auth.tokens import decode_access_token
+from app.modules.tokens import AccessTokenClaims
+from app.modules.tokens import AccessTokenError
+from app.modules.tokens import decode_access_token
 
 
 def get_access_token_claims(request: Request) -> AccessTokenClaims | None:
@@ -29,7 +29,9 @@ def get_access_token_claims(request: Request) -> AccessTokenClaims | None:
     return claims
 
 
-def require_access_token_claims(claims: AccessTokenClaims | None = Depends(get_access_token_claims)) -> AccessTokenClaims:
+def require_access_token_claims(
+    claims: AccessTokenClaims | None = Depends(get_access_token_claims),
+) -> AccessTokenClaims:
     if claims is None:
         raise HTTPException(status_code=401, detail="Access token is required.")
     return claims

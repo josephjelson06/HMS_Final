@@ -8,6 +8,8 @@ from sqlalchemy import CheckConstraint
 from sqlalchemy import DateTime
 from sqlalchemy import ForeignKey
 from sqlalchemy import Index
+from sqlalchemy import Integer
+from sqlalchemy import Float
 from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy import UniqueConstraint
@@ -38,6 +40,36 @@ class Tenant(Base):
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("true")
     )
+
+    # HMS Specific Fields
+    gstin: Mapped[str | None] = mapped_column(String(15), nullable=True, unique=True)
+    owner: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    mobile: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    pan: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    legal_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    logo: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    plan: Mapped[str] = mapped_column(
+        String(50), nullable=False, server_default=text("'Starter'")
+    )
+    kiosks: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("0")
+    )
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, server_default=text("'Onboarding'")
+    )
+    mrr: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default=text("0.0")
+    )
+    address: Mapped[str | None] = mapped_column(Text, nullable=True)
+    subscription_start_date: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )
+    subscription_end_date: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    is_auto_renew: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("true")
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -64,6 +96,14 @@ class User(Base):
     )
     email: Mapped[str] = mapped_column(String(320), nullable=False)
     username: Mapped[str] = mapped_column(String(120), nullable=False)
+    name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    employee_id: Mapped[str | None] = mapped_column(
+        String(50), nullable=True, unique=True
+    )
+    mobile: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    department: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    avatar: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     domain: Mapped[str | None] = mapped_column(String(120), nullable=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     user_type: Mapped[str] = mapped_column(String(20), nullable=False)

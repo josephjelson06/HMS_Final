@@ -3,8 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { repositories } from '@/infrastructure/config/container';
 
 export interface Invoice {
-  id: number;
-  hotel_id: number;
+  id: string;
+  hotel_id: string;
   amount: number;
   status: 'Paid' | 'Overdue' | 'Pending';
   period_start: string;

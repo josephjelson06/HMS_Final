@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -31,7 +32,7 @@ class PlanUpdate(BaseModel):
 
 
 class Plan(PlanBase):
-    id: int
+    id: UUID
 
     class Config:
         from_attributes = True

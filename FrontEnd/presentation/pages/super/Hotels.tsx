@@ -20,7 +20,7 @@ import type { PlanData } from '@/domain/entities/Plan';
 interface HotelsProps {
   onNavigate: (route: string) => void;
   onLoginAsAdmin?: (hotelName: string) => void;
-  onNavigateHotelDetails?: (hotelId: number) => void;
+  onNavigateHotelDetails?: (hotelId: string) => void;
 }
 
 const PlanBadge = ({ plan, plans }: { plan: string, plans: PlanData[] }) => {
@@ -54,7 +54,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
   const [filterPlan, setFilterPlan] = useState('All Plans');
   const [filterStatus, setFilterStatus] = useState('All Status');
 
-  const [selectedHotels, setSelectedHotels] = useState<number[]>([]);
+  const [selectedHotels, setSelectedHotels] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [modalConfig, setModalConfig] = useState<{
@@ -81,7 +81,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
     setModalConfig(prev => ({ ...prev, isOpen: false }));
   };
 
-  const toggleSelect = (id: number) => {
+  const toggleSelect = (id: string) => {
     setSelectedHotels(prev => prev.includes(id) ? prev.filter(hId => hId !== id) : [...prev, id]);
   };
 
@@ -101,7 +101,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
     });
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     openConfirm({
       title: 'Delete Hotel',
       message: 'Are you sure you want to delete this hotel? This action cannot be undone.',
@@ -141,7 +141,7 @@ const Hotels: React.FC<HotelsProps> = ({ onNavigate, onLoginAsAdmin, onNavigateH
 
   const totalPages = Math.ceil(filteredHotels.length / itemsPerPage);
 
-  const navigateToHotelDetails = (hotelId: number) => {
+  const navigateToHotelDetails = (hotelId: string) => {
     if (onNavigateHotelDetails) {
       onNavigateHotelDetails(hotelId);
       return;

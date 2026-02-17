@@ -2,9 +2,9 @@
 
 
 export interface Building {
-  id: number;
+  id: string;
   name: string;
-  hotel_id: number;
+  hotel_id: string;
 }
 
 export type RoomStatus = 'CLEAN_VACANT' | 'DIRTY_VACANT' | 'CLEAN_OCCUPIED' | 'DIRTY_OCCUPIED' | 'MAINTENANCE';

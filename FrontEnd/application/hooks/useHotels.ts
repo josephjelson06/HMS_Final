@@ -20,13 +20,13 @@ export function useHotels() {
     return hotel;
   };
 
-  const updateHotel = async (id: number, data: Partial<Hotel>) => {
+  const updateHotel = async (id: string, data: Partial<Hotel>) => {
     const hotel = await repositories.hotels.update(id, data);
     setHotels(prev => prev.map(h => h.id === id ? hotel : h));
     return hotel;
   };
 
-  const deleteHotel = async (id: number) => {
+  const deleteHotel = async (id: string) => {
     await repositories.hotels.delete(id);
     setHotels(prev => prev.filter(h => h.id !== id));
   };

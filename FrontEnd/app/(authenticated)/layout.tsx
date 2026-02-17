@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 
 import AppShell from "@/presentation/components/layout/AppShell";
 import ImpersonationModal from "@/presentation/components/ui/ImpersonationModal";
-import { ThemeProvider } from "@/presentation/providers/ThemeProvider";
 
 import { deleteCookie, getCookie, setCookie } from "@/infrastructure/browser/cookies";
 import {
@@ -48,7 +47,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
     const role = getCookie(ROLE_COOKIE) as ViewMode;
 
     if (!isAuthed) {
-      router.replace("/login");
+      router.replace(`/login?from=${encodeURIComponent(pathname)}`);
       return;
     }
 
@@ -115,7 +114,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
   }
 
   return (
-    <ThemeProvider>
+    <>
       <ImpersonationProvider startImpersonation={startImpersonation}>
         <AppShell
           currentRoute={currentRoute}
@@ -140,7 +139,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           hotelName={impersonatedHotel || ""}
         />
       </ImpersonationProvider>
-    </ThemeProvider>
+    </>
   );
 }
 

@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from uuid import UUID
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
@@ -37,7 +38,7 @@ class IncidentUpdate(BaseModel):
 
 class IncidentResponse(IncidentBase):
     id: int
-    hotel_id: int
+    hotel_id: UUID = Field(validation_alias="tenant_id")
 
     class Config:
         from_attributes = True

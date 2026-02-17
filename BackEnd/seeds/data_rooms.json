@@ -1,6 +1,6 @@
 [
   {
-    "hotel_id": 2,
+    "tenant_key": "grand_hotel",
     "building": "Grand Tower",
     "categories": [
       { "id": "SUT", "name": "Executive Suite", "rate": 8000, "occupancy": 4, "amenities": ["Wi-Fi", "TV", "AC", "Mini Bar", "Jacuzzi"] },
@@ -15,7 +15,7 @@
     ]
   },
   {
-    "hotel_id": 3,
+    "tenant_key": "cozy_stay",
     "building": "Main Cottage",
     "categories": [
       { "id": "FAM", "name": "Family Room", "rate": 3500, "occupancy": 4, "amenities": ["Wi-Fi", "Heating", "Kitchenette"] },
@@ -29,7 +29,7 @@
     ]
   },
   {
-    "hotel_id": 4,
+    "tenant_key": "budget_inn",
     "building": "Block A",
     "categories": [
       { "id": "SGL", "name": "Single Room", "rate": 1500, "occupancy": 1, "amenities": ["Wi-Fi", "Fan"] },

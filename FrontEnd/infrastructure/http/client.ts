@@ -1,6 +1,8 @@
 // HTTP client — centralized fetch wrapper for future API calls.
 // All API repositories will use this instead of raw fetch().
 
+import { getCookie } from '../browser/cookies';
+
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 interface RequestOptions {
@@ -47,9 +49,22 @@ class HttpClient {
 
   private async request<T>(method: HttpMethod, path: string, body?: unknown, options?: RequestOptions): Promise<T> {
     const url = this.buildUrl(path, options?.params);
+    
+    // Read token from client-side cookie and send via Authorization header
+    // This is needed because cross-origin cookies (localhost:3000 → localhost:8000)
+    // are NOT automatically sent by the browser with SameSite=lax
+    const headers: Record<string, string> = { ...this.defaultHeaders, ...options?.headers };
+    if (!headers['Authorization']) {
+      const cookieToken = getCookie('access_token');
+      if (cookieToken) {
+        // Cookie value already includes "Bearer " prefix
+        headers['Authorization'] = cookieToken;
+      }
+    }
+    
     const res = await fetch(url, {
       method,
-      headers: { ...this.defaultHeaders, ...options?.headers },
+      headers,
       body: body ? JSON.stringify(body) : undefined,
       credentials: 'include',
       cache: 'no-store',

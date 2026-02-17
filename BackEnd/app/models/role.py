@@ -1,15 +1,15 @@
-from sqlalchemy import Column, Integer, String
+import uuid
+from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from app.database import Base
 
 
 class Role(Base):
-    __tablename__ = "roles"
+    __tablename__ = "job_roles"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     name = Column(String, index=True)  # Removed unique=True for multi-tenancy
     description = Column(String, nullable=True)
     color = Column(String, default="blue")
     status = Column(String, default="Active")
-    hotel_id = Column(
-        Integer, nullable=True
-    )  # ForeignKey("hotels.id") - keeping loose for now or adds constraint
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=True)

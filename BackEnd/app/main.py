@@ -55,17 +55,15 @@ app.add_middleware(
 
 
 app.include_router(hotels.router)
-# app.include_router(kiosk.router, prefix="/api/kiosks", tags=["kiosks"])
-app.include_router(
-    subscriptions.router, prefix="/api/subscriptions", tags=["subscriptions"]
-)
-app.include_router(plans.router, prefix="/api/plans", tags=["plans"])
-app.include_router(users.router, prefix="/api/users", tags=["users"])
-app.include_router(roles.router, prefix="/api/roles", tags=["roles"])
-app.include_router(rooms.router, prefix="/api", tags=["rooms"])
-app.include_router(incidents.router, prefix="/api", tags=["incidents"])
-app.include_router(tickets.router, prefix="/api", tags=["tickets"])
-app.include_router(settings.router, prefix="/api/settings", tags=["settings"])
+# app.include_router(kiosk.router)
+app.include_router(subscriptions.router)
+app.include_router(plans.router)
+app.include_router(users.router)
+app.include_router(roles.router)
+app.include_router(rooms.router)
+app.include_router(incidents.router)
+app.include_router(tickets.router)
+app.include_router(settings.router)
 app.include_router(auth_simple.router)  # Mounts at /auth/login etc.
 
 

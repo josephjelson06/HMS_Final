@@ -8,8 +8,8 @@ export class ApiUserRepository implements IUserRepository {
   async getAll(): Promise<User[]> {
     const data = await httpClient.get<any[]>(this.baseUrl);
     return data.map(d => ({
-      id: d.employee_id,
-      numericId: d.id,
+      id: d.id, // UUID
+      employeeId: d.employee_id,
       name: d.name,
       email: d.email,
       role: d.role,
@@ -22,8 +22,23 @@ export class ApiUserRepository implements IUserRepository {
   }
 
   async getById(id: string): Promise<User | null> {
-    const all = await this.getAll();
-    return all.find(u => u.id === id) || null;
+    try {
+      const u = await httpClient.get<any>(`${this.baseUrl}/${id}`);
+      return {
+        id: u.id,
+        employeeId: u.employee_id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        status: u.status,
+        mobile: u.mobile,
+        lastLogin: u.last_login,
+        dateAdded: u.date_added,
+        avatar: u.avatar
+      };
+    } catch (error) {
+      return null;
+    }
   }
 
   async create(data: Omit<User, 'id'>): Promise<User> {
@@ -37,8 +52,8 @@ export class ApiUserRepository implements IUserRepository {
     };
     const result = await httpClient.post<any>(this.baseUrl, payload);
     return {
-      id: result.employee_id,
-      numericId: result.id,
+      id: result.id,
+      employeeId: result.employee_id,
       name: result.name,
       email: result.email,
       role: result.role,
@@ -51,17 +66,6 @@ export class ApiUserRepository implements IUserRepository {
   }
 
   async update(id: string, data: Partial<User>): Promise<User> {
-    // Resolve numeric ID
-    let numericId = (data as any).numericId;
-    if (!numericId) {
-        const user = await this.getById(id);
-        numericId = user?.numericId;
-    }
-
-    if (!numericId) {
-        throw new Error(`Could not resolve numeric ID for user ${id}`);
-    }
-
     const payload: any = {};
     if (data.name) payload.name = data.name;
     if (data.status) payload.status = data.status;
@@ -69,10 +73,10 @@ export class ApiUserRepository implements IUserRepository {
     if (data.mobile) payload.mobile = data.mobile;
     if ((data as any).department) payload.department = (data as any).department;
 
-    const result = await httpClient.patch<any>(`${this.baseUrl}/${numericId}`, payload);
+    const result = await httpClient.patch<any>(`${this.baseUrl}/${id}`, payload);
     return {
-      id: result.employee_id,
-      numericId: result.id,
+      id: result.id,
+      employeeId: result.employee_id,
       name: result.name,
       email: result.email,
       role: result.role,
@@ -85,11 +89,7 @@ export class ApiUserRepository implements IUserRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const user = await this.getById(id);
-    if (!user?.numericId) {
-        throw new Error(`Could not resolve numeric ID for deletion of user ${id}`);
-    }
-    await httpClient.delete(`${this.baseUrl}/${user.numericId}`);
+    await httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
   async getRoles(): Promise<Role[]> {

@@ -1,6 +1,6 @@
 [
   {
-    "hotel_id": 2,
+    "tenant_key": "grand_hotel",
     "subject": "Champagne unavailable in minibar",
     "description": "Guest in 1001 complained about missing vintage champagne.",
     "room": "1001",
@@ -12,7 +12,7 @@
     "assigned_to": "Room Service"
   },
   {
-    "hotel_id": 2,
+    "tenant_key": "grand_hotel",
     "subject": "Valet delay",
     "description": "Fetching Ferrari took 15 minutes.",
     "room": "Lobby",
@@ -24,7 +24,7 @@
     "assigned_to": "Valet Team"
   },
   {
-    "hotel_id": 3,
+    "tenant_key": "cozy_stay",
     "subject": "Heater broken",
     "description": "Radiator in Family Room C1 is making noise.",
     "room": "C1",
@@ -36,7 +36,7 @@
     "assigned_to": "Maintenance"
   },
   {
-    "hotel_id": 3,
+    "tenant_key": "cozy_stay",
     "subject": "Key stuck",
     "description": "Key jammed in C3 lock.",
     "room": "C3",
@@ -48,7 +48,7 @@
     "assigned_to": "Locksmith"
   },
   {
-    "hotel_id": 4,
+    "tenant_key": "budget_inn",
     "subject": "Wi-Fi slow",
     "description": "Guest can't stream video.",
     "room": "A101",
@@ -60,7 +60,7 @@
     "assigned_to": "IT Support"
   },
   {
-    "hotel_id": 4,
+    "tenant_key": "budget_inn",
     "subject": "Leaky tap",
     "description": "Dripping tap in A104 bathroom.",
     "room": "A104",

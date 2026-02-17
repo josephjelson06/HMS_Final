@@ -166,30 +166,6 @@ const KioskFirmware: React.FC = () => {
         ))}
       </div>
 
-      {/* Forge Policy Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-         <div className="p-8 rounded-[2.5rem] bg-gray-900 text-white shadow-2xl flex items-center gap-6">
-            <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
-                <Binary size={32} />
-            </div>
-            <div>
-                <h4 className="text-sm font-black leading-tight mb-1 uppercase tracking-tight">Code Signing Authority</h4>
-                <p className="text-[11px] font-medium opacity-80 leading-relaxed">
-                    All firmware binaries are cryptographically signed using platform keys. Kiosks will reject any unverified OTA payloads.
-                </p>
-            </div>
-         </div>
-         <div className="p-8 rounded-[2.5rem] border-2 border-dashed border-white/10 bg-white/5 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-               <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-500"><CheckCircle2 size={24} /></div>
-               <div>
-                  <h4 className="text-xs font-black dark:text-white uppercase tracking-widest">Global Patch Window</h4>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase mt-1">Automatic: Sunday 02:00 AM IST</p>
-               </div>
-            </div>
-            <button className="px-6 py-2 rounded-xl bg-white/5 border border-white/10 text-[9px] font-bold uppercase text-gray-400 hover:text-white transition-all">Reschedule</button>
-         </div>
-      </div>
 
       <AddFirmwareModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
     </div>

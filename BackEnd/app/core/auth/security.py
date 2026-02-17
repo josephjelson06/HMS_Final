@@ -20,14 +20,19 @@ def get_password_hash(password: str) -> str:
 
 
 def create_access_token(
-    subject: Union[str, Any], tenant_id: int, tenant_type: str, user_type: str
+    subject: Union[str, Any],
+    tenant_id: Union[str, Any],
+    tenant_type: str,
+    user_type: str,
+    roles: list[str] | None = None,
 ) -> str:
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = {
         "sub": str(subject),
-        "tenant_id": tenant_id,
+        "tenant_id": str(tenant_id),
         "tenant_type": tenant_type,
         "user_type": user_type,
+        "roles": roles or [],
         "exp": expire,
     }
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)

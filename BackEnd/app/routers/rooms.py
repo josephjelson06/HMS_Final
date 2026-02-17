@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from uuid import UUID
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
@@ -12,22 +13,27 @@ from app.schemas.room import (
     BuildingCreate,
     BuildingResponse,
 )
+from app.modules.rbac import require_permission
 
-router = APIRouter(prefix="/hotels/{hotel_id}", tags=["rooms"])
+router = APIRouter(prefix="/api/hotels/{hotel_id}", tags=["rooms"])
 
 # --- Buildings ---
 
 
 @router.get("/buildings", response_model=List[BuildingResponse])
-def get_buildings(hotel_id: int, db: Session = Depends(get_db)):
-    return db.query(Building).filter(Building.hotel_id == hotel_id).all()
+def get_buildings(hotel_id: UUID, db: Session = Depends(get_db)):
+    return db.query(Building).filter(Building.tenant_id == hotel_id).all()
 
 
-@router.post("/buildings", response_model=BuildingResponse)
+@router.post(
+    "/buildings",
+    response_model=BuildingResponse,
+    dependencies=[Depends(require_permission("hotel:rooms:write"))],
+)
 def create_building(
-    hotel_id: int, building: BuildingCreate, db: Session = Depends(get_db)
+    hotel_id: UUID, building: BuildingCreate, db: Session = Depends(get_db)
 ):
-    db_building = Building(**building.dict(), hotel_id=hotel_id)
+    db_building = Building(**building.model_dump(), tenant_id=hotel_id)
     db.add(db_building)
     db.commit()
     db.refresh(db_building)
@@ -38,9 +44,9 @@ def create_building(
 
 
 @router.get("/categories", response_model=List[RoomCategoryResponse])
-def get_categories(hotel_id: int, db: Session = Depends(get_db)):
+def get_categories(hotel_id: UUID, db: Session = Depends(get_db)):
     db_categories = (
-        db.query(RoomCategory).filter(RoomCategory.hotel_id == hotel_id).all()
+        db.query(RoomCategory).filter(RoomCategory.tenant_id == hotel_id).all()
     )
     # Convert amenities string back to list
     for cat in db_categories:
@@ -48,13 +54,17 @@ def get_categories(hotel_id: int, db: Session = Depends(get_db)):
     return db_categories
 
 
-@router.post("/categories", response_model=RoomCategoryResponse)
+@router.post(
+    "/categories",
+    response_model=RoomCategoryResponse,
+    dependencies=[Depends(require_permission("hotel:rooms:write"))],
+)
 def create_category(
-    hotel_id: int, category: RoomCategoryCreate, db: Session = Depends(get_db)
+    hotel_id: UUID, category: RoomCategoryCreate, db: Session = Depends(get_db)
 ):
-    cat_data = category.dict()
+    cat_data = category.model_dump()
     cat_data["amenities"] = ",".join(cat_data["amenities"])
-    db_category = RoomCategory(**cat_data, hotel_id=hotel_id)
+    db_category = RoomCategory(**cat_data, tenant_id=hotel_id)
     db.add(db_category)
     db.commit()
     db.refresh(db_category)
@@ -69,16 +79,20 @@ def create_category(
 
 
 @router.get("/rooms", response_model=List[RoomResponse])
-def get_rooms(hotel_id: int, db: Session = Depends(get_db)):
-    return db.query(Room).filter(Room.hotel_id == hotel_id).all()
+def get_rooms(hotel_id: UUID, db: Session = Depends(get_db)):
+    return db.query(Room).filter(Room.tenant_id == hotel_id).all()
 
 
-@router.post("/rooms", response_model=RoomResponse)
-def create_room(hotel_id: int, room: RoomCreate, db: Session = Depends(get_db)):
+@router.post(
+    "/rooms",
+    response_model=RoomResponse,
+    dependencies=[Depends(require_permission("hotel:rooms:write"))],
+)
+def create_room(hotel_id: UUID, room: RoomCreate, db: Session = Depends(get_db)):
     # Check if category exists
     cat = (
         db.query(RoomCategory)
-        .filter(RoomCategory.id == room.category_id, RoomCategory.hotel_id == hotel_id)
+        .filter(RoomCategory.id == room.category_id, RoomCategory.tenant_id == hotel_id)
         .first()
     )
     if not cat:
@@ -87,30 +101,39 @@ def create_room(hotel_id: int, room: RoomCreate, db: Session = Depends(get_db)):
     # Check if building exists
     bld = (
         db.query(Building)
-        .filter(Building.id == room.building_id, Building.hotel_id == hotel_id)
+        .filter(Building.id == room.building_id, Building.tenant_id == hotel_id)
         .first()
     )
     if not bld:
         raise HTTPException(status_code=400, detail="Invalid Building ID")
 
-    db_room = Room(**room.dict(), hotel_id=hotel_id)
+    db_room = Room(**room.model_dump(), tenant_id=hotel_id)
     db.add(db_room)
     db.commit()
     db.refresh(db_room)
     return db_room
 
 
-@router.post("/rooms/batch", response_model=List[RoomResponse])
+@router.post(
+    "/rooms/batch",
+    response_model=List[RoomResponse],
+    dependencies=[Depends(require_permission("hotel:rooms:write"))],
+)
 def create_rooms_batch(
-    hotel_id: int, rooms: List[RoomCreate], db: Session = Depends(get_db)
+    hotel_id: UUID, rooms: List[RoomCreate], db: Session = Depends(get_db)
 ):
     created_rooms = []
     for room in rooms:
         # Check if room exists
-        if db.query(Room).filter(Room.id == room.id, Room.hotel_id == hotel_id).first():
+        if (
+            room.id
+            and db.query(Room)
+            .filter(Room.id == room.id, Room.tenant_id == hotel_id)
+            .first()
+        ):
             continue
 
-        db_room = Room(**room.dict(), hotel_id=hotel_id)
+        db_room = Room(**room.model_dump(), tenant_id=hotel_id)
         db.add(db_room)
         created_rooms.append(db_room)
 
@@ -125,17 +148,21 @@ def create_rooms_batch(
     return created_rooms
 
 
-@router.put("/rooms/{room_id}", response_model=RoomResponse)
+@router.put(
+    "/rooms/{room_id}",
+    response_model=RoomResponse,
+    dependencies=[Depends(require_permission("hotel:rooms:write"))],
+)
 def update_room(
-    hotel_id: int, room_id: str, room: RoomUpdate, db: Session = Depends(get_db)
+    hotel_id: UUID, room_id: UUID, room: RoomUpdate, db: Session = Depends(get_db)
 ):
     db_room = (
-        db.query(Room).filter(Room.id == room_id, Room.hotel_id == hotel_id).first()
+        db.query(Room).filter(Room.id == room_id, Room.tenant_id == hotel_id).first()
     )
     if not db_room:
         raise HTTPException(status_code=404, detail="Room not found")
 
-    update_data = room.dict(exclude_unset=True)
+    update_data = room.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_room, key, value)
 
@@ -144,14 +171,18 @@ def update_room(
     return db_room
 
 
-@router.delete("/rooms/{room_id}")
-def delete_room(hotel_id: int, room_id: str, db: Session = Depends(get_db)):
+@router.delete(
+    "/rooms/{room_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission("hotel:rooms:write"))],
+)
+def delete_room(hotel_id: UUID, room_id: UUID, db: Session = Depends(get_db)):
     db_room = (
-        db.query(Room).filter(Room.id == room_id, Room.hotel_id == hotel_id).first()
+        db.query(Room).filter(Room.id == room_id, Room.tenant_id == hotel_id).first()
     )
     if not db_room:
         raise HTTPException(status_code=404, detail="Room not found")
 
     db.delete(db_room)
     db.commit()
-    return {"message": "Room deleted successfully"}
+    return None

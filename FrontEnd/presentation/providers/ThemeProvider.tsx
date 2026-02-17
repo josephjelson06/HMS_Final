@@ -1,16 +1,25 @@
+"use client";
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ThemeContextType } from '../../types/theme';
 
 export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('hms_theme');
+      return saved === 'dark';
+    }
+    return false;
+  });
 
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('hms_theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('hms_theme', 'light');
     }
   }, [isDarkMode]);
 

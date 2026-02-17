@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel
 
 
@@ -11,8 +12,8 @@ class KioskCreate(KioskBase):
 
 
 class Kiosk(KioskBase):
-    id: int
-    hotel_id: int
+    id: UUID
+    hotel_id: UUID
 
     class Config:
         from_attributes = True

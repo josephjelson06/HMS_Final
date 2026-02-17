@@ -1,5 +1,6 @@
 import type { IAuthService, AuthUser, LoginCredentials } from '../../domain/contracts/IAuthService';
 import { httpClient } from '../http/client';
+import { setCookie } from '../browser/cookies';
 
 export class ApiAuthService implements IAuthService {
   private currentUser: AuthUser | null = null;
@@ -27,6 +28,17 @@ export class ApiAuthService implements IAuthService {
         // Map user_type/tenant fields if needed, but UI seems to rely on 'role' string or hotelId
         hotelId: response.tenant_id?.toString()
       };
+
+      // If backend returns token in body, set it in client cookie as fallback
+      if (response.access_token) {
+          // Set with appropriate options matching backend's logic
+          // IMPORTANT: Add "Bearer " prefix to match backend cookie format
+          setCookie('access_token', `Bearer ${response.access_token}`, { 
+              path: '/', 
+              maxAgeSeconds: 60 * 60 * 24, // 1 day
+              sameSite: 'lax' 
+          });
+      }
 
       this.currentUser = user;
       return user;

@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel
 from typing import Optional
 
@@ -13,7 +14,7 @@ class SubscriptionUpdate(BaseModel):
 
 class Subscription(BaseModel):
     id: str  # We might use hotel_id as subscription id conceptually for now
-    hotel_id: int
+    hotel_id: UUID
     hotel: str
     plan: str
     startDate: Optional[str]

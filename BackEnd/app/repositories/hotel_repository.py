@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from uuid import UUID
 from app.models.hotel import Hotel as HotelModel
 from app.schemas.hotel import HotelCreate, HotelUpdate
 
@@ -11,7 +12,7 @@ class HotelRepository:
     def get_all(self, skip: int = 0, limit: int = 100) -> List[HotelModel]:
         return self.db.query(HotelModel).offset(skip).limit(limit).all()
 
-    def get_by_id(self, hotel_id: int) -> Optional[HotelModel]:
+    def get_by_id(self, hotel_id: UUID) -> Optional[HotelModel]:
         return self.db.query(HotelModel).filter(HotelModel.id == hotel_id).first()
 
     def create(self, hotel_in: HotelCreate) -> HotelModel:
@@ -24,7 +25,7 @@ class HotelRepository:
         self.db.refresh(db_hotel)
         return db_hotel
 
-    def update(self, hotel_id: int, hotel_in: HotelUpdate) -> Optional[HotelModel]:
+    def update(self, hotel_id: UUID, hotel_in: HotelUpdate) -> Optional[HotelModel]:
         db_hotel = self.get_by_id(hotel_id)
         if not db_hotel:
             return None
@@ -38,7 +39,7 @@ class HotelRepository:
         self.db.refresh(db_hotel)
         return db_hotel
 
-    def delete(self, hotel_id: int) -> bool:
+    def delete(self, hotel_id: UUID) -> bool:
         db_hotel = self.get_by_id(hotel_id)
         if not db_hotel:
             return False

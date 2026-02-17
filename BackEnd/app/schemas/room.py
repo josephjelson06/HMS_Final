@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
@@ -12,7 +13,7 @@ class BuildingCreate(BuildingBase):
 
 class BuildingResponse(BuildingBase):
     id: int
-    hotel_id: int
+    hotel_id: UUID = Field(validation_alias="tenant_id")
 
     class Config:
         from_attributes = True
@@ -31,7 +32,7 @@ class RoomCategoryCreate(RoomCategoryBase):
 
 
 class RoomCategoryResponse(RoomCategoryBase):
-    hotel_id: int
+    hotel_id: UUID = Field(validation_alias="tenant_id")
 
     class Config:
         from_attributes = True
@@ -59,7 +60,7 @@ class RoomUpdate(BaseModel):
 
 
 class RoomResponse(RoomBase):
-    hotel_id: int
+    hotel_id: UUID = Field(validation_alias="tenant_id")
     building: Optional[str] = Field(None, validation_alias="building_name")
     category: Optional[str] = Field(None, validation_alias="category_name")
 

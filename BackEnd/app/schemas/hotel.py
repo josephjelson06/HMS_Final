@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel, Field, EmailStr
 from enum import Enum
 from typing import Optional, List
@@ -54,7 +55,7 @@ class HotelUpdate(BaseModel):
 
 
 class Hotel(HotelBase):
-    id: int
+    id: UUID
     kiosk_list: List[Kiosk] = []
 
     class Config:

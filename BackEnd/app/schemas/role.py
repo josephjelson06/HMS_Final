@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel
 from typing import Optional
 
@@ -20,7 +21,7 @@ class RoleUpdate(BaseModel):
 
 
 class Role(RoleBase):
-    id: int
+    id: UUID
     userCount: Optional[int] = 0
 
     class Config:

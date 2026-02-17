@@ -1,6 +1,6 @@
 [
   {
-    "hotel_id": 1,
+    "tenant_key": "grand_hotel",
     "subject": "Kiosk Printer Jammed",
     "description": "The kiosk in the lobby is not printing key cards. Error code P-404.",
     "priority": "High",
@@ -10,7 +10,7 @@
     "updated_at": "2023-10-26T08:30:00"
   },
   {
-    "hotel_id": 1,
+    "tenant_key": "grand_hotel",
     "subject": "Billing Discrepancy",
     "description": "Invoice #INV-2023-001 shows an incorrect total for the Pro Plan.",
     "priority": "Medium",
@@ -20,7 +20,7 @@
     "updated_at": "2023-10-25T14:00:00"
   },
   {
-    "hotel_id": 1,
+    "tenant_key": "cozy_stay",
     "subject": "Feature Request: Dark Mode",
     "description": "Staff requesting dark mode for the dashboard to reduce eye strain during night shifts.",
     "priority": "Low",
@@ -30,7 +30,7 @@
     "updated_at": "2023-10-20T15:45:00"
   },
   {
-    "hotel_id": 1,
+    "tenant_key": "cozy_stay",
     "subject": "PMS Integration Failure",
     "description": "Sync with Oracle Opera PMS failed last night. Guests details not updating.",
     "priority": "Critical",
@@ -40,7 +40,7 @@
     "updated_at": "2023-10-24T13:00:00"
   },
   {
-    "hotel_id": 1,
+    "tenant_key": "budget_inn",
     "subject": "New Kiosk Firmware Update",
     "description": "Need assistance verifying compatibility of new firmware v2.1.",
     "priority": "Medium",

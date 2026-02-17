@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -8,9 +9,9 @@ class Building(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
-    hotel_id = Column(Integer, ForeignKey("hotels.id"))
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"))
 
-    hotel = relationship("Hotel")
+    tenant = relationship("Tenant")
     rooms = relationship(
         "Room", back_populates="building", cascade="all, delete-orphan"
     )
@@ -24,9 +25,9 @@ class RoomCategory(Base):
     rate = Column(Float)
     occupancy = Column(Integer)
     amenities = Column(String)  # Stored as comma-separated string for simplicity
-    hotel_id = Column(Integer, ForeignKey("hotels.id"))
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"))
 
-    hotel = relationship("Hotel")
+    tenant = relationship("Tenant")
     rooms = relationship(
         "Room", back_populates="category", cascade="all, delete-orphan"
     )
@@ -41,11 +42,11 @@ class Room(Base):
     type = Column(String, default="Hostel Room")
     building_id = Column(Integer, ForeignKey("buildings.id"))
     category_id = Column(String, ForeignKey("room_categories.id"))
-    hotel_id = Column(Integer, ForeignKey("hotels.id"))
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"))
 
     building = relationship("Building", back_populates="rooms")
     category = relationship("RoomCategory", back_populates="rooms")
-    hotel = relationship("Hotel")
+    tenant = relationship("Tenant")
 
     @property
     def building_name(self):

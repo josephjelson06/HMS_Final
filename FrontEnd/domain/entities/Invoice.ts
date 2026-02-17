@@ -9,7 +9,7 @@ export interface LineItem {
 
 export interface Invoice {
   id: string;
-  numericId?: number; // Internal ID for backend updates
+  invoiceNumber?: string;
   hotel: string;
   amount?: number;
   baseAmount?: number;

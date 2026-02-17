@@ -8,8 +8,8 @@ from uuid import UUID
 from fastapi import Request
 
 from app.core.config import get_settings
-from app.modules.auth.tokens import AccessTokenError
-from app.modules.auth.tokens import decode_access_token
+from app.modules.tokens import AccessTokenError
+from app.modules.tokens import decode_access_token
 
 
 AUTH_TENANT_ID_HEADER = "x-auth-tenant-id"
@@ -69,7 +69,9 @@ def parse_auth_context_from_access_token_cookie(request: Request) -> AuthContext
     try:
         tenant_type = TenantType(claims.tenant_type)
     except ValueError as exc:
-        raise TenantContextResolutionError("Access token tenant type claim is invalid.", status_code=401) from exc
+        raise TenantContextResolutionError(
+            "Access token tenant type claim is invalid.", status_code=401
+        ) from exc
 
     request.state.access_token_claims = claims
     return AuthContext(
@@ -100,7 +102,9 @@ def parse_auth_context_from_headers(headers: Any) -> AuthContext | None:
     try:
         tenant_id = UUID(tenant_id_raw)
     except ValueError as exc:
-        raise TenantContextResolutionError(f"Invalid {AUTH_TENANT_ID_HEADER} value: {tenant_id_raw}") from exc
+        raise TenantContextResolutionError(
+            f"Invalid {AUTH_TENANT_ID_HEADER} value: {tenant_id_raw}"
+        ) from exc
 
     try:
         tenant_type = TenantType(tenant_type_raw)
@@ -115,7 +119,9 @@ def parse_auth_context_from_headers(headers: Any) -> AuthContext | None:
         try:
             user_id = UUID(user_id_raw)
         except ValueError as exc:
-            raise TenantContextResolutionError(f"Invalid {AUTH_USER_ID_HEADER} value: {user_id_raw}") from exc
+            raise TenantContextResolutionError(
+                f"Invalid {AUTH_USER_ID_HEADER} value: {user_id_raw}"
+            ) from exc
 
     roles: tuple[str, ...] = ()
     if roles_raw:

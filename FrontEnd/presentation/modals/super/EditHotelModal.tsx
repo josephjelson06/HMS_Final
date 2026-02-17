@@ -10,7 +10,7 @@ interface EditHotelModalProps {
   isOpen: boolean;
   onClose: () => void;
   hotel: Hotel;
-  onUpdate: (id: number, data: Partial<Hotel>) => Promise<void>;
+  onUpdate: (id: string, data: Partial<Hotel>) => Promise<void>;
 }
 
 const EditHotelModal: React.FC<EditHotelModalProps> = ({ isOpen, onClose, hotel, onUpdate }) => {

@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from uuid import UUID
+from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
@@ -25,7 +26,7 @@ class TicketUpdate(BaseModel):
 
 class TicketResponse(TicketBase):
     id: int
-    hotel_id: int
+    hotel_id: UUID = Field(validation_alias="tenant_id")
     created_at: datetime
     updated_at: Optional[datetime] = None
 

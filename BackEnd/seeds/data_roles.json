@@ -5,18 +5,18 @@
     { "name": "Housekeeping", "color": "emerald", "description": "Room Status & Maintenance Reporting" }
   ],
   "specific": {
-    "2": [
+    "grand_hotel": [
       { "name": "Housekeeping Lead", "color": "emerald", "description": "Housekeeping team supervision" },
       { "name": "Night Auditor", "color": "orange", "description": "EndOfDay Operations & Revenue Reconciliation" },
       { "name": "Maintenance Lead", "color": "blue", "description": "Critical Infrastructure & Hardware Repair Access" }
     ],
-    "3": [
+    "cozy_stay": [
       { "name": "Property Manager", "color": "purple", "description": "Boutique property management" },
       { "name": "Guest Relations", "color": "rose", "description": "VIP guest assistance and concierge" },
       { "name": "Head Chef", "color": "red", "description": "Kitchen and menu management" },
       { "name": "Security Chief", "color": "slate", "description": "Full property security management" }
     ],
-    "4": [
+    "budget_inn": [
       { "name": "Supervisor", "color": "amber", "description": "General shift supervision" },
       { "name": "Night Guard", "color": "indigo", "description": "Night shift property security" },
       { "name": "Receptionist", "color": "sky", "description": "Front desk and call handling" },

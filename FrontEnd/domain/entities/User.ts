@@ -2,7 +2,7 @@
 
 export interface User {
   id: string;
-  numericId?: number;
+  employeeId: string;
   name: string;
   email: string;
   role: string;
