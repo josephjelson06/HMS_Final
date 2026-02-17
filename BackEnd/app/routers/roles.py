@@ -1,5 +1,6 @@
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
@@ -58,6 +59,150 @@ def create_platform_role(role: RoleCreate, db: Session = Depends(get_db)):
     db.refresh(new_role)
     new_role.userCount = 0
     return new_role
+
+
+@router.patch(
+    "/roles/{role_id}",
+    response_model=RoleSchema,
+    dependencies=[Depends(require_permission("platform:roles:write"))],
+)
+def update_platform_role(
+    role_id: UUID,
+    role_update: RoleUpdate,
+    db: Session = Depends(get_db),
+):
+    db_role = (
+        db.query(Role).filter(Role.id == role_id, Role.tenant_id.is_(None)).first()
+    )
+    if not db_role:
+        raise HTTPException(status_code=404, detail="Role not found")
+
+    for key, value in role_update.model_dump(exclude_unset=True).items():
+        setattr(db_role, key, value)
+
+    db.commit()
+    db.refresh(db_role)
+    db_role.userCount = _count_users_for_role(db, db_role.id)
+    return db_role
+
+
+@router.delete(
+    "/roles/{role_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission("platform:roles:write"))],
+)
+def delete_platform_role(role_id: UUID, db: Session = Depends(get_db)):
+    db_role = (
+        db.query(Role).filter(Role.id == role_id, Role.tenant_id.is_(None)).first()
+    )
+    if not db_role:
+        raise HTTPException(status_code=404, detail="Role not found")
+
+    user_count = _count_users_for_role(db, db_role.id)
+    if user_count > 0:
+        raise HTTPException(
+            status_code=400, detail="Cannot delete role with assigned users"
+        )
+
+    db.delete(db_role)
+    db.commit()
+    return None
+
+
+# ── Platform Permissions ──────────────────────────────────────────
+
+
+class RolePermissionsOut(BaseModel):
+    role_id: UUID
+    role_name: str
+    permissions: List[str]
+
+
+class RolePermissionsIn(BaseModel):
+    permissions: List[str]
+
+
+@router.get(
+    "/roles/{role_id}/permissions",
+    response_model=RolePermissionsOut,
+    dependencies=[Depends(require_permission("platform:roles:read"))],
+)
+def get_platform_role_permissions(role_id: UUID, db: Session = Depends(get_db)):
+    """Return permission keys assigned to a platform role."""
+    # Import here to avoid circular dependencies if any, though top-level is fine usually
+    from app.models.auth import Permission, RolePermission
+
+    job_role = (
+        db.query(Role).filter(Role.id == role_id, Role.tenant_id.is_(None)).first()
+    )
+    if not job_role:
+        print(f"DEBUG: Role {role_id} not found in platform scope.")
+
+        # Try finding it in hotel scope for debug
+        any_role = db.query(Role).filter(Role.id == role_id).first()
+        if any_role:
+            print(f"DEBUG: Found role {role_id} but tenant_id is {any_role.tenant_id}")
+
+        raise HTTPException(status_code=404, detail="Role not found")
+
+    perm_keys = (
+        db.query(Permission.permission_key)
+        .join(RolePermission, RolePermission.permission_id == Permission.id)
+        .filter(RolePermission.role_id == role_id)
+        .all()
+    )
+
+    return RolePermissionsOut(
+        role_id=role_id,
+        role_name=job_role.name,
+        permissions=[p[0] for p in perm_keys],
+    )
+
+
+@router.put(
+    "/roles/{role_id}/permissions",
+    response_model=RolePermissionsOut,
+    dependencies=[Depends(require_permission("platform:roles:write"))],
+)
+def set_platform_role_permissions(
+    role_id: UUID,
+    body: RolePermissionsIn,
+    db: Session = Depends(get_db),
+):
+    from app.models.auth import Permission, RolePermission
+
+    job_role = (
+        db.query(Role).filter(Role.id == role_id, Role.tenant_id.is_(None)).first()
+    )
+    if not job_role:
+        raise HTTPException(status_code=404, detail="Role not found")
+
+    perms = (
+        db.query(Permission)
+        .filter(Permission.permission_key.in_(body.permissions))
+        .all()
+    )
+    perm_id_map = {p.permission_key: p.id for p in perms}
+
+    missing = set(body.permissions) - set(perm_id_map.keys())
+    if missing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown permission keys: {', '.join(sorted(missing))}",
+        )
+
+    db.query(RolePermission).filter(RolePermission.role_id == role_id).delete()
+
+    for perm_key in body.permissions:
+        db.add(RolePermission(role_id=role_id, permission_id=perm_id_map[perm_key]))
+
+    db.commit()
+
+    return RolePermissionsOut(
+        role_id=role_id,
+        role_name=job_role.name,
+        permissions=body.permissions,
+    )
 
 
 # ── Hotel-scoped: each hotel manages its own roles ────────────────

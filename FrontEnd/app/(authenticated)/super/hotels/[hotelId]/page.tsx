@@ -11,9 +11,9 @@ export default function SuperHotelDetailsPage() {
   const params = useParams();
   const startImpersonation = useStartImpersonation();
   const raw = params?.hotelId;
-  const hotelIdString = Array.isArray(raw) ? raw[0] : raw;
-  const parsedHotelId = Number(hotelIdString);
-  const hotelId = Number.isFinite(parsedHotelId) ? parsedHotelId : undefined;
+  const hotelId = Array.isArray(raw) ? raw[0] : raw;
+  // const parsedHotelId = Number(hotelIdString);
+  // const hotelId = Number.isFinite(parsedHotelId) ? parsedHotelId : undefined;
 
   return (
     <HotelDetails

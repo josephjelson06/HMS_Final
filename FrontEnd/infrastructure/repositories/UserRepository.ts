@@ -3,7 +3,7 @@ import type { User, Role, StaffMember } from '../../domain/entities/User';
 import { httpClient } from '../http/client';
 
 export class ApiUserRepository implements IUserRepository {
-  private baseUrl = 'api/users';
+  private baseUrl = 'api/users/';
 
   async getAll(): Promise<User[]> {
     const data = await httpClient.get<any[]>(this.baseUrl);
@@ -23,7 +23,7 @@ export class ApiUserRepository implements IUserRepository {
 
   async getById(id: string): Promise<User | null> {
     try {
-      const u = await httpClient.get<any>(`${this.baseUrl}/${id}`);
+      const u = await httpClient.get<any>(`${this.baseUrl}${id}`);
       return {
         id: u.id,
         employeeId: u.employee_id,
@@ -73,7 +73,7 @@ export class ApiUserRepository implements IUserRepository {
     if (data.mobile) payload.mobile = data.mobile;
     if ((data as any).department) payload.department = (data as any).department;
 
-    const result = await httpClient.patch<any>(`${this.baseUrl}/${id}`, payload);
+    const result = await httpClient.patch<any>(`${this.baseUrl}${id}`, payload);
     return {
       id: result.id,
       employeeId: result.employee_id,
@@ -89,7 +89,7 @@ export class ApiUserRepository implements IUserRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await httpClient.delete(`${this.baseUrl}/${id}`);
+    await httpClient.delete(`${this.baseUrl}${id}`);
   }
 
   async getRoles(): Promise<Role[]> {
@@ -102,13 +102,25 @@ export class ApiUserRepository implements IUserRepository {
     return result;
   }
 
-  async updateRole(name: string, data: Partial<Role>): Promise<Role> {
-    const result = await httpClient.patch<any>(`api/roles/${name}`, data);
+  async updateRole(id: string, data: Partial<Role>): Promise<Role> {
+    const result = await httpClient.patch<any>(`api/roles/${id}`, data);
     return result;
   }
 
-  async deleteRole(name: string): Promise<void> {
-    await httpClient.delete(`api/roles/${name}`);
+  async deleteRole(id: string): Promise<void> {
+    await httpClient.delete(`api/roles/${id}`);
+  }
+
+  async getAvailablePermissions(): Promise<{ id: string; permission_key: string; description: string }[]> {
+    return await httpClient.get('api/permissions/');
+  }
+
+  async getRolePermissions(roleId: string): Promise<{ role_id: string; role_name: string; permissions: string[] }> {
+    return await httpClient.get(`api/roles/${roleId}/permissions`);
+  }
+
+  async setRolePermissions(roleId: string, permissions: string[]): Promise<void> {
+    await httpClient.put(`api/roles/${roleId}/permissions`, { permissions });
   }
 
   async getStaff(): Promise<StaffMember[]> {

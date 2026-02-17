@@ -21,7 +21,7 @@ type Tab = 'USERS' | 'ROLES' | 'VIEW_ROLE';
 
 const UsersManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('USERS');
-  const { users, roles, loading, updateUser, deleteUser, createRole, updateRole, deleteRole } = useUsers();
+  const { users, roles, loading, updateUser, deleteUser, createRole, updateRole, deleteRole, getAvailablePermissions, getRolePermissions, setRolePermissions } = useUsers();
   const [selectedRoleForView, setSelectedRoleForView] = useState<Role | null>(null);
   
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
@@ -75,21 +75,22 @@ const UsersManagement: React.FC = () => {
     console.log("Role creation requested:", roleName);
   };
 
-  const handleToggleRoleStatus = async (roleName: string) => {
-    const role = roles.find(r => r.name === roleName);
+  const handleToggleRoleStatus = async (roleId: string) => {
+    const role = roles.find(r => (r as any).id === roleId || r.name === roleId);
     if (!role) return;
+    const actualId = (role as any).id || role.name;
     try {
-        await updateRole(roleName, { status: role.status === 'Active' ? 'Inactive' : 'Active' });
+        await updateRole(actualId, { status: role.status === 'Active' ? 'Inactive' : 'Active' });
     } catch (err) {
         console.error("Failed to toggle role status", err);
     }
   };
 
-  const handleRemoveRole = (roleName: string) => {
+  const handleRemoveRole = (roleId: string, roleName: string) => {
     setConfirmDelete({
       isOpen: true,
       type: 'ROLE',
-      idOrName: roleName,
+      idOrName: roleId,
       displayName: roleName
     });
   };
@@ -137,8 +138,16 @@ const UsersManagement: React.FC = () => {
       <RoleDetailView 
         role={selectedRoleForView} 
         users={roleUsers}
-        onBack={() => setActiveTab('ROLES')} 
+        onBack={() => {
+          setSelectedRoleForView(null);
+          setActiveTab('ROLES');
+        }} 
         type="super"
+        fetchAvailable={getAvailablePermissions}
+        fetchRolePerms={getRolePermissions}
+        saveRolePerms={setRolePermissions}
+        onUpdateStatus={handleToggleRoleStatus}
+        onDelete={handleRemoveRole}
       />
     );
   }
@@ -294,17 +303,35 @@ const UsersManagement: React.FC = () => {
                     </div>
                   )}
                   
-                  <div className="p-10 pb-0 text-center">
-                      <div className={`w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-6 shadow-xl transition-all ${
+                  <div className="p-8 pb-0 flex flex-col items-center text-center flex-1">
+                      <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center mb-6 shadow-2xl transition-all relative group-hover:scale-110 duration-500 ${
                           isInactive ? 'bg-gray-500/10 text-gray-500' :
-                          'bg-accent-strong/10 text-accent-strong'
+                          'bg-accent-strong text-white shadow-accent-strong/40'
                       }`}>
-                          <Shield size={32} />
+                          <Shield size={36} className="drop-shadow-lg" />
+                          <div className={`absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm ${
+                              isInactive ? 'bg-gray-100 text-gray-500 border-gray-200' : 'bg-white text-accent-strong border-white'
+                          }`}>
+                              {role.userCount || 0}
+                          </div>
                       </div>
-                      <h3 className={`text-xl font-black tracking-tighter uppercase mb-2 truncate transition-colors ${isInactive ? 'text-gray-400 dark:text-zinc-600' : 'dark:text-white'}`} title={role.name}>{role.name}</h3>
-                      <p className={`text-sm font-medium leading-relaxed mb-10 h-16 overflow-hidden transition-colors ${isInactive ? 'text-gray-400 dark:text-zinc-700' : 'text-gray-500'}`}>
-                          {role.desc}
+                      
+                      <h3 className={`text-2xl font-black tracking-tighter uppercase mb-3 truncate w-full transition-colors ${isInactive ? 'text-gray-400 dark:text-zinc-600' : 'dark:text-white'}`} title={role.name}>
+                          {role.name}
+                      </h3>
+                      
+                      <p className={`text-xs font-bold uppercase tracking-widest mb-8 line-clamp-2 px-4 transition-colors ${isInactive ? 'text-gray-400 dark:text-zinc-700' : 'text-gray-500'}`}>
+                          {role.desc || "No description provided"}
                       </p>
+                      
+                      <div className="mt-auto w-full pt-6 border-t border-white/5 flex items-center justify-between px-2">
+                          <span className={`text-[10px] font-black uppercase tracking-widest ${isInactive ? 'text-red-400' : 'text-emerald-400'}`}>
+                              {role.status}
+                          </span>
+                          <span className="text-[10px] font-bold text-gray-500 uppercase">
+                              {(role.userCount || 0) === 1 ? '1 Member' : `${role.userCount || 0} Members`}
+                          </span>
+                      </div>
                   </div>
 
                   <div className="p-10 pt-0 mt-auto">
@@ -317,15 +344,15 @@ const UsersManagement: React.FC = () => {
                               }
                               items={[
                                   { icon: Eye, label: 'View Details', onClick: () => handleViewRole(role) },
-                                  { icon: Edit2, label: 'Edit Role Name', onClick: () => {} },
+                                  { icon: Edit2, label: 'Edit Role Name', onClick: () => handleViewRole(role) },
                                   { 
                                     icon: isInactive ? ShieldCheck : ShieldAlert, 
                                     label: isInactive ? 'Activate Role' : 'Deactivate Role', 
-                                    onClick: () => handleToggleRoleStatus(role.name),
+                                    onClick: () => handleToggleRoleStatus((role as any).id || role.name),
                                     variant: isInactive ? 'primary' : 'warning',
                                     hasSeparatorAfter: true
                                   },
-                                  { icon: Trash2, label: 'Delete Role', onClick: () => handleRemoveRole(role.name), variant: 'danger' },
+                                  { icon: Trash2, label: 'Delete Role', onClick: () => handleRemoveRole((role as any).id || role.name, role.name), variant: 'danger' },
                               ]}
                           />
                       </div>

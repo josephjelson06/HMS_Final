@@ -100,7 +100,8 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
         status: 'Onboarding',
         kiosks: kiosks.length,
         kiosks_details: kiosks.map(k => ({ serial_number: k.serialNumber, location: k.location })),
-        mrr: mrr
+        mrr: mrr,
+        pan: formData.pan
       });
       onClose();
     } catch (error) {

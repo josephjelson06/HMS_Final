@@ -62,6 +62,7 @@ class HttpClient {
       }
     }
     
+    console.log(`[HttpClient] Requesting: ${method} ${url}`);
     const res = await fetch(url, {
       method,
       headers,
@@ -72,8 +73,12 @@ class HttpClient {
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({ detail: res.statusText }));
-      const message = errorData.detail || errorData.message || `HTTP ${res.status}: ${res.statusText}`;
+      let message = errorData.detail || errorData.message || `HTTP ${res.status}: ${res.statusText}`;
       
+      if (typeof message === 'object') {
+        message = JSON.stringify(message);
+      }
+
       // For auth endpoints, throw a user-friendly error
       if (res.status === 401) {
         throw new Error('Invalid email or password');

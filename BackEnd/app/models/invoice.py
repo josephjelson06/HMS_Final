@@ -19,3 +19,7 @@ class Invoice(Base):
     due_date = Column(String)
 
     tenant = relationship("Tenant")
+
+    @property
+    def hotel_id(self):
+        return self.tenant_id

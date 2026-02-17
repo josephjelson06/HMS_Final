@@ -4,6 +4,7 @@ import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
 import type { User } from '@/domain/entities/User';
+import { useUsers } from '../../../application/hooks/useUsers';
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface EditUserModalProps {
 const selectClass = `w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-medium border bg-gray-50 dark:bg-black/20 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-accent/50 focus:ring-4 focus:ring-accent/10 appearance-none cursor-pointer`;
 
 const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, user, onClose, onUpdate }) => {
+  const { roles } = useUsers();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [name, setName] = useState(user.name);
@@ -119,10 +121,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, user, onClose, on
                 onChange={(e) => setRole(e.target.value)}
                 className={`${selectClass} pl-11`}
               >
-                <option>Super Admin</option>
-                <option>Finance</option>
-                <option>Operations</option>
-                <option>Support</option>
+                {roles.map((r) => (
+                  <option key={r.id || r.name} value={r.name}>
+                    {r.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

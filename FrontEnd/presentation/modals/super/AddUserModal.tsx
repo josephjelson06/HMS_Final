@@ -13,7 +13,7 @@ interface AddUserModalProps {
 const selectClass = `w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-medium border bg-gray-50 dark:bg-black/20 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-accent/50 focus:ring-4 focus:ring-accent/10 appearance-none cursor-pointer`;
 
 const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
-  const { createUser } = useUsers();
+  const { createUser, roles } = useUsers();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -21,7 +21,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [department, setDepartment] = useState('Engineering');
-  const [role, setRole] = useState('Super Admin');
+  const [role, setRole] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -30,9 +30,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
       setEmail('');
       setMobile('');
       setDepartment('Engineering');
-      setRole('Super Admin');
+      setRole(roles.length > 0 ? roles[0].name : '');
     }
-  }, [isOpen]);
+  }, [isOpen, roles]);
 
   const handleCreate = async () => {
     if (!name || !email) return;
@@ -138,10 +138,11 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
                   onChange={(e) => setRole(e.target.value)}
                   className={`${selectClass} pl-11`}
                 >
-                  <option>Super Admin</option>
-                  <option>Finance Manager</option>
-                  <option>Logistics Lead</option>
-                  <option>Senior Support</option>
+                  {roles.map((r) => (
+                    <option key={r.id || r.name} value={r.name}>
+                      {r.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

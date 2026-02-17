@@ -8,7 +8,10 @@ export interface IUserRepository {
   delete(id: string): Promise<void>;
   getRoles(): Promise<Role[]>;
   createRole(data: Role): Promise<Role>;
-  updateRole(name: string, data: Partial<Role>): Promise<Role>;
-  deleteRole(name: string): Promise<void>;
+  updateRole(id: string, data: Partial<Role>): Promise<Role>;
+  deleteRole(id: string): Promise<void>;
   getStaff(): Promise<StaffMember[]>;
+  getAvailablePermissions(): Promise<{ id: string; permission_key: string; description: string }[]>;
+  getRolePermissions(roleId: string): Promise<{ role_id: string; role_name: string; permissions: string[] }>;
+  setRolePermissions(roleId: string, permissions: string[]): Promise<void>;
 }

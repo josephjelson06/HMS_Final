@@ -11,7 +11,7 @@ import EditHotelModal from '../../modals/super/EditHotelModal';
 interface HotelDetailsProps {
   onNavigate: (route: string) => void;
   onLoginAsAdmin?: (hotelName: string) => void;
-  hotelId?: number;
+  hotelId?: string; // Changed from number to string
 }
 
 const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin, hotelId }) => {
@@ -43,7 +43,7 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ onNavigate, onLoginAsAdmin,
     setModalConfig(prev => ({ ...prev, isOpen: false }));
   };
 
-  const selectedHotel = hotelId !== undefined
+  const selectedHotel = hotelId 
     ? allHotels.find((hotel) => hotel.id === hotelId)
     : allHotels[0];
 

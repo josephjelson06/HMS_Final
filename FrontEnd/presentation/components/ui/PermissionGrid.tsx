@@ -14,6 +14,9 @@ interface PermissionGridProps {
   roleId: string;
   onBack: () => void;
   type: 'super' | 'hotel';
+  fetchAvailable: () => Promise<{ permission_key: string }[]>;
+  fetchRolePerms: (id: string) => Promise<{ permissions: string[] }>;
+  saveRolePerms: (id: string, perms: string[]) => Promise<void>;
 }
 
 // Action metadata — maps a suffix (read, write, etc.) to an icon
@@ -48,9 +51,10 @@ function prettyResource(key: string): string {
   return key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
 }
 
-const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, roleId, onBack, type }) => {
-
-  const { getAvailablePermissions, getRolePermissions, setRolePermissions } = useHotelStaff();
+const PermissionGrid: React.FC<PermissionGridProps> = ({ 
+  roleName, roleId, onBack, type,
+  fetchAvailable, fetchRolePerms, saveRolePerms
+}) => {
 
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
@@ -76,22 +80,28 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, roleId, onBac
         setLoadingPerms(true);
         setError(null);
 
-        const [available, rolePerm] = await Promise.all([
-          getAvailablePermissions(),
-          getRolePermissions(roleId),
-        ]);
+        console.log("Fetching permissions for roleId:", roleId, "scope:", scope);
+        try {
+          const [available, rolePerm] = await Promise.all([
+            fetchAvailable(),
+            fetchRolePerms(roleId),
+          ]);
+          
+          if (cancelled) return;
 
-        if (cancelled) return;
+          // Filter to current scope
+          const scopedKeys = available
+            .map(p => p.permission_key)
+            .filter(k => k.startsWith(scope + ':'));
 
-        // Filter to current scope
-        const scopedKeys = available
-          .map(p => p.permission_key)
-          .filter(k => k.startsWith(scope + ':'));
-
-        setAllResources(groupPermissions(scopedKeys));
-        const roleSet = new Set(rolePerm.permissions);
-        setEnabledPerms(roleSet);
-        setOriginalPerms(new Set(roleSet));
+          setAllResources(groupPermissions(scopedKeys));
+          const roleSet = new Set(rolePerm.permissions);
+          setEnabledPerms(roleSet);
+          setOriginalPerms(new Set(roleSet));
+        } catch (err: any) {
+          console.error("Permission fetch error:", err);
+          throw err;
+        }
       } catch (err: any) {
         if (!cancelled) setError(err?.message || 'Failed to load permissions');
       } finally {
@@ -147,7 +157,7 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, roleId, onBac
     try {
       setSaving(true);
       setError(null);
-      await setRolePermissions(roleId, Array.from(enabledPerms));
+      await saveRolePerms(roleId, Array.from(enabledPerms));
       setOriginalPerms(new Set(enabledPerms));
       setSuccessMsg('Permissions saved successfully');
       setTimeout(() => setSuccessMsg(null), 3000);
@@ -156,7 +166,7 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, roleId, onBac
     } finally {
       setSaving(false);
     }
-  }, [roleId, enabledPerms, setRolePermissions]);
+  }, [roleId, enabledPerms, saveRolePerms]);
 
   // ── Loading / Error states ─────────────────────────────────
   if (loadingPerms) {
@@ -265,10 +275,23 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, roleId, onBac
                       <div className="flex items-center gap-4">
                          <button 
                            onClick={() => toggleRow(resource)}
-                           className="p-2 rounded-lg bg-black/5 dark:bg-white/5 text-gray-400 hover:text-white transition-all"
-                           title="Select All Module Actions"
+                           className={`
+                             w-8 h-8 rounded-lg flex items-center justify-center transition-all border-2
+                             ${enabledCount === totalAvailable 
+                               ? 'bg-accent-strong border-accent-strong text-white' 
+                               : enabledCount > 0 
+                               ? 'bg-accent-strong/20 border-accent-strong text-accent-strong' 
+                               : 'bg-transparent border-white/10 text-transparent hover:border-white/30'}
+                           `}
+                           title="Toggle All Module Actions"
                          >
-                            <Layout size={14} />
+                            {enabledCount === totalAvailable ? (
+                              <Check size={16} strokeWidth={4} />
+                            ) : enabledCount > 0 ? (
+                              <div className="w-3 h-0.5 bg-current rounded-full" />
+                            ) : (
+                              <Check size={16} strokeWidth={4} className="opacity-0" />
+                            )}
                          </button>
                          <div>
                             <h3 className="text-sm font-black dark:text-white leading-none mb-1.5 uppercase">{prettyResource(resource)}</h3>
@@ -286,19 +309,19 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, roleId, onBac
                       return (
                         <td key={actionId} className="px-6 py-6 text-center">
                           {isAvailable ? (
-                            <button 
-                              onClick={() => togglePermission(resource, actionId)}
-                              className={`
-                                w-10 h-10 rounded-2xl mx-auto flex items-center justify-center transition-all duration-300
-                                ${isEnabled 
-                                  ? 'bg-accent-strong text-white shadow-lg shadow-accent-strong/30 scale-110' 
-                                  : 'bg-black/10 dark:bg-white/5 text-gray-600 hover:bg-black/20 dark:hover:bg-white/10'
-                                }
-                                ${(meta as any).isHighRisk && isEnabled ? 'bg-red-600 shadow-red-900/40' : ''}
-                              `}
-                            >
-                              {isEnabled ? <Check size={18} strokeWidth={4} /> : <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20" />}
-                            </button>
+                          <button 
+                            onClick={() => togglePermission(resource, actionId)}
+                            className={`
+                              w-8 h-8 rounded-lg mx-auto flex items-center justify-center transition-all duration-200 border-2
+                              ${isEnabled 
+                                ? 'bg-accent-strong border-accent-strong text-white shadow-lg shadow-accent-strong/20 scale-105' 
+                                : 'bg-transparent border-white/10 text-transparent hover:border-white/30'
+                              }
+                              ${(meta as any).isHighRisk && isEnabled ? 'bg-red-500 border-red-500 shadow-red-900/40' : ''}
+                            `}
+                          >
+                            <Check size={16} strokeWidth={4} className={isEnabled ? 'opacity-100' : 'opacity-0'} />
+                          </button>
                           ) : (
                             <div className="w-10 h-10 mx-auto flex items-center justify-center text-gray-300 dark:text-zinc-800">
                                <X size={16} strokeWidth={3} className="opacity-20" />

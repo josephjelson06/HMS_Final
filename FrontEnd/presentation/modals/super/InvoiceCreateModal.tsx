@@ -71,7 +71,7 @@ const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({ isOpen, onClose
     setLoading(true);
     try {
         const payload: any = {
-          hotelId: parseInt(hotelId),
+          hotelId: hotelId, // Pass string ID directly
           period,
           total,
           dueDate,

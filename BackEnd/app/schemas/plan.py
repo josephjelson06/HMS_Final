@@ -8,7 +8,7 @@ class PlanBase(BaseModel):
     price: float
     rooms: int
     kiosks: int
-    subscribers: int
+    # subscribers removed from base
     support: str
     included: List[str]
     theme: str
@@ -26,7 +26,7 @@ class PlanUpdate(BaseModel):
     price: Optional[float] = None
     rooms: Optional[int] = None
     kiosks: Optional[int] = None
-    subscribers: Optional[int] = None
+    # subscribers removed
     support: Optional[str] = None
     included: Optional[List[str]] = None
     theme: Optional[str] = None
@@ -37,6 +37,7 @@ class PlanUpdate(BaseModel):
 
 class Plan(PlanBase):
     id: UUID
+    subscribers: int = 0  # Added here as computed field
 
     class Config:
         from_attributes = True

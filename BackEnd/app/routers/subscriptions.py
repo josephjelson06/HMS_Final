@@ -60,47 +60,63 @@ def get_all_subscriptions(
 def update_subscription(
     hotel_id: UUID, section: SubscriptionUpdate, db: Session = Depends(get_db)
 ):
-    hotel = db.query(Hotel).filter(Hotel.id == hotel_id).first()
-    if not hotel:
-        raise HTTPException(status_code=404, detail="Hotel not found")
+    try:
+        hotel = db.query(Hotel).filter(Hotel.id == hotel_id).first()
+        if not hotel:
+            raise HTTPException(status_code=404, detail="Hotel not found")
 
-    if section.plan:
-        hotel.plan = section.plan
-    if section.is_auto_renew is not None:
-        hotel.is_auto_renew = 1 if section.is_auto_renew else 0
-    if section.subscription_end_date:
-        hotel.subscription_end_date = section.subscription_end_date
-    if section.mrr is not None:
-        hotel.mrr = section.mrr
+        if section.plan:
+            # Plan is a property, so we must find the plan_id
+            from app.models.plan import Plan
 
-    # Create Invoice if amount is provided
-    if section.invoice_amount:
-        new_invoice = Invoice(
-            tenant_id=hotel.id,
-            amount=section.invoice_amount,
-            status=section.invoice_status or "Pending",
-            period_start=datetime.utcnow().isoformat(),
-            period_end=section.subscription_end_date
-            or (datetime.utcnow() + timedelta(days=30)).isoformat(),
-            generated_on=datetime.utcnow().isoformat(),
-            due_date=(datetime.utcnow() + timedelta(days=7)).isoformat(),
+            sys_plan = db.query(Plan).filter(Plan.name == section.plan).first()
+            if not sys_plan:
+                raise HTTPException(
+                    status_code=400, detail=f"Plan '{section.plan}' not found"
+                )
+            hotel.plan_id = sys_plan.id
+
+        if section.is_auto_renew is not None:
+            hotel.is_auto_renew = 1 if section.is_auto_renew else 0
+        if section.subscription_end_date:
+            hotel.subscription_end_date = section.subscription_end_date
+        if section.mrr is not None:
+            hotel.mrr = section.mrr
+
+        # Create Invoice if amount is provided
+        if section.invoice_amount:
+            new_invoice = Invoice(
+                tenant_id=hotel.id,
+                amount=section.invoice_amount,
+                status=section.invoice_status or "Pending",
+                period_start=datetime.utcnow().isoformat(),
+                period_end=section.subscription_end_date
+                or (datetime.utcnow() + timedelta(days=30)).isoformat(),
+                generated_on=datetime.utcnow().isoformat(),
+                due_date=(datetime.utcnow() + timedelta(days=7)).isoformat(),
+            )
+            db.add(new_invoice)
+
+        db.commit()
+        db.refresh(hotel)
+
+        return Subscription(
+            id=str(hotel.id),
+            hotel_id=hotel.id,
+            hotel=hotel.name,
+            plan=hotel.plan,
+            startDate=hotel.subscription_start_date,
+            renewalDate=hotel.subscription_end_date,
+            status=getattr(hotel, "status", "Active"),
+            autoRenew=bool(hotel.is_auto_renew),
+            price=hotel.mrr,
         )
-        db.add(new_invoice)
+    except Exception as e:
+        import traceback
 
-    db.commit()
-    db.refresh(hotel)
-
-    return Subscription(
-        id=str(hotel.id),
-        hotel_id=hotel.id,
-        hotel=hotel.name,
-        plan=hotel.plan,
-        startDate=hotel.subscription_start_date,
-        renewalDate=hotel.subscription_end_date,
-        status=getattr(hotel, "status", "Active"),
-        autoRenew=bool(hotel.is_auto_renew),
-        price=hotel.mrr,
-    )
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Update failed: {str(e)}")
 
 
 @router.get(
@@ -135,36 +151,45 @@ def get_all_invoices(db: Session = Depends(get_db)):
     dependencies=[Depends(require_permission("platform:invoices:write"))],
 )
 def create_invoice(data: InvoiceCreate, db: Session = Depends(get_db)):
-    # Check if hotel exists
-    hotel = db.query(Hotel).filter(Hotel.id == data.hotel_id).first()
-    if not hotel:
-        raise HTTPException(status_code=404, detail="Hotel not found")
-
-    new_invoice = Invoice(
-        tenant_id=data.hotel_id,
-        amount=data.amount,
-        status=data.status or "Pending",
-        period_start=data.period_start,
-        period_end=data.period_end,
-        generated_on=datetime.utcnow().isoformat(),
-        due_date=data.due_date,
-    )
-    db.add(new_invoice)
-    db.commit()
-    db.refresh(new_invoice)
-
-    # Map to schema
-    hotel_name = hotel.name
     try:
-        date_obj = datetime.fromisoformat(new_invoice.generated_on)
-    except (ValueError, TypeError):
-        date_obj = datetime.utcnow()
-    formatted_number = f"INV-{date_obj.year}-{str(new_invoice.id)[:8].upper()}"
+        # Check if hotel exists
+        hotel = db.query(Hotel).filter(Hotel.id == data.hotel_id).first()
+        if not hotel:
+            raise HTTPException(status_code=404, detail="Hotel not found")
 
-    inv_data = InvoiceSchema.model_validate(new_invoice)
-    inv_data.hotel_name = hotel_name
-    inv_data.invoice_number = formatted_number
-    return inv_data
+        new_invoice = Invoice(
+            tenant_id=data.hotel_id,
+            amount=data.amount,
+            status=data.status or "Pending",
+            period_start=data.period_start,
+            period_end=data.period_end,
+            generated_on=datetime.utcnow().isoformat(),
+            due_date=data.due_date,
+        )
+        db.add(new_invoice)
+        db.commit()
+        db.refresh(new_invoice)
+
+        # Map to schema
+        hotel_name = hotel.name
+        try:
+            date_obj = datetime.fromisoformat(new_invoice.generated_on)
+        except (ValueError, TypeError):
+            date_obj = datetime.utcnow()
+        formatted_number = f"INV-{date_obj.year}-{str(new_invoice.id)[:8].upper()}"
+
+        inv_data = InvoiceSchema.model_validate(new_invoice)
+        inv_data.hotel_name = hotel_name
+        inv_data.invoice_number = formatted_number
+        return inv_data
+    except Exception as e:
+        import traceback
+
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail=f"Invoice creation failed: {str(e)}"
+        )
 
 
 @router.patch(

@@ -24,7 +24,11 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
     loading, 
     updateStaff, 
     deleteStaff,
+    updateRole,
     deleteRole,
+    getAvailablePermissions,
+    getRolePermissions,
+    setRolePermissions,
     refetch 
   } = useHotelStaff();
   
@@ -128,6 +132,20 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
             refetch(); // Reload in case permission changes affect user counts/status
         }} 
         type="hotel" 
+        fetchAvailable={getAvailablePermissions}
+        fetchRolePerms={getRolePermissions}
+        saveRolePerms={setRolePermissions}
+        onUpdateStatus={async () => {
+          await updateRole(selectedRoleForView.name, { 
+            status: selectedRoleForView.status === 'Active' ? 'Inactive' : 'Active' 
+          });
+          refetch();
+        }}
+        onDelete={async () => {
+          await deleteRole(selectedRoleForView.name);
+          setActiveTab('ROLES');
+          refetch();
+        }}
       />
     );
   }

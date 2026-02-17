@@ -42,76 +42,83 @@ def read_hotel(hotel_id: UUID, db: Session = Depends(get_db)):
     dependencies=[Depends(require_permission("platform:hotels:write"))],
 )
 def create_hotel(hotel: HotelCreate, db: Session = Depends(get_db)):
-    # Extract kiosk details if present
-    kiosks_data = hotel.kiosks_details
+    try:
+        # Extract kiosk details if present
+        kiosks_data = hotel.kiosks_details
 
-    # Create hotel record
-    repo = HotelRepository(db)
-    new_hotel = repo.create(hotel)
+        # Create hotel record
+        repo = HotelRepository(db)
+        new_hotel = repo.create(hotel)
 
-    # If there are kiosk details, create them
-    if kiosks_data:
-        from app.models.kiosk import Kiosk
+        # If there are kiosk details, create them
+        if kiosks_data:
+            from app.models.kiosk import Kiosk
 
-        for k_data in kiosks_data:
-            new_kiosk = Kiosk(
-                serial_number=k_data.serial_number,
-                location=k_data.location,
-                hotel_id=new_hotel.id,
-            )
-            db.add(new_kiosk)
+            for k_data in kiosks_data:
+                new_kiosk = Kiosk(
+                    serial_number=k_data.serial_number,
+                    location=k_data.location,
+                    hotel_id=new_hotel.id,
+                )
+                db.add(new_kiosk)
 
-        # Update the kiosk count to match the actual number of details provided
-        new_hotel.kiosks = len(kiosks_data)
+            # Update the kiosk count to match the actual number of details provided
+            new_hotel.kiosks = len(kiosks_data)
 
-    # ── Auto-provision default roles ──────────────────────────────
-    gm_role = Role(
-        name="General Manager",
-        description="Full hotel management access",
-        color="purple",
-        status="Active",
-        tenant_id=new_hotel.id,
-    )
-    fd_role = Role(
-        name="Front Desk Manager",
-        description="Front desk operations and guest services",
-        color="blue",
-        status="Active",
-        tenant_id=new_hotel.id,
-    )
-    db.add(gm_role)
-    db.add(fd_role)
-    db.flush()  # get role IDs before creating user
+        # ── Auto-provision default roles ──────────────────────────────
+        gm_role = Role(
+            name="General Manager",
+            description="Full hotel management access",
+            color="purple",
+            status="Active",
+            tenant_id=new_hotel.id,
+        )
+        fd_role = Role(
+            name="Front Desk Manager",
+            description="Front desk operations and guest services",
+            color="blue",
+            status="Active",
+            tenant_id=new_hotel.id,
+        )
+        db.add(gm_role)
+        db.add(fd_role)
+        db.flush()  # get role IDs before creating user
 
-    # ── Auto-provision General Manager user ───────────────────────
-    tenant_key = getattr(new_hotel, "tenant_key", "hotel")
-    gm_email = f"gm@{tenant_key}.hotel"
-    gm_user = User(
-        tenant_id=new_hotel.id,
-        email=gm_email,
-        username=gm_email,
-        name=f"{new_hotel.name} Manager",
-        employee_id="EMP-001",
-        department="Management",
-        password_hash=get_password_hash("changeme123"),
-        user_type="hotel",
-        must_reset_password=True,
-    )
-    db.add(gm_user)
-    db.flush()  # get user ID
+        # ── Auto-provision General Manager user ───────────────────────
+        tenant_key = getattr(new_hotel, "tenant_key", "hotel")
+        gm_email = f"gm@{tenant_key}.hotel"
+        gm_user = User(
+            tenant_id=new_hotel.id,
+            email=gm_email,
+            username=gm_email,
+            name=f"{new_hotel.name} Manager",
+            employee_id="EMP-001",
+            department="Management",
+            password_hash=get_password_hash("changeme123"),
+            user_type="hotel",
+            must_reset_password=True,
+        )
+        db.add(gm_user)
+        db.flush()  # get user ID
 
-    # ── Bind GM user to GM role ───────────────────────────────────
-    user_role = UserRole(
-        tenant_id=new_hotel.id,
-        user_id=gm_user.id,
-        role_id=gm_role.id,
-    )
-    db.add(user_role)
+        # ── Bind GM user to GM role ───────────────────────────────────
+        user_role = UserRole(
+            tenant_id=new_hotel.id,
+            user_id=gm_user.id,
+            role_id=gm_role.id,
+        )
+        db.add(user_role)
 
-    db.commit()
-    db.refresh(new_hotel)
+        db.commit()
+        db.refresh(new_hotel)
 
-    return new_hotel
+        return new_hotel
+    except Exception as e:
+        import traceback
+
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Creation failed: {str(e)}")
 
 
 @router.patch("/{hotel_id}", response_model=Hotel)

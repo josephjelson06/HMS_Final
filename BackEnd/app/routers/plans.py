@@ -21,13 +21,15 @@ def get_all_plans(db: Session = Depends(get_db)):
     # Get all plans
     plans = db.query(Plan).all()
 
-    # Get hotel counts grouped by plan name
-    counts = db.query(Hotel.plan, func.count(Hotel.id)).group_by(Hotel.plan).all()
-    counts_dict = {name: count for name, count in counts}
+    # Get hotel counts grouped by plan_id
+    # Hotel is Tenant, so it has plan_id
+    counts = db.query(Hotel.plan_id, func.count(Hotel.id)).group_by(Hotel.plan_id).all()
+    # counts is list of (plan_id, count)
+    counts_dict = {pid: count for pid, count in counts}
 
     # Set subscribers field dynamically
     for plan in plans:
-        plan.subscribers = counts_dict.get(plan.name, 0)
+        plan.subscribers = counts_dict.get(plan.id, 0)
 
     return plans
 
@@ -39,11 +41,20 @@ def get_all_plans(db: Session = Depends(get_db)):
     dependencies=[Depends(require_permission("platform:plans:write"))],
 )
 def create_plan(plan: PlanCreate, db: Session = Depends(get_db)):
-    db_plan = Plan(**plan.model_dump())
-    db.add(db_plan)
-    db.commit()
-    db.refresh(db_plan)
-    return db_plan
+    try:
+        # plan.model_dump() is safe now that subscribers is removed from PlanCreate
+        db_plan = Plan(**plan.model_dump())
+        db.add(db_plan)
+        db.commit()
+        db.refresh(db_plan)
+        # Default subscribers is 0
+        return db_plan
+    except Exception as e:
+        import traceback
+
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Plan creation failed: {str(e)}")
 
 
 @router.patch(

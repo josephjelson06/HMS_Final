@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
-  ArrowLeft, Shield, Save, RotateCcw
+  ArrowLeft, Shield, Save, RotateCcw, Trash2, PauseCircle, PlayCircle, Edit3
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import PermissionGrid from '../../components/ui/PermissionGrid';
+import Button from '../../components/ui/Button';
+import EditRoleModal from './EditRoleModal';
 import type { Role } from '@/domain/entities/User';
 
 interface RoleDetailViewProps {
@@ -11,10 +13,24 @@ interface RoleDetailViewProps {
   users: any[];
   onBack: () => void;
   type?: 'super' | 'hotel';
+  fetchAvailable: () => Promise<{ permission_key: string }[]>;
+  fetchRolePerms: (id: string) => Promise<{ permissions: string[] }>;
+  saveRolePerms: (id: string, perms: string[]) => Promise<void>;
+  onUpdateStatus?: (id: string) => Promise<void>;
+  onDelete?: (id: string, name: string) => void;
 }
 
-const RoleDetailView: React.FC<RoleDetailViewProps> = ({ role, users, onBack, type = 'super' }) => {
+const RoleDetailView: React.FC<RoleDetailViewProps> = ({ 
+  role, users, onBack, type = 'super',
+  fetchAvailable, fetchRolePerms, saveRolePerms,
+  onUpdateStatus, onDelete
+}) => {
+  console.log("RoleDetailView rendered for role:", role);
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'PERMISSIONS' | 'MEMBERS'>('OVERVIEW');
+  const [isEditing, setIsEditing] = useState(false);
+
   const isInactive = role.status === 'Inactive';
+  const roleId = (role as any).id || role.name;
 
   // If role has an id, we can show the live permission grid
   const hasRoleId = !!(role as any).id;
@@ -53,6 +69,38 @@ const RoleDetailView: React.FC<RoleDetailViewProps> = ({ role, users, onBack, ty
              </div>
           </div>
         </div>
+
+        <div className="flex items-center gap-3">
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                icon={<Edit3 size={16} />}
+            >
+                Edit Details
+            </Button>
+            {onUpdateStatus && (
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onUpdateStatus(roleId)}
+                    icon={isInactive ? <PlayCircle size={16} /> : <PauseCircle size={16} />}
+                >
+                    {isInactive ? 'Activate Role' : 'Suspend Role'}
+                </Button>
+            )}
+            {onDelete && (
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:bg-red-500/10"
+                    onClick={() => onDelete(roleId, role.name)}
+                    icon={<Trash2 size={16} />}
+                >
+                    Delete Role
+                </Button>
+            )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-8">
@@ -64,6 +112,9 @@ const RoleDetailView: React.FC<RoleDetailViewProps> = ({ role, users, onBack, ty
                 roleId={(role as any).id}
                 onBack={onBack}
                 type={type || 'hotel'}
+                fetchAvailable={fetchAvailable}
+                fetchRolePerms={fetchRolePerms}
+                saveRolePerms={saveRolePerms}
               />
             ) : (
               <GlassCard className="text-center py-16 space-y-4">
@@ -75,6 +126,12 @@ const RoleDetailView: React.FC<RoleDetailViewProps> = ({ role, users, onBack, ty
             )}
         </div>
       </div>
+
+      <EditRoleModal 
+        isOpen={isEditing} 
+        onClose={() => setIsEditing(false)} 
+        role={role} 
+      />
     </div>
   );
 };

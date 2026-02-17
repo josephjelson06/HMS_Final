@@ -12,7 +12,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    password: str
+    password: Optional[str] = None
     role: Optional[str] = None
     hotel_id: Optional[UUID] = None
 
@@ -23,12 +23,15 @@ class UserUpdate(BaseModel):
     mobile: Optional[str] = None
     department: Optional[str] = None
     password: Optional[str] = None
+    status: Optional[str] = None
+    role: Optional[str] = None
 
 
 class User(UserBase):
     id: UUID
     employee_id: Optional[str] = None
     hotel_id: Optional[UUID] = Field(None, validation_alias="tenant_id")
+    role: Optional[str] = None
     user_type: Optional[str] = None
     avatar: Optional[str] = None
     status: Optional[str] = None
@@ -58,6 +61,10 @@ class User(UserBase):
                     "created_at",
                 ]:
                     d[key] = getattr(data, key, None)
+
+                # Extract role name if available (assuming a relationship 'roles' exists or we'll fetch manually)
+                # For now, we'll let the router handle the role fetch if map_model_fields is too restricted
+
                 d["status"] = "Active" if d.get("is_active") else "Inactive"
                 created = d.get("created_at")
                 if isinstance(created, datetime):

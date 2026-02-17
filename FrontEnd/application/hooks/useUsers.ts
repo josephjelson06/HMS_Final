@@ -41,18 +41,35 @@ export function useUsers() {
     return role;
   };
 
-  const updateRole = async (name: string, data: Partial<Role>) => {
-    const role = await repositories.users.updateRole(name, data);
-    setRoles(prev => prev.map(r => r.name === name ? role : r));
+  const updateRole = async (id: string, data: Partial<Role>) => {
+    const role = await repositories.users.updateRole(id, data);
+    setRoles(prev => prev.map(r => r.id === id ? role : r));
     return role;
   };
 
-  const deleteRole = async (name: string) => {
-    await repositories.users.deleteRole(name);
-    setRoles(prev => prev.filter(r => r.name !== name));
+  const deleteRole = async (id: string) => {
+    await repositories.users.deleteRole(id);
+    setRoles(prev => prev.filter(r => r.id !== id));
   };
 
-  return { users, roles, loading, error, createUser, updateUser, deleteUser, createRole, updateRole, deleteRole };
+  const getAvailablePermissions = async () => {
+    return repositories.users.getAvailablePermissions();
+  };
+
+  const getRolePermissions = async (roleId: string) => {
+    return repositories.users.getRolePermissions(roleId);
+  };
+
+  const setRolePermissions = async (roleId: string, permissions: string[]) => {
+    await repositories.users.setRolePermissions(roleId, permissions);
+  };
+
+  return { 
+    users, roles, loading, error, 
+    createUser, updateUser, deleteUser, 
+    createRole, updateRole, deleteRole,
+    getAvailablePermissions, getRolePermissions, setRolePermissions
+  };
 }
 
 export function useStaff() {

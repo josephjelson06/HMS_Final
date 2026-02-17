@@ -38,6 +38,25 @@ class HotelRepository:
 
         if "kiosks_details" in hotel_data:
             del hotel_data["kiosks_details"]
+        import random
+        import string
+
+        # Generate tenant_key if not present
+        if "tenant_key" not in hotel_data:
+            base_slug = hotel_data.get("name", "hotel").lower().replace(" ", "-")
+            # Remove non-alphanumeric chars (keep hyphens) - simple cleanup
+            base_slug = "".join(c for c in base_slug if c.isalnum() or c == "-")
+
+            # Add random suffix
+            suffix = "".join(
+                random.choices(string.ascii_lowercase + string.digits, k=6)
+            )
+            hotel_data["tenant_key"] = f"{base_slug}-{suffix}"
+
+        # Ensure tenant_type is set
+        if "tenant_type" not in hotel_data:
+            hotel_data["tenant_type"] = "hotel"
+
         db_hotel = HotelModel(**hotel_data)
         self.db.add(db_hotel)
         self.db.commit()
