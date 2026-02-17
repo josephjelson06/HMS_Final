@@ -4,45 +4,92 @@ from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
 from app.models.user import User
-from app.schemas.user import User as UserSchema, UserCreate, UserUpdate, RoleSchema
+from app.schemas.user import User as UserSchema, UserCreate, UserUpdate
 from app.modules.rbac import require_permission
+from app.modules.limits import check_user_limit
 from app.core.auth.security import get_password_hash
 
-router = APIRouter(prefix="/api/users", tags=["users"])
+router = APIRouter(prefix="/api", tags=["users"])
+
+
+# ── Platform-scoped: admin sees only platform users ───────────────
 
 
 @router.get(
-    "/",
+    "/users/",
     response_model=List[UserSchema],
     dependencies=[Depends(require_permission("platform:users:read"))],
 )
-def get_users(db: Session = Depends(get_db)):
-    return db.query(User).all()
+def get_platform_users(db: Session = Depends(get_db)):
+    """Platform admin: returns only platform-type users."""
+    return db.query(User).filter(User.user_type == "platform").all()
 
 
 @router.post(
-    "/",
+    "/users/",
     response_model=UserSchema,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_permission("platform:users:write"))],
 )
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    # Check if email exists
+def create_platform_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    # Generate Employee ID
     user_count = db.query(User).count()
     employee_id = f"ATC-EMP-{(user_count + 1):03d}"
 
-    user_data = user.model_dump()
-    # In the new model, we use password_hash
-    if "password" in user_data:
-        password = user_data.pop("password")
-        user_data["password_hash"] = get_password_hash(password)
+    user_data = user.model_dump(exclude={"password", "role", "hotel_id"})
+    if user.password:
+        user_data["password_hash"] = get_password_hash(user.password)
 
-    new_user = User(**user_data, employee_id=employee_id, last_login="Never")
+    new_user = User(**user_data, employee_id=employee_id, user_type="platform")
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+
+# ── Hotel-scoped: each hotel manages its own users ────────────────
+
+
+@router.get(
+    "/hotels/{hotel_id}/users",
+    response_model=List[UserSchema],
+    dependencies=[Depends(require_permission("hotel:users:read"))],
+)
+def get_hotel_users(hotel_id: UUID, db: Session = Depends(get_db)):
+    """Hotel admin: returns only users belonging to this hotel."""
+    return db.query(User).filter(User.tenant_id == hotel_id).all()
+
+
+@router.post(
+    "/hotels/{hotel_id}/users",
+    response_model=UserSchema,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("hotel:users:write"))],
+)
+def create_hotel_user(hotel_id: UUID, user: UserCreate, db: Session = Depends(get_db)):
+    # ── Plan limit enforcement ──
+    check_user_limit(db, hotel_id)
+
+    db_user = db.query(User).filter(User.email == user.email).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    user_count = db.query(User).filter(User.tenant_id == hotel_id).count()
+    employee_id = f"EMP-{(user_count + 1):03d}"
+
+    user_data = user.model_dump(exclude={"password", "role", "hotel_id"})
+    if user.password:
+        user_data["password_hash"] = get_password_hash(user.password)
+
+    new_user = User(
+        **user_data,
+        employee_id=employee_id,
+        tenant_id=hotel_id,
+        user_type="hotel",
+    )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -50,17 +97,23 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.patch(
-    "/{user_id}",
+    "/hotels/{hotel_id}/users/{user_id}",
     response_model=UserSchema,
-    dependencies=[Depends(require_permission("platform:users:write"))],
+    dependencies=[Depends(require_permission("hotel:users:write"))],
 )
-def update_user(user_id: UUID, user_update: UserUpdate, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.id == user_id).first()
+def update_hotel_user(
+    hotel_id: UUID,
+    user_id: UUID,
+    user_update: UserUpdate,
+    db: Session = Depends(get_db),
+):
+    db_user = (
+        db.query(User).filter(User.id == user_id, User.tenant_id == hotel_id).first()
+    )
     if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found in this hotel")
 
     update_data = user_update.model_dump(exclude_unset=True)
-
     if "password" in update_data:
         password = update_data.pop("password")
         update_data["password_hash"] = get_password_hash(password)
@@ -74,50 +127,17 @@ def update_user(user_id: UUID, user_update: UserUpdate, db: Session = Depends(ge
 
 
 @router.delete(
-    "/{user_id}",
+    "/hotels/{hotel_id}/users/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require_permission("platform:users:write"))],
+    dependencies=[Depends(require_permission("hotel:users:write"))],
 )
-def delete_user(user_id: UUID, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.id == user_id).first()
+def delete_hotel_user(hotel_id: UUID, user_id: UUID, db: Session = Depends(get_db)):
+    db_user = (
+        db.query(User).filter(User.id == user_id, User.tenant_id == hotel_id).first()
+    )
     if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found in this hotel")
 
     db.delete(db_user)
     db.commit()
     return None
-
-
-@router.get("/roles/summary", response_model=List[RoleSchema])
-def get_roles_summary(db: Session = Depends(get_db)):
-    # This is for the UI dashboard - simplified since roles are now in user_roles table
-    return [
-        {
-            "name": "Super Admin",
-            "desc": "Full platform administrative access.",
-            "color": "purple",
-            "userCount": 0,
-            "status": "Active",
-        },
-        {
-            "name": "Finance",
-            "desc": "Access to invoices, billing, and subscription management.",
-            "color": "blue",
-            "userCount": 0,
-            "status": "Active",
-        },
-        {
-            "name": "Operations",
-            "desc": "Manage hotels, kiosks, and support requests.",
-            "color": "emerald",
-            "userCount": 0,
-            "status": "Active",
-        },
-        {
-            "name": "Support",
-            "desc": "L1/L2 technical support and ticketing system.",
-            "color": "amber",
-            "userCount": 0,
-            "status": "Active",
-        },
-    ]

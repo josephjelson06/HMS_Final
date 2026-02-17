@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { 
   Users, Shield, Search, UserPlus, MoreHorizontal, Mail, Phone, 
-  Edit2, Trash2, ShieldAlert, Plus, MoreVertical, Eye
+  Edit2, Trash2, ShieldAlert, MoreVertical, Eye, Loader2
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import GlassDropdown from '../../components/ui/GlassDropdown';
@@ -11,15 +11,25 @@ import Button from '../../components/ui/Button';
 import AddHotelUserModal from '../../modals/hotel/AddHotelUserModal';
 import CreateHotelRoleModal from '../../modals/hotel/CreateHotelRoleModal';
 import RoleDetailView from '../../modals/super/RoleDetailView';
-import type { HotelStaffMember as StaffMember } from '@/domain/entities/HotelStaff';
+import type { HotelStaffMember as StaffMember, HotelRole } from '@/domain/entities/HotelStaff';
 import { useHotelStaff } from '@/application/hooks/useHotelStaff';
 
 type Tab = 'STAFF' | 'ROLES' | 'VIEW_ROLE';
 
 const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) => {
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
-  const { staff: allStaff, roles: allRoles } = useHotelStaff();
-  const [selectedRoleForView, setSelectedRoleForView] = useState<any | null>(null);
+  const { 
+    staff: allStaff, 
+    roles: allRoles, 
+    loading, 
+    updateStaff, 
+    deleteStaff,
+    deleteRole,
+    refetch 
+  } = useHotelStaff();
+  
+  const [selectedRoleForView, setSelectedRoleForView] = useState<HotelRole | null>(null);
+  const [selectedStaffForEdit, setSelectedStaffForEdit] = useState<StaffMember | null>(null);
   const [search, setSearch] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
@@ -44,24 +54,49 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
   const currentDataLength = activeTab === 'STAFF' ? filteredStaff.length : filteredRoles.length;
   const totalPages = Math.max(1, Math.ceil(currentDataLength / itemsPerPage));
 
-  const handleViewRole = (role: any) => {
+  const handleViewRole = (role: HotelRole) => {
     setSelectedRoleForView(role);
     setActiveTab('VIEW_ROLE');
   };
 
-  const handleRoleCreated = (roleName: string) => {
-    const newRole = {
-        name: roleName,
-        desc: 'Custom property role created via admin entry.',
-        userCount: 0,
-        color: 'blue',
-        status: 'Active'
-    };
-    handleViewRole(newRole);
+  const handleEditStaff = (staff: StaffMember) => {
+    setSelectedStaffForEdit(staff);
+    setIsAddModalOpen(true);
+  };
+
+  const handleSuspendStaff = async (staff: StaffMember) => {
+    if (confirm(`Are you sure you want to ${staff.status === 'Active' ? 'suspend' : 'activate'} ${staff.name}?`)) {
+      try {
+        await updateStaff(staff.id, { status: staff.status === 'Active' ? 'Inactive' : 'Active' });
+      } catch (err) {
+        alert('Failed to update staff status');
+      }
+    }
+  };
+
+  const handleDeleteStaff = async (staff: StaffMember) => {
+    if (confirm(`CRITICAL: Are you sure you want to delete ${staff.name}? This action is irreversible.`)) {
+      try {
+        await deleteStaff(staff.id);
+      } catch (err) {
+        alert('Failed to delete staff member');
+      }
+    }
+  };
+
+  const handleDeleteRole = async (role: HotelRole) => {
+    if (confirm(`CRITICAL: Are you sure you want to delete the role "${role.name}"? All assigned staff will lose access.`)) {
+      try {
+        await deleteRole(role.name);
+      } catch (err) {
+        alert('Failed to delete role');
+      }
+    }
   };
 
   const handlePrimaryAction = () => {
     if (activeTab === 'STAFF') {
+      setSelectedStaffForEdit(null);
       setIsAddModalOpen(true);
     } else {
       setIsRoleModalOpen(true);
@@ -86,9 +121,12 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
     const roleStaff = allStaff.filter(s => s.role === selectedRoleForView.name);
     return (
       <RoleDetailView 
-        role={selectedRoleForView} 
+        role={selectedRoleForView as any} 
         users={roleStaff}
-        onBack={() => setActiveTab('ROLES')} 
+        onBack={() => {
+            setActiveTab('ROLES');
+            refetch(); // Reload in case permission changes affect user counts/status
+        }} 
         type="hotel" 
       />
     );
@@ -141,7 +179,12 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
       </div>
 
       <div className="relative z-10">
-        {activeTab === 'STAFF' ? (
+        {loading ? (
+          <div className="py-32 flex flex-col items-center justify-center space-y-4">
+             <Loader2 className="h-10 w-10 animate-spin text-accent" />
+             <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em]">Synchronizing Registry...</p>
+          </div>
+        ) : activeTab === 'STAFF' ? (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
              {paginatedStaff.map((s) => (
@@ -160,9 +203,9 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
                               </button>
                           }
                           items={[
-                              { icon: Edit2, label: 'Edit Profile', onClick: () => {} },
-                              { icon: ShieldAlert, label: 'Suspend Account', onClick: () => {}, variant: 'warning', hasSeparatorAfter: true },
-                              { icon: Trash2, label: 'Delete Record', onClick: () => {}, variant: 'danger' },
+                              { icon: Edit2, label: 'Edit Profile', onClick: () => handleEditStaff(s) },
+                              { icon: ShieldAlert, label: s.status === 'Active' ? 'Suspend Account' : 'Activate Account', onClick: () => handleSuspendStaff(s), variant: 'warning', hasSeparatorAfter: true },
+                              { icon: Trash2, label: 'Delete Record', onClick: () => handleDeleteStaff(s), variant: 'danger' },
                           ]}
                       />
                   </div>
@@ -203,7 +246,7 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
                       <div className="mt-auto pt-6 flex items-center justify-between border-t border-white/5">
                           <div className="flex flex-col min-w-0">
                               <span className="text-[8px] font-black text-gray-500 uppercase">Last Session</span>
-                              <span className={`text-[10px] font-bold truncate ${s.lastLogin.includes('ago') ? 'dark:text-gray-300' : 'text-red-500'}`}>{s.lastLogin}</span>
+                              <span className={`text-[10px] font-bold truncate ${s.lastLogin.includes('ago') || s.lastLogin === 'Never' ? 'dark:text-gray-300' : 'text-red-500'}`}>{s.lastLogin}</span>
                           </div>
                           <div className="flex flex-col items-end min-w-0">
                               <span className="text-[8px] font-black text-gray-500 uppercase">Registered</span>
@@ -251,8 +294,7 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
                                 }
                                 items={[
                                     { icon: Eye, label: 'View Details', onClick: () => handleViewRole(roleItem) },
-                                    { icon: Edit2, label: 'Edit Identity', onClick: () => {} },
-                                    { icon: Trash2, label: 'Delete Role', onClick: () => {}, variant: 'danger' },
+                                    { icon: Trash2, label: 'Delete Role', onClick: () => handleDeleteRole(roleItem), variant: 'danger' },
                                 ]}
                             />
                         </div>
@@ -266,7 +308,7 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
         )}
       </div>
 
-      {(activeTab === 'STAFF' ? filteredStaff : filteredRoles).length === 0 && (
+      {!loading && (activeTab === 'STAFF' ? filteredStaff : filteredRoles).length === 0 && (
           <div className="py-24 flex flex-col items-center justify-center text-center opacity-40">
               <Users size={64} className="text-gray-500 mb-6" />
               <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">No Registry Matches</h3>
@@ -274,17 +316,33 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
           </div>
       )}
 
-      <Pagination 
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={setItemsPerPage}
-          totalItems={activeTab === 'STAFF' ? filteredStaff.length : filteredRoles.length}
-      />
+      {!loading && (
+        <Pagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={setItemsPerPage}
+            totalItems={activeTab === 'STAFF' ? filteredStaff.length : filteredRoles.length}
+        />
+      )}
 
-      <AddHotelUserModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
-      <CreateHotelRoleModal isOpen={isRoleModalOpen} onClose={() => setIsRoleModalOpen(false)} onCreated={handleRoleCreated} />
+      <AddHotelUserModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => {
+            setIsAddModalOpen(false);
+            setSelectedStaffForEdit(null);
+        }} 
+        staffMember={selectedStaffForEdit}
+      />
+      
+      <CreateHotelRoleModal 
+        isOpen={isRoleModalOpen} 
+        onClose={() => setIsRoleModalOpen(false)} 
+        onCreated={(roleName) => {
+            // Already handled by useHotelStaff state, but we could redirect if needed
+        }} 
+      />
     </div>
   );
 };

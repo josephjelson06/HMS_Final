@@ -12,8 +12,9 @@ class Plan(Base):
     price = Column(Float)
     rooms = Column(Integer)
     kiosks = Column(Integer)
-    subscribers = Column(Integer, default=0)
     support = Column(String)
     included = Column(JSON)  # List of strings
     theme = Column(String)
+    max_roles = Column(Integer, default=5)
+    max_users = Column(Integer, default=10)
     is_archived = Column(Boolean, default=False)

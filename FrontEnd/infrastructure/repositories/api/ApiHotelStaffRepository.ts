@@ -3,10 +3,13 @@ import type { HotelStaffMember, HotelRole } from '@/domain/entities/HotelStaff';
 import { httpClient } from '../../http/client';
 
 export class ApiHotelStaffRepository implements IHotelStaffRepository {
-  async getAllStaff(_hotelId: string): Promise<HotelStaffMember[]> {
-    const data = await httpClient.get<any[]>('api/users');
+
+  // ── Staff (hotel-scoped) ─────────────────────────────────────
+
+  async getAllStaff(hotelId: string): Promise<HotelStaffMember[]> {
+    const data = await httpClient.get<any[]>(`api/hotels/${hotelId}/users`);
     return data.map(u => ({
-      id: u.employee_id,
+      id: u.employee_id || u.id,
       name: u.name,
       email: u.email,
       mobile: u.mobile || '',
@@ -17,9 +20,12 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
     }));
   }
 
-  async getAllRoles(_hotelId: string): Promise<HotelRole[]> {
-    const data = await httpClient.get<any[]>('api/roles');
+  // ── Roles (hotel-scoped) ─────────────────────────────────────
+
+  async getAllRoles(hotelId: string): Promise<HotelRole[]> {
+    const data = await httpClient.get<any[]>(`api/hotels/${hotelId}/roles`);
     return data.map(r => ({
+      id: r.id,
       name: r.name,
       desc: r.description || r.desc || '',
       userCount: r.userCount || 0,
@@ -28,24 +34,26 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
     }));
   }
 
-  async getStaffById(id: string, _hotelId: string): Promise<HotelStaffMember | null> {
-    const all = await this.getAllStaff(_hotelId);
+  // ── CRUD ─────────────────────────────────────────────────────
+
+  async getStaffById(id: string, hotelId: string): Promise<HotelStaffMember | null> {
+    const all = await this.getAllStaff(hotelId);
     return all.find(s => s.id === id) || null;
   }
 
-  async createStaff(data: Omit<HotelStaffMember, 'id'>, _hotelId: string): Promise<HotelStaffMember> {
+  async createStaff(data: Omit<HotelStaffMember, 'id'>, hotelId: string): Promise<HotelStaffMember> {
     const payload = {
       name: data.name,
       email: data.email,
       role: data.role,
       mobile: data.mobile,
       status: data.status,
-      password: 'password123', // Default password for new staff
-      department: data.role // Simplified mapping
+      password: 'password123',
+      department: data.role
     };
-    const result = await httpClient.post<any>('api/users', payload);
+    const result = await httpClient.post<any>(`api/hotels/${hotelId}/users`, payload);
     return {
-      id: result.employee_id,
+      id: result.employee_id || result.id,
       name: result.name,
       email: result.email,
       mobile: result.mobile,
@@ -56,15 +64,15 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
     };
   }
 
-  async updateStaff(id: string, data: Partial<HotelStaffMember>, _hotelId: string): Promise<HotelStaffMember> {
-    // We need the numeric ID for the API
-    const users = await httpClient.get<any[]>('api/users');
-    const user = users.find(u => u.employee_id === id);
+  async updateStaff(id: string, data: Partial<HotelStaffMember>, hotelId: string): Promise<HotelStaffMember> {
+    // Find user UUID from employee_id
+    const users = await httpClient.get<any[]>(`api/hotels/${hotelId}/users`);
+    const user = users.find(u => u.employee_id === id || u.id === id);
     if (!user) throw new Error(`Staff member ${id} not found`);
 
-    const result = await httpClient.patch<any>(`api/users/${user.id}`, data);
+    const result = await httpClient.patch<any>(`api/hotels/${hotelId}/users/${user.id}`, data);
     return {
-      id: result.employee_id,
+      id: result.employee_id || result.id,
       name: result.name,
       email: result.email,
       mobile: result.mobile,
@@ -75,11 +83,55 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
     };
   }
 
-  async deleteStaff(id: string, _hotelId: string): Promise<void> {
-    const users = await httpClient.get<any[]>('api/users');
-    const user = users.find(u => u.employee_id === id);
+  async deleteStaff(id: string, hotelId: string): Promise<void> {
+    const users = await httpClient.get<any[]>(`api/hotels/${hotelId}/users`);
+    const user = users.find(u => u.employee_id === id || u.id === id);
     if (!user) throw new Error(`Staff member ${id} not found`);
 
-    await httpClient.delete(`api/users/${user.id}`);
+    await httpClient.delete(`api/hotels/${hotelId}/users/${user.id}`);
+  }
+
+  // ── Role CRUD (hotel-scoped) ─────────────────────────────────
+
+  async createRole(data: Omit<HotelRole, 'id' | 'userCount'>, hotelId: string): Promise<HotelRole> {
+    const result = await httpClient.post<any>(`api/hotels/${hotelId}/roles`, data);
+    return {
+      id: result.id,
+      name: result.name,
+      desc: result.description || result.desc || '',
+      userCount: result.userCount || 0,
+      color: result.color || 'blue',
+      status: result.status || 'Active'
+    };
+  }
+
+  async updateRole(name: string, data: Partial<HotelRole>, hotelId: string): Promise<HotelRole> {
+    const result = await httpClient.patch<any>(`api/hotels/${hotelId}/roles/${name}`, data);
+    return {
+      id: result.id,
+      name: result.name,
+      desc: result.description || result.desc || '',
+      userCount: result.userCount || 0,
+      color: result.color || 'blue',
+      status: result.status || 'Active'
+    };
+  }
+
+  async deleteRole(name: string, hotelId: string): Promise<void> {
+    await httpClient.delete(`api/hotels/${hotelId}/roles/${name}`);
+  }
+
+  // ── Permissions Matrix ───────────────────────────────────────
+
+  async getRolePermissions(hotelId: string, roleId: string): Promise<{ role_id: string; role_name: string; permissions: string[] }> {
+    return httpClient.get(`api/hotels/${hotelId}/roles/${roleId}/permissions`);
+  }
+
+  async setRolePermissions(hotelId: string, roleId: string, permissions: string[]): Promise<void> {
+    await httpClient.put(`api/hotels/${hotelId}/roles/${roleId}/permissions`, { permissions });
+  }
+
+  async getAvailablePermissions(hotelId: string): Promise<{ id: string; permission_key: string; description: string }[]> {
+    return httpClient.get(`api/hotels/${hotelId}/permissions/`);
   }
 }

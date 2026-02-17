@@ -6,6 +6,8 @@ from app.database import get_db
 from app.schemas.hotel import Hotel, HotelCreate, HotelUpdate
 from app.repositories.hotel_repository import HotelRepository
 from app.modules.rbac import require_permission
+from app.models.auth import Role, User, UserRole
+from app.core.auth.security import get_password_hash
 
 router = APIRouter(
     prefix="/api/hotels",
@@ -61,8 +63,53 @@ def create_hotel(hotel: HotelCreate, db: Session = Depends(get_db)):
 
         # Update the kiosk count to match the actual number of details provided
         new_hotel.kiosks = len(kiosks_data)
-        db.commit()
-        db.refresh(new_hotel)
+
+    # ── Auto-provision default roles ──────────────────────────────
+    gm_role = Role(
+        name="General Manager",
+        description="Full hotel management access",
+        color="purple",
+        status="Active",
+        tenant_id=new_hotel.id,
+    )
+    fd_role = Role(
+        name="Front Desk Manager",
+        description="Front desk operations and guest services",
+        color="blue",
+        status="Active",
+        tenant_id=new_hotel.id,
+    )
+    db.add(gm_role)
+    db.add(fd_role)
+    db.flush()  # get role IDs before creating user
+
+    # ── Auto-provision General Manager user ───────────────────────
+    tenant_key = getattr(new_hotel, "tenant_key", "hotel")
+    gm_email = f"gm@{tenant_key}.hotel"
+    gm_user = User(
+        tenant_id=new_hotel.id,
+        email=gm_email,
+        username=gm_email,
+        name=f"{new_hotel.name} Manager",
+        employee_id="EMP-001",
+        department="Management",
+        password_hash=get_password_hash("changeme123"),
+        user_type="hotel",
+        must_reset_password=True,
+    )
+    db.add(gm_user)
+    db.flush()  # get user ID
+
+    # ── Bind GM user to GM role ───────────────────────────────────
+    user_role = UserRole(
+        tenant_id=new_hotel.id,
+        user_id=gm_user.id,
+        role_id=gm_role.id,
+    )
+    db.add(user_role)
+
+    db.commit()
+    db.refresh(new_hotel)
 
     return new_hotel
 

@@ -12,6 +12,8 @@ class PlanBase(BaseModel):
     support: str
     included: List[str]
     theme: str
+    max_roles: int = 5
+    max_users: int = 10
     is_archived: bool = False
 
 
@@ -28,6 +30,8 @@ class PlanUpdate(BaseModel):
     support: Optional[str] = None
     included: Optional[List[str]] = None
     theme: Optional[str] = None
+    max_roles: Optional[int] = None
+    max_users: Optional[int] = None
     is_archived: Optional[bool] = None
 
 

@@ -17,7 +17,7 @@ from sqlalchemy import func
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 
 from app.db.base import Base
@@ -49,9 +49,17 @@ class Tenant(Base):
     pan: Mapped[str | None] = mapped_column(String(20), nullable=True)
     legal_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     logo: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    plan: Mapped[str] = mapped_column(
-        String(50), nullable=False, server_default=text("'Starter'")
+    plan_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("plans.id", ondelete="RESTRICT"), nullable=False
     )
+
+    # Relationship to Plan
+    subscribed_plan = relationship("Plan")
+
+    @property
+    def plan(self) -> str:
+        return self.subscribed_plan.name if self.subscribed_plan else "Unknown"
+
     kiosks: Mapped[int] = mapped_column(
         Integer, nullable=False, server_default=text("0")
     )
@@ -97,9 +105,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(320), nullable=False)
     username: Mapped[str] = mapped_column(String(120), nullable=False)
     name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    employee_id: Mapped[str | None] = mapped_column(
-        String(50), nullable=True, unique=True
-    )
+    employee_id: Mapped[str | None] = mapped_column(String(50), nullable=True)
     mobile: Mapped[str | None] = mapped_column(String(20), nullable=True)
     department: Mapped[str | None] = mapped_column(String(100), nullable=True)
     avatar: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -133,9 +139,20 @@ class Role(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
     )
-    role_name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
-    scope: Mapped[str] = mapped_column(String(20), nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    scope: Mapped[str | None] = mapped_column(String(20), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    color: Mapped[str] = mapped_column(
+        String(50), nullable=False, server_default=text("'blue'")
+    )
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, server_default=text("'Active'")
+    )
+    tenant_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("tenants.id", ondelete="RESTRICT"),
+        nullable=True,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

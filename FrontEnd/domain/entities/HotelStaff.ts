@@ -10,6 +10,7 @@ export interface HotelStaffMember {
 }
 
 export interface HotelRole {
+  id?: string;
   name: string;
   desc: string;
   userCount: number;

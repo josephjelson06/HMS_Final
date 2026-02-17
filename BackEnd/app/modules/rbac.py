@@ -93,7 +93,7 @@ def load_permissions_for_roles(db: Session, *, role_names: Iterable[str]) -> set
         select(Permission.permission_key)
         .join(RolePermission, RolePermission.permission_id == Permission.id)
         .join(Role, Role.id == RolePermission.role_id)
-        .where(Role.role_name.in_(role_names))
+        .where(Role.name.in_(role_names))
     )
     return set(db.execute(stmt).scalars().all())
 
@@ -110,6 +110,11 @@ def get_effective_permissions(
         return cached
 
     permissions = load_permissions_for_roles(db, role_names=auth_context.roles)
+
+    # Fallback: platform admins get full access when no DB permissions exist
+    if not permissions and "platform:admin" in (auth_context.roles or []):
+        permissions = {"*:*:*"}
+
     request.state.effective_permissions = permissions
     return permissions
 

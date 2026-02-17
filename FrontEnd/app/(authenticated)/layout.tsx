@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import AppShell from "@/presentation/components/layout/AppShell";
 import ImpersonationModal from "@/presentation/components/ui/ImpersonationModal";
+import { useAuth } from "@/application/hooks/useAuth";
 
 import { deleteCookie, getCookie, setCookie } from "@/infrastructure/browser/cookies";
 import {
@@ -24,6 +25,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
   const pathname = usePathname();
 
   const [ready, setReady] = useState(false);
+  const { user: authUser } = useAuth();
 
   // Layout state
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -128,6 +130,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           onCloseMobile={() => setIsMobileMenuOpen(false)}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
           onLogout={onLogout}
+          permissions={authUser?.permissions || []}
         >
           {children}
         </AppShell>

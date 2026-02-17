@@ -287,11 +287,11 @@ def issue_access_token_for_credentials(
 
 def list_user_roles(db: Session, *, user_id: UUID, tenant_id: UUID) -> list[str]:
     stmt = (
-        select(Role.role_name)
+        select(Role.name)
         .join(UserRole, UserRole.role_id == Role.id)
         .where(UserRole.user_id == user_id)
         .where(UserRole.tenant_id == tenant_id)
-        .order_by(Role.role_name)
+        .order_by(Role.name)
     )
     return list(db.execute(stmt).scalars().all())
 
@@ -365,7 +365,7 @@ def assign_role_to_user(
         raise UserNotFoundError("User not found.")
 
     role = db.execute(
-        select(Role).where(Role.role_name == normalized_role_name)
+        select(Role).where(Role.name == normalized_role_name)
     ).scalar_one_or_none()
     if role is None:
         raise UserServiceError("Role is not available.")

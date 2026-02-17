@@ -14,6 +14,7 @@ from app.schemas.room import (
     BuildingResponse,
 )
 from app.modules.rbac import require_permission
+from app.modules.limits import check_room_limit
 
 router = APIRouter(prefix="/api/hotels/{hotel_id}", tags=["rooms"])
 
@@ -89,6 +90,9 @@ def get_rooms(hotel_id: UUID, db: Session = Depends(get_db)):
     dependencies=[Depends(require_permission("hotel:rooms:write"))],
 )
 def create_room(hotel_id: UUID, room: RoomCreate, db: Session = Depends(get_db)):
+    # ── Plan limit enforcement ──
+    check_room_limit(db, hotel_id, adding=1)
+
     # Check if category exists
     cat = (
         db.query(RoomCategory)
@@ -122,6 +126,9 @@ def create_room(hotel_id: UUID, room: RoomCreate, db: Session = Depends(get_db))
 def create_rooms_batch(
     hotel_id: UUID, rooms: List[RoomCreate], db: Session = Depends(get_db)
 ):
+    # ── Plan limit enforcement ──
+    check_room_limit(db, hotel_id, adding=len(rooms))
+
     created_rooms = []
     for room in rooms:
         # Check if room exists

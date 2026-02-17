@@ -10,6 +10,8 @@ export interface AuthUser {
   lastLogin?: string;
   avatar?: string;
   dateAdded?: string;
+  permissions?: string[];
+  employee_id?: string;
 }
 
 export interface LoginCredentials {

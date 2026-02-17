@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from uuid import UUID
 from app.models.hotel import Hotel as HotelModel
+from app.models.plan import Plan
 from app.schemas.hotel import HotelCreate, HotelUpdate
 
 
@@ -17,6 +18,24 @@ class HotelRepository:
 
     def create(self, hotel_in: HotelCreate) -> HotelModel:
         hotel_data = hotel_in.model_dump()
+
+        # Handle plan string -> ID resolution
+        plan_name = hotel_data.pop("plan", "Starter")
+        plan = self.db.query(Plan).filter(Plan.name == plan_name).first()
+        if not plan:
+            # Fallback to Starter if requested plan not found
+            plan = self.db.query(Plan).filter(Plan.name == "Starter").first()
+
+        if not plan:
+            # If even Starter is missing, we have a seed issue, but handle gracefully-ish?
+            # We can't create tenant without plan_id (NOT NULL).
+            # Raise error.
+            raise ValueError(
+                f"Plan '{plan_name}' (or default 'Starter') not found in database."
+            )
+
+        hotel_data["plan_id"] = plan.id
+
         if "kiosks_details" in hotel_data:
             del hotel_data["kiosks_details"]
         db_hotel = HotelModel(**hotel_data)
@@ -31,6 +50,15 @@ class HotelRepository:
             return None
 
         update_data = hotel_in.model_dump(exclude_unset=True)
+
+        # Handle plan update
+        if "plan" in update_data:
+            plan_name = update_data.pop("plan")
+            if plan_name:
+                plan = self.db.query(Plan).filter(Plan.name == plan_name).first()
+                if plan:
+                    update_data["plan_id"] = plan.id
+
         for key, value in update_data.items():
             setattr(db_hotel, key, value)
 

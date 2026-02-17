@@ -71,8 +71,18 @@ class HttpClient {
     });
 
     if (!res.ok) {
-      const error = await res.json().catch(() => ({ message: res.statusText }));
-      throw new Error(error.message || `HTTP ${res.status}: ${res.statusText}`);
+      const errorData = await res.json().catch(() => ({ detail: res.statusText }));
+      const message = errorData.detail || errorData.message || `HTTP ${res.status}: ${res.statusText}`;
+      
+      // For auth endpoints, throw a user-friendly error
+      if (res.status === 401) {
+        throw new Error('Invalid email or password');
+      }
+      if (res.status === 403) {
+        throw new Error('Access denied');
+      }
+      
+      throw new Error(message);
     }
 
     if (res.status === 204) return undefined as T;

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Shield } from 'lucide-react';
 import GlassCard from '../components/ui/GlassCard';
 import GlassInput from '../components/ui/GlassInput';
@@ -16,6 +16,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const { login, error: loginError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,12 +33,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center transition-colors duration-700 bg-[#f8fafc] dark:bg-black">
       
-      {/* Top Right Theme Toggle */}
+      {/* Top Right Theme Toggle — only render icon after mount to avoid hydration mismatch */}
       <button 
         onClick={toggleTheme}
         className="absolute top-8 right-8 p-3 rounded-2xl bg-white/80 dark:bg-white/5 border border-black/5 dark:border-white/10 shadow-sm backdrop-blur-md transition-all hover:scale-110 active:scale-95"
       >
-        {isDarkMode ? <Sun size={20} className="text-gray-300" /> : <Moon size={20} className="text-slate-600" />}
+        {mounted && (isDarkMode ? <Sun size={20} className="text-gray-300" /> : <Moon size={20} className="text-slate-600" />)}
       </button>
 
       {/* Main Login Card */}

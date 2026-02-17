@@ -1,136 +1,208 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Shield, Check, X, ShieldAlert, Save, RotateCcw, 
-  ArrowLeft, Search, Info, ChevronRight, Layout,
+  Shield, Check, X, Save, RotateCcw, 
+  ArrowLeft, Search, Info, Layout,
   Eye, Edit3, Trash2, PlusCircle, FileOutput, Zap,
-  ShieldCheck
+  Loader2, AlertTriangle
 } from 'lucide-react';
 import GlassCard from './GlassCard';
+import { useHotelStaff } from '@/application/hooks/useHotelStaff';
 
-
-interface PermissionAction {
-  id: string;
-  label: string;
-  icon: any;
-  isHighRisk?: boolean;
-}
-
-interface PermissionModule {
-  id: string;
-  label: string;
-  description: string;
-  actions: string[]; // IDs of actions available for this module
-}
 
 interface PermissionGridProps {
   roleName: string;
+  roleId: string;
   onBack: () => void;
   type: 'super' | 'hotel';
 }
 
-const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type }) => {
+// Action metadata — maps a suffix (read, write, etc.) to an icon
+const ACTION_META: Record<string, { label: string; icon: any; isHighRisk?: boolean }> = {
+  read:  { label: 'View',    icon: Eye },
+  write: { label: 'Manage',  icon: Edit3 },
+  delete:{ label: 'Delete',  icon: Trash2, isHighRisk: true },
+  create:{ label: 'Create',  icon: PlusCircle },
+  export:{ label: 'Export',  icon: FileOutput },
+  special:{ label:'Override', icon: Zap, isHighRisk: true },
+};
+
+/**
+ * Groups flat permission keys like "hotel:rooms:read", "hotel:rooms:write"
+ * into a { resource → Set<action> } map.
+ */
+function groupPermissions(keys: string[]): Map<string, Set<string>> {
+  const map = new Map<string, Set<string>>();
+  for (const key of keys) {
+    const parts = key.split(':');
+    if (parts.length < 3) continue;
+    const resource = parts[1]; // e.g. "rooms"
+    const action   = parts[2]; // e.g. "read"
+    if (!map.has(resource)) map.set(resource, new Set());
+    map.get(resource)!.add(action);
+  }
+  return map;
+}
+
+/** Pretty-print a resource key */
+function prettyResource(key: string): string {
+  return key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+}
+
+const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, roleId, onBack, type }) => {
+
+  const { getAvailablePermissions, getRolePermissions, setRolePermissions } = useHotelStaff();
 
   const [search, setSearch] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [loadingPerms, setLoadingPerms] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // 1. Define available actions (X-Axis)
-  const availableActions: PermissionAction[] = [
-    { id: 'view', label: 'View', icon: Eye },
-    { id: 'create', label: 'Create', icon: PlusCircle },
-    { id: 'edit', label: 'Edit', icon: Edit3 },
-    { id: 'delete', label: 'Delete', icon: Trash2, isHighRisk: true },
-    { id: 'export', label: 'Export', icon: FileOutput },
-    { id: 'special', label: 'Override', icon: Zap, isHighRisk: true },
-  ];
+  // Available permission keys from DB (grouped by resource)
+  const [allResources, setAllResources] = useState<Map<string, Set<string>>>(new Map());
+  // Current role's enabled permissions (flat set of keys)
+  const [enabledPerms, setEnabledPerms] = useState<Set<string>>(new Set());
+  // Original state (to detect changes / reset)
+  const [originalPerms, setOriginalPerms] = useState<Set<string>>(new Set());
 
-  // 2. Define modules based on context (Y-Axis)
-  const modules: PermissionModule[] = type === 'super' ? [
-    { id: 'hotels', label: 'Hotels Registry', description: 'Tenant management and onboarding', actions: ['view', 'create', 'edit', 'delete', 'export', 'special'] },
-    { id: 'kiosks', label: 'Kiosk Fleet', description: 'Hardware telemetry and firmware control', actions: ['view', 'edit', 'special'] },
-    { id: 'plans', label: 'Product Catalog', description: 'Commercial plan definitions', actions: ['view', 'create', 'edit', 'delete'] },
-    { id: 'billing', label: 'Platform Billing', description: 'Invoice generation and B2B receivables', actions: ['view', 'edit', 'export', 'special'] },
-    { id: 'users', label: 'Admin Users', description: 'Platform team management', actions: ['view', 'create', 'edit', 'delete'] },
-    { id: 'audit', label: 'Audit Forensic', description: 'Immutable system logs access', actions: ['view', 'export'] },
-  ] : [
-    { id: 'guests', label: 'Guest Registry', description: 'Guest details and KYC assets', actions: ['view', 'create', 'edit', 'delete', 'export'] },
-    { id: 'rooms', label: 'Room Management', description: 'Status and cleaning tasks', actions: ['view', 'edit', 'special'] },
-    { id: 'rates', label: 'Rate & Inventory', description: 'Revenue and yield management', actions: ['view', 'edit', 'special'] },
-    { id: 'pos', label: 'Billing/POS', description: 'Guest invoices and settlement', actions: ['view', 'create', 'edit', 'delete', 'export', 'special'] },
-    { id: 'staff', label: 'Staff Directory', description: 'Property personnel access', actions: ['view', 'create', 'edit', 'delete'] },
-    { id: 'audit_h', label: 'Property Audit', description: 'Night audit and shift logs', actions: ['view', 'export', 'special'] },
-  ];
+  // The scope prefix to filter by (hotel vs platform)
+  const scope = type === 'super' ? 'platform' : 'hotel';
 
-  // 3. Current Permission State (Mocked)
-  const [permissions, setPermissions] = useState<Record<string, Set<string>>>(() => {
-    const initial: Record<string, Set<string>> = {};
-    modules.forEach(m => {
-      initial[m.id] = new Set(['view']); // Default only view access
+  // ── Load from API ──────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoadingPerms(true);
+        setError(null);
+
+        const [available, rolePerm] = await Promise.all([
+          getAvailablePermissions(),
+          getRolePermissions(roleId),
+        ]);
+
+        if (cancelled) return;
+
+        // Filter to current scope
+        const scopedKeys = available
+          .map(p => p.permission_key)
+          .filter(k => k.startsWith(scope + ':'));
+
+        setAllResources(groupPermissions(scopedKeys));
+        const roleSet = new Set(rolePerm.permissions);
+        setEnabledPerms(roleSet);
+        setOriginalPerms(new Set(roleSet));
+      } catch (err: any) {
+        if (!cancelled) setError(err?.message || 'Failed to load permissions');
+      } finally {
+        if (!cancelled) setLoadingPerms(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [roleId, scope]);
+
+  // ── Derived values ─────────────────────────────────────────
+  const resources = Array.from(allResources.entries())
+    .filter(([res]) => prettyResource(res).toLowerCase().includes(search.toLowerCase()))
+    .sort(([a], [b]) => a.localeCompare(b));
+
+  // All unique actions across resources
+  const allActions = Array.from(
+    new Set(Array.from(allResources.values()).flatMap(s => Array.from(s)))
+  ).sort();
+
+  const hasChanges = (() => {
+    if (enabledPerms.size !== originalPerms.size) return true;
+    for (const k of enabledPerms) if (!originalPerms.has(k)) return true;
+    return false;
+  })();
+
+  // ── Toggle helpers ─────────────────────────────────────────
+  const makeKey = (resource: string, action: string) => `${scope}:${resource}:${action}`;
+
+  const togglePermission = (resource: string, action: string) => {
+    const key = makeKey(resource, action);
+    setEnabledPerms(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
     });
-    return initial;
-  });
-
-  const togglePermission = (moduleId: string, actionId: string) => {
-    const newPerms = { ...permissions };
-    const modulePerms = new Set(newPerms[moduleId]);
-    if (modulePerms.has(actionId)) {
-      modulePerms.delete(actionId);
-    } else {
-      modulePerms.add(actionId);
-    }
-    newPerms[moduleId] = modulePerms;
-    setPermissions(newPerms);
   };
 
-  const toggleRow = (moduleId: string) => {
-    const newPerms = { ...permissions };
-    const module = modules.find(m => m.id === moduleId);
-    if (!module) return;
-
-    const allCurrent = module.actions.every(a => newPerms[moduleId].has(a));
-    if (allCurrent) {
-      newPerms[moduleId] = new Set();
-    } else {
-      newPerms[moduleId] = new Set(module.actions);
-    }
-    setPermissions(newPerms);
+  const toggleRow = (resource: string) => {
+    const actions = allResources.get(resource);
+    if (!actions) return;
+    const keys = Array.from(actions).map(a => makeKey(resource, a));
+    const allEnabled = keys.every(k => enabledPerms.has(k));
+    setEnabledPerms(prev => {
+      const next = new Set(prev);
+      keys.forEach(k => allEnabled ? next.delete(k) : next.add(k));
+      return next;
+    });
   };
 
-  const filteredModules = modules.filter(m => 
-    m.label.toLowerCase().includes(search.toLowerCase())
-  );
+  const handleReset = () => setEnabledPerms(new Set(originalPerms));
+
+  const handleSave = useCallback(async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      await setRolePermissions(roleId, Array.from(enabledPerms));
+      setOriginalPerms(new Set(enabledPerms));
+      setSuccessMsg('Permissions saved successfully');
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to save permissions');
+    } finally {
+      setSaving(false);
+    }
+  }, [roleId, enabledPerms, setRolePermissions]);
+
+  // ── Loading / Error states ─────────────────────────────────
+  if (loadingPerms) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <Loader2 className="h-8 w-8 animate-spin text-accent-strong" />
+        <span className="ml-3 text-gray-400 text-sm font-bold">Loading permissions matrix…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       
-      {/* Header Context */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-1">
-          <button 
-            onClick={onBack}
-            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-accent-strong transition-colors group mb-3"
-          >
-            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-            Back to Role Registry
-          </button>
-          <div className="flex items-center gap-4">
-             <div className="w-12 h-12 rounded-2xl bg-accent-strong flex items-center justify-center text-white shadow-xl">
-                <Shield size={24} />
-             </div>
-             <div>
-                <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">RBAC Matrix</h1>
-                <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Configuring Role: <span className="text-accent-strong">{roleName}</span></p>
-             </div>
-          </div>
-        </div>
-
+      {/* Header Actions Only */}
+      <div className="flex justify-end pt-2">
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/10 text-gray-500 hover:text-white transition-all text-xs font-black uppercase tracking-widest">
-            <RotateCcw size={16} /> Reset Default
+          <button 
+            onClick={handleReset}
+            disabled={!hasChanges}
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-white/10 text-gray-500 hover:text-white transition-all text-xs font-black uppercase tracking-widest disabled:opacity-30"
+          >
+            <RotateCcw size={16} /> Reset
           </button>
-          <button className="flex items-center gap-2 px-10 py-3 rounded-2xl bg-accent-strong text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-accent-strong/20 hover:scale-105 active:scale-95 transition-all">
-            <Save size={18} /> Save Changes
+          <button 
+            onClick={handleSave}
+            disabled={!hasChanges || saving}
+            className="flex items-center gap-2 px-10 py-3 rounded-2xl bg-accent-strong text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-accent-strong/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+          >
+            {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+            {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
       </div>
+
+      {/* Feedback messages */}
+      {error && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-bold">
+          <AlertTriangle size={18} /> {error}
+        </div>
+      )}
+      {successMsg && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-bold">
+          <Check size={18} /> {successMsg}
+        </div>
+      )}
 
       {/* Control Bar */}
       <GlassCard className="flex flex-col md:flex-row items-center justify-between gap-4 border-white/10" noPadding>
@@ -165,102 +237,96 @@ const PermissionGrid: React.FC<PermissionGridProps> = ({ roleName, onBack, type 
                 <th className="px-8 py-6 w-[350px] sticky left-0 z-20 bg-gray-100 dark:bg-[#121212] border-r border-white/5">
                    Module Identity
                 </th>
-                {availableActions.map((action) => (
-                  <th key={action.id} className="px-6 py-6 text-center min-w-[120px]">
-                    <div className="flex flex-col items-center gap-2">
-                       <div className={`p-2 rounded-xl bg-black/5 dark:bg-white/5 ${action.isHighRisk ? 'text-red-500' : 'text-gray-400'}`}>
-                          <action.icon size={18} />
-                       </div>
-                       <span>{action.label}</span>
-                    </div>
-                  </th>
-                ))}
+                {allActions.map((actionId) => {
+                  const meta = ACTION_META[actionId] || { label: actionId, icon: Eye };
+                  const Icon = meta.icon;
+                  return (
+                    <th key={actionId} className="px-6 py-6 text-center min-w-[120px]">
+                      <div className="flex flex-col items-center gap-2">
+                         <div className={`p-2 rounded-xl bg-black/5 dark:bg-white/5 ${meta.isHighRisk ? 'text-red-500' : 'text-gray-400'}`}>
+                            <Icon size={18} />
+                         </div>
+                         <span>{meta.label}</span>
+                      </div>
+                    </th>
+                  );
+                })}
                 <th className="px-8 py-6 text-right pr-10">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {filteredModules.map((module) => (
-                <tr key={module.id} className="group hover:bg-black/5 dark:hover:bg-white/[0.01] transition-all">
-                  <td className="px-8 py-6 sticky left-0 z-20 bg-gray-50 dark:bg-[#0a0a0a] group-hover:bg-gray-100 dark:group-hover:bg-[#121212] border-r border-white/5 transition-colors">
-                    <div className="flex items-center gap-4">
-                       <button 
-                         onClick={() => toggleRow(module.id)}
-                         className="p-2 rounded-lg bg-black/5 dark:bg-white/5 text-gray-400 hover:text-white transition-all"
-                         title="Select All Module Actions"
-                       >
-                          <Layout size={14} />
-                       </button>
-                       <div>
-                          <h3 className="text-sm font-black dark:text-white leading-none mb-1.5 uppercase">{module.label}</h3>
-                          <p className="text-[10px] font-medium text-gray-500 leading-tight">{module.description}</p>
-                       </div>
-                    </div>
-                  </td>
-                  {availableActions.map((action) => {
-                    const isAvailable = module.actions.includes(action.id);
-                    const isEnabled = permissions[module.id]?.has(action.id);
-                    
-                    return (
-                      <td key={action.id} className="px-6 py-6 text-center">
-                        {isAvailable ? (
-                          <button 
-                            onClick={() => togglePermission(module.id, action.id)}
-                            className={`
-                              w-10 h-10 rounded-2xl mx-auto flex items-center justify-center transition-all duration-300
-                              ${isEnabled 
-                                ? 'bg-accent-strong text-white shadow-lg shadow-accent-strong/30 scale-110' 
-                                : 'bg-black/10 dark:bg-white/5 text-gray-600 hover:bg-black/20 dark:hover:bg-white/10'
-                              }
-                              ${action.isHighRisk && isEnabled ? 'bg-red-600 shadow-red-900/40' : ''}
-                            `}
-                          >
-                            {isEnabled ? <Check size={18} strokeWidth={4} /> : <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20" />}
-                          </button>
-                        ) : (
-                          <div className="w-10 h-10 mx-auto flex items-center justify-center text-gray-300 dark:text-zinc-800">
-                             <X size={16} strokeWidth={3} className="opacity-20" />
+              {resources.map(([resource, availableActions]) => {
+                const enabledCount = allActions.filter(a => availableActions.has(a) && enabledPerms.has(makeKey(resource, a))).length;
+                const totalAvailable = Array.from(availableActions).filter(a => allActions.includes(a)).length;
+
+                return (
+                  <tr key={resource} className="group hover:bg-black/5 dark:hover:bg-white/[0.01] transition-all">
+                    <td className="px-8 py-6 sticky left-0 z-20 bg-gray-50 dark:bg-[#0a0a0a] group-hover:bg-gray-100 dark:group-hover:bg-[#121212] border-r border-white/5 transition-colors">
+                      <div className="flex items-center gap-4">
+                         <button 
+                           onClick={() => toggleRow(resource)}
+                           className="p-2 rounded-lg bg-black/5 dark:bg-white/5 text-gray-400 hover:text-white transition-all"
+                           title="Select All Module Actions"
+                         >
+                            <Layout size={14} />
+                         </button>
+                         <div>
+                            <h3 className="text-sm font-black dark:text-white leading-none mb-1.5 uppercase">{prettyResource(resource)}</h3>
+                            <p className="text-[10px] font-medium text-gray-500 leading-tight">
+                              {scope}:{resource}
+                            </p>
+                         </div>
+                      </div>
+                    </td>
+                    {allActions.map((actionId) => {
+                      const isAvailable = availableActions.has(actionId);
+                      const isEnabled = enabledPerms.has(makeKey(resource, actionId));
+                      const meta = ACTION_META[actionId] || {};
+                      
+                      return (
+                        <td key={actionId} className="px-6 py-6 text-center">
+                          {isAvailable ? (
+                            <button 
+                              onClick={() => togglePermission(resource, actionId)}
+                              className={`
+                                w-10 h-10 rounded-2xl mx-auto flex items-center justify-center transition-all duration-300
+                                ${isEnabled 
+                                  ? 'bg-accent-strong text-white shadow-lg shadow-accent-strong/30 scale-110' 
+                                  : 'bg-black/10 dark:bg-white/5 text-gray-600 hover:bg-black/20 dark:hover:bg-white/10'
+                                }
+                                ${(meta as any).isHighRisk && isEnabled ? 'bg-red-600 shadow-red-900/40' : ''}
+                              `}
+                            >
+                              {isEnabled ? <Check size={18} strokeWidth={4} /> : <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20" />}
+                            </button>
+                          ) : (
+                            <div className="w-10 h-10 mx-auto flex items-center justify-center text-gray-300 dark:text-zinc-800">
+                               <X size={16} strokeWidth={3} className="opacity-20" />
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                    <td className="px-8 py-6 text-right pr-10">
+                       <div className="flex justify-end">
+                          <div className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-tighter border ${
+                            enabledCount === totalAvailable 
+                              ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+                              : enabledCount === 0
+                              ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                              : 'bg-blue-500/10 text-accent border-accent/20'
+                          }`}>
+                             {enabledCount === totalAvailable ? 'FULL ACCESS' : enabledCount === 0 ? 'RESTRICTED' : 'PARTIAL'}
                           </div>
-                        )}
-                      </td>
-                    );
-                  })}
-                  <td className="px-8 py-6 text-right pr-10">
-                     <div className="flex justify-end">
-                        <div className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-tighter border ${
-                          permissions[module.id].size === module.actions.length 
-                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
-                            : permissions[module.id].size === 0
-                            ? 'bg-red-500/10 text-red-500 border-red-500/20'
-                            : 'bg-blue-500/10 text-accent border-accent/20'
-                        }`}>
-                           {permissions[module.id].size === module.actions.length ? 'FULL ACCESS' : permissions[module.id].size === 0 ? 'RESTRICTED' : 'PARTIAL'}
-                        </div>
-                     </div>
-                  </td>
-                </tr>
-              ))}
+                       </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </GlassCard>
-
-      {/* Safety Banner */}
-      <div className="p-8 rounded-[2.5rem] bg-accent-strong text-white shadow-2xl flex flex-col md:flex-row items-center gap-8 animate-in slide-in-from-bottom-6 duration-1000">
-          <div className="w-20 h-20 rounded-3xl bg-white/20 flex items-center justify-center shrink-0 border border-white/20">
-              <ShieldAlert size={40} strokeWidth={2.5} />
-          </div>
-          <div className="flex-1 text-center md:text-left">
-              <h4 className="text-xl font-black leading-tight mb-1 uppercase italic tracking-tighter">Security Safeguard Active</h4>
-              <p className="text-sm font-medium opacity-90 leading-relaxed max-w-3xl">
-                  Permissions designated as <span className="bg-white/20 px-1.5 py-0.5 rounded font-black">High Risk</span> require a secondary hardware-token authentication to save. These actions affect property revenue and critical financial data.
-              </p>
-          </div>
-          <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 border border-white/20">
-             {/* Fix: Added missing ShieldCheck import and used it here */}
-             <ShieldCheck size={20} />
-             <span className="text-[10px] font-bold uppercase tracking-widest">MFA Required for Write</span>
-          </div>
-      </div>
 
     </div>
   );

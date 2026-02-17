@@ -58,6 +58,27 @@ def seed_all():
     tenant_map = {}  # tenant_key -> hotel_id (UUID)
 
     try:
+        # 1.5 Seed Plans (Moved to start because Tenants depend on Plan FK)
+        print("\n--- Seeding Plans ---")
+        p_data_list = load_json("plans_data.json")
+        plan_map = {}  # name -> id
+
+        for p_data in p_data_list:
+            plan = Plan(
+                name=p_data["name"],
+                price=p_data["price"],
+                rooms=p_data["rooms"],
+                kiosks=p_data["kiosks"],
+                support=p_data["support"],
+                included=p_data["included"],
+                theme=p_data["theme"],
+            )
+            db.add(plan)
+            db.flush()
+            plan_map[plan.name] = plan.id
+        db.commit()
+        print("Plans Seeded.")
+
         # 2. Seed Tenants (Hotels + Platform)
         print("\n--- Seeding Tenants ---")
         auth_data = load_json("auth_data.json")
@@ -75,7 +96,8 @@ def seed_all():
                 owner=t_data.get("owner"),
                 gstin=t_data.get("gstin"),
                 pan=t_data.get("pan"),
-                plan=t_data.get("plan", "Pro"),
+                plan_id=plan_map.get(t_data.get("plan", "Starter"))
+                or plan_map.get("Starter"),
                 is_auto_renew=t_data.get("is_auto_renew", 1),
                 kiosks=t_data.get("kiosks", 0),
                 mrr=t_data.get("mrr", 0.0),
@@ -313,30 +335,6 @@ def seed_all():
             print("Tickets Seeded.")
         else:
             print("tickets.json not found, skipping.")
-
-        # 6a. Seed Plans (Optional, if not handled by planseed.py separately)
-        # Assuming planseed.py exists and works, we can either call it here or leave it.
-        # But for 'seed_all', let's include Plans since we have models for it.
-        try:
-            print("\n--- Seeding Plans ---")
-            p_data_list = load_json("plans_data.json")
-
-            for p_data in p_data_list:
-                plan = Plan(
-                    name=p_data["name"],
-                    price=p_data["price"],
-                    rooms=p_data["rooms"],
-                    kiosks=p_data["kiosks"],
-                    subscribers=p_data["subscribers"],
-                    support=p_data["support"],
-                    included=p_data["included"],
-                    theme=p_data["theme"],
-                )
-                db.add(plan)
-            db.commit()
-            print("Plans Seeded.")
-        except Exception as e:
-            print(f"Plan seeding error: {e}")
 
     except Exception as e:
         print(f"CRITICAL ERROR SEEDING: {e}")

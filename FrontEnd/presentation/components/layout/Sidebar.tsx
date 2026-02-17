@@ -39,6 +39,7 @@ interface SidebarProps {
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
   onLogout?: () => void;
+  permissions?: string[];
 }
 
 const SidebarItem = ({ 
@@ -105,9 +106,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
   isMobileOpen = false,
   onCloseMobile,
-  onLogout
+  onLogout,
+  permissions = []
 }) => {
   const isHotelMode = viewMode === 'hotel';
+
+  /** Check if user has a specific permission (wildcard "*" grants all) */
+  const hasPerm = (perm: string) => permissions.includes('*') || permissions.includes(perm);
 
   return (
     <>
@@ -134,22 +139,23 @@ const Sidebar: React.FC<SidebarProps> = ({
           {/* Navigation */}
           <div className="flex-1">
             {isHotelMode ? (
-              // HOTEL ADMIN NAVIGATION
+              // HOTEL ADMIN NAVIGATION — filtered by permissions
               <>
                 <SidebarSection title="Operations" collapsed={isCollapsed}>
-                  <SidebarItem icon={LayoutDashboard} label="Dashboard" active={currentRoute === 'hotel-dashboard'} onClick={() => onNavigate('hotel-dashboard')} collapsed={isCollapsed} />
-                  <SidebarItem icon={Users} label="Guest Registry" active={currentRoute === 'guest-registry'} onClick={() => onNavigate('guest-registry')} collapsed={isCollapsed} />
-                  <SidebarItem icon={DoorOpen} label="Room Management" active={currentRoute === 'room-mgmt'} onClick={() => onNavigate('room-mgmt')} collapsed={isCollapsed} />
-                  <SidebarItem icon={ClipboardList} label="Incidents Record" active={currentRoute === 'incidents'} onClick={() => onNavigate('incidents')} collapsed={isCollapsed} />
+                  {hasPerm('hotel:dashboard:read') && <SidebarItem icon={LayoutDashboard} label="Dashboard" active={currentRoute === 'hotel-dashboard'} onClick={() => onNavigate('hotel-dashboard')} collapsed={isCollapsed} />}
+                  {hasPerm('hotel:guests:read') && <SidebarItem icon={Users} label="Guest Registry" active={currentRoute === 'guest-registry'} onClick={() => onNavigate('guest-registry')} collapsed={isCollapsed} />}
+                  {hasPerm('hotel:rooms:read') && <SidebarItem icon={DoorOpen} label="Room Management" active={currentRoute === 'room-mgmt'} onClick={() => onNavigate('room-mgmt')} collapsed={isCollapsed} />}
+                  {hasPerm('hotel:incidents:read') && <SidebarItem icon={ClipboardList} label="Incidents Record" active={currentRoute === 'incidents'} onClick={() => onNavigate('incidents')} collapsed={isCollapsed} />}
                 </SidebarSection>
 
                 <SidebarSection title="Management" collapsed={isCollapsed}>
-                  <SidebarItem icon={Users} label="Staff Registry" active={currentRoute === 'user-mgmt'} onClick={() => onNavigate('user-mgmt')} collapsed={isCollapsed} />
+                  {hasPerm('hotel:users:read') && <SidebarItem icon={Users} label="Staff Registry" active={currentRoute === 'user-mgmt'} onClick={() => onNavigate('user-mgmt')} collapsed={isCollapsed} />}
                 </SidebarSection>
 
                 <SidebarSection title="Insights" collapsed={isCollapsed}>
+                  {/* Help & Support always visible */}
                   <SidebarItem icon={HelpCircle} label="Help & Support" active={currentRoute === 'help'} onClick={() => onNavigate('help')} collapsed={isCollapsed} />
-                  <SidebarItem icon={BarChart3} label="Reports" active={currentRoute === 'hotel-reports'} onClick={() => onNavigate('hotel-reports')} collapsed={isCollapsed} />
+                  {hasPerm('hotel:reports:read') && <SidebarItem icon={BarChart3} label="Reports" active={currentRoute === 'hotel-reports'} onClick={() => onNavigate('hotel-reports')} collapsed={isCollapsed} />}
                 </SidebarSection>
               </>
             ) : (

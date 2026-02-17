@@ -3,6 +3,7 @@ import { Shield, Zap, ArrowRight, Copy, Check } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
+import { useHotelStaff } from '@/application/hooks/useHotelStaff';
 
 interface CreateHotelRoleModalProps {
   isOpen: boolean;
@@ -13,10 +14,13 @@ interface CreateHotelRoleModalProps {
 const textareaClass = `w-full px-4 py-4 rounded-2xl outline-none transition-all duration-200 text-sm font-medium border bg-gray-50 dark:bg-black/20 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-accent/50 focus:ring-4 focus:ring-accent/10 resize-none`;
 
 const CreateHotelRoleModal: React.FC<CreateHotelRoleModalProps> = ({ isOpen, onClose, onCreated }) => {
+  const { createRole } = useHotelStaff();
   const [step, setStep] = useState(1);
   const [roleName, setRoleName] = useState('');
   const [roleDesc, setRoleDesc] = useState('');
   const [cloneFrom, setCloneFrom] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const templates = ['Front Desk', 'Housekeeping', 'Maintenance', 'Night Auditor'];
 
@@ -26,15 +30,33 @@ const CreateHotelRoleModal: React.FC<CreateHotelRoleModalProps> = ({ isOpen, onC
       setRoleName('');
       setRoleDesc('');
       setCloneFrom(null);
+      setError(null);
     }
   }, [isOpen]);
 
-  const handleInitialize = () => {
-    setStep(2);
-    setTimeout(() => {
-        onCreated?.(roleName || 'New Property Role');
-        onClose();
-    }, 1200);
+  const handleInitialize = async () => {
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      setStep(2);
+      
+      const newRole = await createRole({
+        name: roleName || 'New Property Role',
+        desc: roleDesc || 'Custom property role created via admin entry.',
+        color: 'blue',
+        status: 'Active'
+      });
+
+      setTimeout(() => {
+          onCreated?.(newRole.name);
+          onClose();
+      }, 1200);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to create role');
+      setStep(1);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -55,16 +77,16 @@ const CreateHotelRoleModal: React.FC<CreateHotelRoleModalProps> = ({ isOpen, onC
       }
       footer={
         step === 1 ? (
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-3 p-6 pt-0">
             <Button variant="ghost" onClick={onClose}>Discard</Button>
             <Button
               variant="primary"
               size="lg"
-              disabled={!roleName}
+              disabled={!roleName || isSubmitting}
               onClick={handleInitialize}
-              iconRight={<ArrowRight size={16} strokeWidth={3} />}
+              iconRight={!isSubmitting ? <ArrowRight size={16} strokeWidth={3} /> : undefined}
             >
-              Generate & Customize Right
+              {isSubmitting ? 'Generating...' : 'Generate & Customize Rights'}
             </Button>
           </div>
         ) : undefined
@@ -73,6 +95,12 @@ const CreateHotelRoleModal: React.FC<CreateHotelRoleModalProps> = ({ isOpen, onC
       <div className="p-8 min-h-[400px] flex flex-col">
         {step === 1 ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300 flex-1">
+            {error && (
+              <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold uppercase tracking-widest">
+                {error}
+              </div>
+            )}
+            
             <GlassInput
               label="Role Functional Name *"
               placeholder="e.g. Concierge Supervisor"

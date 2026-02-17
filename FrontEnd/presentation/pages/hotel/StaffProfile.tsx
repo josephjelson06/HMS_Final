@@ -14,7 +14,6 @@ const StaffProfile: React.FC = () => {
 
     const [formData, setFormData] = useState({
         name: '',
-        email: '',
         mobile: ''
     });
 
@@ -22,7 +21,6 @@ const StaffProfile: React.FC = () => {
         if (user) {
             setFormData({
                 name: user.name,
-                email: user.email,
                 mobile: user.mobile || user.phone || ''
             });
         }
@@ -40,7 +38,6 @@ const StaffProfile: React.FC = () => {
         try {
             await repositories.users.update(user.id, {
                 name: formData.name,
-                email: formData.email,
                 mobile: formData.mobile
             });
             setSuccess(true);
@@ -55,7 +52,7 @@ const StaffProfile: React.FC = () => {
 
     const profileName = formData.name || 'Staff Member';
     const profileRole = user?.role || 'Unassigned Role';
-    const profileId = user?.id || 'N/A'; // Or employee_id if available on user object
+    const profileId = user?.employee_id || user?.id || 'N/A';
     const profileJoinedOn = user?.dateAdded || 'N/A';
     // const profileEmail = formData.email || 'staff@example.com';
     // const profileMobile = formData.mobile || '+91 00000 00000';
@@ -108,6 +105,14 @@ const StaffProfile: React.FC = () => {
                                 <span className="text-gray-500">Joined On</span>
                                 <span className="dark:text-white">{profileJoinedOn}</span>
                             </div>
+                            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+                                <span className="text-gray-500">Status</span>
+                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                    user?.status === 'Active'
+                                        ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                                        : 'bg-red-500/10 text-red-500 border border-red-500/20'
+                                }`}>{user?.status || 'Active'}</span>
+                            </div>
                         </div>
                     </GlassCard>
 
@@ -139,10 +144,12 @@ const StaffProfile: React.FC = () => {
                                     <input
                                         type="email"
                                         name="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        className={`${inputClass} pl-11`}
+                                        value={user?.email || ''}
+                                        readOnly
+                                        className={`${inputClass} pl-11 opacity-60 cursor-not-allowed`}
+                                        title="Email is managed by your administrator"
                                     />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] font-bold uppercase tracking-widest text-gray-400">Admin Only</span>
                                 </div>
                             </div>
                             <div>
