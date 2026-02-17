@@ -18,7 +18,8 @@ export interface Invoice {
   period?: string;
   status: 'Paid' | 'Overdue' | 'Pending' | 'Draft' | 'paid' | 'pending' | 'overdue' | 'failed' | string;
   dueDate: string;
-  issuedDate?: string;
+  issuedDate?: string; // Optional in entities, required in types?
   daysOverdue?: number;
   items?: LineItem[];
 }
+

@@ -12,5 +12,6 @@ export interface PlanData {
   support: string;
   included: string[];
   theme: PlanTheme;
-  isArchived?: boolean;
+  isArchived?: boolean; // From types/plan.ts
 }
+

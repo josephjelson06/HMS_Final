@@ -11,7 +11,7 @@ import GlassCard from '../../components/ui/GlassCard';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import { useTheme } from '../../hooks/useTheme';
 import { useModalVisibility } from '../../hooks/useModalVisibility';
-import { Room, RoomStatus } from '../../../types/room';
+import { Room, RoomStatus } from '@/domain/entities/Room';
 
 interface RoomDetailPanelProps {
   isOpen: boolean;

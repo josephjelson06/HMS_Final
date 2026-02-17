@@ -1,8 +1,9 @@
 // User domain entities — pure TypeScript, no framework dependencies
+import type React from 'react';
 
 export interface User {
   id: string;
-  employeeId: string;
+  employeeId?: string; // Optional in types/user.ts
   name: string;
   email: string;
   role: string;
@@ -15,14 +16,26 @@ export interface User {
 }
 
 export interface Role {
-  id?: string;
+  id: string;
   name: string;
   description?: string;
-  desc?: string;
-  permissions?: string[];
+  desc?: string; // Legacy support
+  permissions: string[];
   userCount?: number;
   color?: string;
   status?: 'Active' | 'Inactive';
+}
+
+export interface PermissionAction {
+  key: string;
+  label: string;
+  granted: boolean;
+}
+
+export interface PermissionModule {
+  name: string;
+  icon: React.ElementType; // Requires React import
+  actions: PermissionAction[];
 }
 
 export interface StaffMember {
@@ -36,3 +49,4 @@ export interface StaffMember {
   lastLogin: string;
   avatar?: string;
 }
+

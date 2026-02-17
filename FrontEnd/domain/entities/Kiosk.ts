@@ -11,8 +11,9 @@ export interface Kiosk {
   lastSeen: string;
   paper: number;
   firmware: string;
-  update: boolean;
+  update: boolean; // From types/kiosk.ts
 }
+
 
 export interface FirmwareRelease {
   version: string;

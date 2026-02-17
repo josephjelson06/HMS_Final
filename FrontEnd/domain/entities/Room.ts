@@ -1,6 +1,5 @@
 // Room domain entities — pure TypeScript, no framework dependencies
 
-
 export interface Building {
   id: string;
   name: string;
@@ -50,3 +49,4 @@ export interface Booking {
 export const ROOM_CELL_WIDTH = 140;
 export const ROOM_LIST_WIDTH = 300;
 export const ROOM_DAYS_TO_SHOW = 21;
+
