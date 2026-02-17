@@ -1,7 +1,7 @@
 
-import type { ISubscriptionRepository } from '../../../domain/contracts/ISubscriptionRepository';
-import type { Subscription } from '../../../domain/entities/Subscription';
-import { httpClient } from '../../http/client';
+import type { ISubscriptionRepository } from '../../domain/contracts/ISubscriptionRepository';
+import type { Subscription } from '../../domain/entities/Subscription';
+import { httpClient } from '../http/client';
 
 export class ApiSubscriptionRepository implements ISubscriptionRepository {
   private baseUrl = 'api/subscriptions/';

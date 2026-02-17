@@ -1,6 +1,6 @@
-import type { IPlanRepository } from '../../../domain/contracts/IPlanRepository';
-import type { PlanData } from '../../../domain/entities/Plan';
-import { httpClient } from '../../http/client';
+import type { IPlanRepository } from '../../domain/contracts/IPlanRepository';
+import type { PlanData } from '../../domain/entities/Plan';
+import { httpClient } from '../http/client';
 
 export class ApiPlanRepository implements IPlanRepository {
   private readonly baseUrl = '/api/plans';

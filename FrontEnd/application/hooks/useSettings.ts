@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ApiSettingsRepository, PlatformSettings } from '@/infrastructure/repositories/api/ApiSettingsRepository';
+import { ApiSettingsRepository, PlatformSettings } from '@/infrastructure/repositories/SettingsRepository';
 
 export function useSettings() {
     const [settings, setSettings] = useState<PlatformSettings | null>(null);

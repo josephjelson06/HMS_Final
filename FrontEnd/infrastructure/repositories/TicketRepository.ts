@@ -1,6 +1,6 @@
-import type { ITicketRepository } from '../../../domain/contracts/ITicketRepository';
-import type { HotelTicket, HotelTicketCategory, HotelTicketPriority, HotelTicketStatus } from '../../../domain/entities/HotelTicket';
-import { httpClient } from '../../http/client';
+import type { ITicketRepository } from '../../domain/contracts/ITicketRepository';
+import type { HotelTicket, HotelTicketCategory, HotelTicketPriority, HotelTicketStatus } from '../../domain/entities/HotelTicket';
+import { httpClient } from '../http/client';
 
 export class ApiTicketRepository implements ITicketRepository {
   async getHotelTickets(hotelId: string): Promise<HotelTicket[]> {

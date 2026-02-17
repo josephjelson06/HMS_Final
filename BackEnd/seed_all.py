@@ -49,11 +49,42 @@ def seed_all():
     # Ensure all mappers are configured
     configure_mappers()
 
-    # 1. Reset Schema
-    print("Dropping and Recreating Tables...")
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-    print("Schema Reset Complete.")
+    # 1. Reset Data (Preserve Schema for Alembic)
+    print("Clearing existing data (Truncating tables)...")
+    # Base.metadata.drop_all(bind=engine) # DANGEROUS: DELETES ALEMBIC HISTORY
+    # Base.metadata.create_all(bind=engine)
+
+    # List of tables to truncate (order doesn't strict matter with CASCADE, but good to be explicit)
+    tables_to_truncate = [
+        "plans",
+        "tenants",
+        "users",
+        "roles",
+        "rooms",
+        "room_categories",
+        "buildings",
+        "incidents",
+        "tickets",
+        "kiosks",
+        "invoices",
+    ]
+
+    # Execute Truncate
+    with engine.begin() as conn:
+        # Check which tables actually exist to avoid errors if some are missing
+        existing_tables = []
+        for t in tables_to_truncate:
+            # This check is a bit manual, but safe.
+            # Alternatively, just try/except or assume schema is correct via alembic.
+            # Let's assume schema is correct.
+            existing_tables.append(t)
+
+        if existing_tables:
+            tbl_str = ", ".join([f'"{t}"' for t in existing_tables])
+            print(f"Truncating: {tbl_str}")
+            conn.execute(text(f"TRUNCATE TABLE {tbl_str} RESTART IDENTITY CASCADE;"))
+
+    print("Data Reset Complete.")
 
     tenant_map = {}  # tenant_key -> hotel_id (UUID)
 

@@ -1,6 +1,6 @@
-import type { IHotelRepository } from '../../../domain/contracts/IHotelRepository';
-import type { Hotel } from '../../../domain/entities/Hotel';
-import { httpClient } from '../../http/client';
+import type { IHotelRepository } from '../../domain/contracts/IHotelRepository';
+import type { Hotel } from '../../domain/entities/Hotel';
+import { httpClient } from '../http/client';
 
 export class ApiHotelRepository implements IHotelRepository {
   private baseUrl = 'api/hotels/';

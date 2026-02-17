@@ -1,6 +1,6 @@
-import type { IHotelStaffRepository } from '@/domain/contracts/IHotelStaffRepository';
-import type { HotelStaffMember, HotelRole } from '@/domain/entities/HotelStaff';
-import { httpClient } from '../../http/client';
+import type { IHotelStaffRepository } from '../../domain/contracts/IHotelStaffRepository';
+import type { HotelStaffMember, HotelRole } from '../../domain/entities/HotelStaff';
+import { httpClient } from '../http/client';
 
 export class ApiHotelStaffRepository implements IHotelStaffRepository {
 

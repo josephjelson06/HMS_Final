@@ -1,6 +1,6 @@
-import type { IUserRepository } from '../../../domain/contracts/IUserRepository';
-import type { User, Role, StaffMember } from '../../../domain/entities/User';
-import { httpClient } from '../../http/client';
+import type { IUserRepository } from '../../domain/contracts/IUserRepository';
+import type { User, Role, StaffMember } from '../../domain/entities/User';
+import { httpClient } from '../http/client';
 
 export class ApiUserRepository implements IUserRepository {
   private baseUrl = 'api/users';

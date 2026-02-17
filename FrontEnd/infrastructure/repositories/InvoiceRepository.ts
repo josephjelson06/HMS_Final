@@ -1,7 +1,7 @@
 
-import type { IInvoiceRepository } from '../../../domain/contracts/IInvoiceRepository';
-import type { Invoice } from '../../../domain/entities/Invoice';
-import { httpClient } from '../../http/client';
+import type { IInvoiceRepository } from '../../domain/contracts/IInvoiceRepository';
+import type { Invoice } from '../../domain/entities/Invoice';
+import { httpClient } from '../http/client';
 
 export class ApiInvoiceRepository implements IInvoiceRepository {
   private baseUrl = 'api/subscriptions/invoices';

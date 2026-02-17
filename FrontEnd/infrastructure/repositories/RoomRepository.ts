@@ -1,6 +1,7 @@
-import type { IRoomRepository } from '../../../domain/contracts/IRoomRepository';
-import type { Room, RoomType, Booking, Building } from '../../../domain/entities/Room';
-import { httpClient } from '../../http/client';
+
+import type { IRoomRepository } from '../../domain/contracts/IRoomRepository';
+import type { Room, RoomType, Booking, Building } from '../../domain/entities/Room';
+import { httpClient } from '../http/client';
 
 export class ApiRoomRepository implements IRoomRepository {
   private baseUrl = 'api/hotels/';

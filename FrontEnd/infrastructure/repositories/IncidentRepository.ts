@@ -1,6 +1,6 @@
-import type { IIncidentRepository } from '../../../domain/contracts/IIncidentRepository';
-import type { Incident } from '../../../domain/entities/Incident';
-import { httpClient } from '../../http/client';
+import type { IIncidentRepository } from '../../domain/contracts/IIncidentRepository';
+import type { Incident } from '../../domain/entities/Incident';
+import { httpClient } from '../http/client';
 
 export class ApiIncidentRepository implements IIncidentRepository {
   private baseUrl = 'api/hotels/';
