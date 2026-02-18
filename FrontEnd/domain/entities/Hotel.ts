@@ -13,15 +13,15 @@ export interface Kiosk {
 export interface Hotel {
   id: string; // Unified to string
   name: string;
-  gstin: string;
-  owner: string;
-  email: string;
-  mobile: string;
-  plan: HotelPlan | string;
+  gstin?: string;
+  owner?: string;
+  email?: string;
+  mobile?: string;
+  plan?: HotelPlan | string;
   kiosks: number;
   status: HotelStatus | string;
   mrr: number;
-  address: string;
+  address?: string;
   pan?: string;
   legal_name?: string;
   logo?: string;

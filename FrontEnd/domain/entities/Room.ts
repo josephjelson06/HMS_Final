@@ -14,12 +14,13 @@ export interface Room {
   floor: number;
   status: RoomStatus | string;
   type: string;
+  hotel_id?: string;
   building_id?: number;
   category_id?: string;
   building?: string;
   category?: string;
   guestName?: string;
-  lastUpdate: string;
+  lastUpdate?: string;
   isDND?: boolean;
   hasIncident?: boolean;
   maintenanceNote?: string;
@@ -33,6 +34,7 @@ export interface RoomType {
   rate: number;
   occupancy: number;
   units?: number;
+  hotel_id?: string;
   amenities: string[];
 }
 

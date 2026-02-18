@@ -1,47 +1,69 @@
-
 import type { ISubscriptionRepository } from '../../domain/contracts/ISubscriptionRepository';
 import type { Subscription } from '../../domain/entities/Subscription';
 import { httpClient } from '../http/client';
+import type {
+  ApiInvoiceDTO,
+  ApiSubscriptionDTO,
+  ApiSubscriptionUpdateDTO,
+} from '../dto/backend';
+
+type SubscriptionUpdateInput = Partial<Subscription> & {
+  invoiceAmount?: number;
+  invoiceStatus?: string;
+};
 
 export class ApiSubscriptionRepository implements ISubscriptionRepository {
   private baseUrl = 'api/subscriptions/';
 
+  private mapToEntity(data: ApiSubscriptionDTO): Subscription {
+    const nowIso = new Date().toISOString();
+    const startDate = data.startDate ?? nowIso;
+    const renewalDate = data.renewalDate ?? nowIso;
+
+    return {
+      id: String(data.id),
+      hotelId: String(data.hotel_id),
+      hotel_id: String(data.hotel_id),
+      hotel: data.hotel ?? '',
+      plan: data.plan,
+      startDate,
+      renewalDate,
+      status: data.status ?? 'Active',
+      autoRenew: Boolean(data.autoRenew),
+      price: data.price ?? 0,
+    };
+  }
+
+  private toUpdatePayload(data: SubscriptionUpdateInput): ApiSubscriptionUpdateDTO {
+    const payload: ApiSubscriptionUpdateDTO = {};
+
+    if (data.plan !== undefined) payload.plan = String(data.plan);
+    if (data.autoRenew !== undefined) payload.is_auto_renew = data.autoRenew;
+    if (data.renewalDate !== undefined) payload.subscription_end_date = data.renewalDate;
+    if (data.price !== undefined) payload.mrr = data.price;
+    if (data.invoiceAmount !== undefined) payload.invoice_amount = data.invoiceAmount;
+    if (data.invoiceStatus !== undefined) payload.invoice_status = data.invoiceStatus;
+
+    return payload;
+  }
+
   async getAll(): Promise<Subscription[]> {
-    return httpClient.get<Subscription[]>(this.baseUrl);
+    const data = await httpClient.get<ApiSubscriptionDTO[]>(this.baseUrl);
+    return data.map((item) => this.mapToEntity(item));
   }
 
   async getById(id: string): Promise<Subscription | null> {
-    // Current API doesn't have getById specific for subscription, but we can filter or add endpoint
-    // validating against getAll for now as per contract or just returning null if not needed strictly
-    // Or better, define getById in router if needed. 
-    // For now, let's implement getAll.
     const all = await this.getAll();
-    return all.find(s => s.id === id) || null;
+    return all.find((s) => s.id === id || s.hotel_id === id || s.hotelId === id) || null;
   }
 
   async update(id: string, data: Partial<Subscription>): Promise<Subscription> {
-    // We map subscription update to our patch endpoint
-    // The endpoint expects { plan?, is_auto_renew?, subscription_end_date?, mrr? }
-    
-    // We need to map 'autoRenew' to 'is_auto_renew' etc.
-    const payload: any = {};
-    if (data.plan) payload.plan = data.plan;
-    if (data.autoRenew !== undefined) payload.is_auto_renew = data.autoRenew;
-    if (data.renewalDate) payload.subscription_end_date = data.renewalDate;
-    if (data.price) payload.mrr = data.price;
-    
-    // Check for invoice data (casted from frontend extras)
-    if ((data as any).invoiceAmount) payload.invoice_amount = (data as any).invoiceAmount;
-    if ((data as any).invoiceStatus) payload.invoice_status = (data as any).invoiceStatus;
-
-    // id here is hotel_id string
-    console.log(`Sending PATCH request to ${this.baseUrl}${id} with payload:`, payload);
-    const result = await httpClient.patch<Subscription>(`${this.baseUrl}${id}`, payload);
-    console.log(`PATCH Response for ${id}:`, result);
-    return result;
+    const payload = this.toUpdatePayload(data as SubscriptionUpdateInput);
+    const result = await httpClient.patch<ApiSubscriptionDTO>(`${this.baseUrl}${id}`, payload);
+    return this.mapToEntity(result);
   }
 
-  async getInvoices(hotelId: string): Promise<any[]> {
-    return httpClient.get<any[]>(`${this.baseUrl}invoices/${hotelId}`);
+  async getInvoices(hotelId: string): Promise<ApiInvoiceDTO[]> {
+    return httpClient.get<ApiInvoiceDTO[]>(`${this.baseUrl}invoices/${hotelId}`);
   }
 }

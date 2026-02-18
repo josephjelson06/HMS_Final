@@ -1,5 +1,6 @@
 export interface PlatformSettings {
   name: string;
+  owner?: string;
   gstin?: string;
   pan?: string;
   address?: string;

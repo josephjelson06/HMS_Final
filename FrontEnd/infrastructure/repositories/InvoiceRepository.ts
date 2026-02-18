@@ -1,96 +1,136 @@
-
 import type { IInvoiceRepository } from '../../domain/contracts/IInvoiceRepository';
 import type { Invoice } from '../../domain/entities/Invoice';
 import { httpClient } from '../http/client';
+import type { ApiInvoiceDTO } from '../dto/backend';
+
+type InvoiceCreatePayload = {
+  hotel_id: string;
+  amount: number;
+  status: string;
+  period_start: string;
+  period_end: string;
+  due_date: string;
+};
+
+type InvoiceUpdatePayload = {
+  status?: string;
+  amount?: number;
+  due_date?: string;
+};
 
 export class ApiInvoiceRepository implements IInvoiceRepository {
   private baseUrl = 'api/subscriptions/invoices';
 
-  async getAll(): Promise<Invoice[]> {
-    console.log("Fetching all invoices from API...");
-    const data = await httpClient.get<any[]>(this.baseUrl);
-    return data.map(d => ({
-      id: d.id, // UUID
-      invoiceNumber: d.invoice_number,
-      hotel: d.hotel_name || 'Unknown',
-      amount: d.amount,
-      baseAmount: d.amount, 
+  private toDisplayDate(value: string | null | undefined): string {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString();
+  }
+
+  private toStatus(status: string | null | undefined): Invoice['status'] {
+    if (!status) return 'Pending';
+    return status;
+  }
+
+  private computeDaysOverdue(status: string | null | undefined, dueDate: string): number {
+    const normalized = (status ?? '').toLowerCase();
+    if (normalized === 'paid') return 0;
+
+    const due = new Date(dueDate);
+    if (Number.isNaN(due.getTime())) return 0;
+
+    const diffMs = Date.now() - due.getTime();
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
+  }
+
+  private mapToEntity(data: ApiInvoiceDTO): Invoice {
+    const amount = data.amount ?? 0;
+    const status = this.toStatus(data.status);
+
+    return {
+      id: String(data.id),
+      invoiceNumber: data.invoice_number ?? undefined,
+      invoice_number: data.invoice_number ?? undefined,
+      hotel: data.hotel_name ?? 'Unknown',
+      hotel_id: String(data.hotel_id),
+      hotel_name: data.hotel_name ?? undefined,
+      amount,
+      baseAmount: amount,
       gst: 0,
-      total: d.amount,
-      status: d.status,
-      dueDate: new Date(d.due_date).toLocaleDateString(),
-      issuedDate: new Date(d.generated_on).toLocaleDateString(),
-      daysOverdue: 0 
-    }));
+      total: amount,
+      period_start: data.period_start,
+      period_end: data.period_end,
+      period: `${data.period_start} - ${data.period_end}`,
+      status,
+      dueDate: this.toDisplayDate(data.due_date),
+      due_date: data.due_date,
+      issuedDate: this.toDisplayDate(data.generated_on),
+      generated_on: data.generated_on ?? undefined,
+      daysOverdue: this.computeDaysOverdue(data.status, data.due_date),
+    };
+  }
+
+  private toCreatePayload(data: Omit<Invoice, 'id'>): InvoiceCreatePayload {
+    const hotelId = (
+      (data as Omit<Invoice, 'id'> & { hotelId?: string }).hotelId ??
+      data.hotel_id
+    );
+    if (!hotelId) {
+      throw new Error('hotel_id is required to create invoice.');
+    }
+
+    const amount = data.total ?? data.amount ?? 0;
+    const periodStart = data.period_start ?? data.period ?? new Date().toISOString();
+    const periodEnd = data.period_end ?? data.period ?? periodStart;
+    const dueDate = data.due_date ?? data.dueDate;
+
+    return {
+      hotel_id: hotelId,
+      amount,
+      status: data.status ?? 'Pending',
+      period_start: periodStart,
+      period_end: periodEnd,
+      due_date: dueDate,
+    };
+  }
+
+  private toUpdatePayload(data: Partial<Invoice>): InvoiceUpdatePayload {
+    const payload: InvoiceUpdatePayload = {};
+    if (data.status !== undefined) payload.status = data.status;
+    if (data.amount !== undefined) payload.amount = data.amount;
+    if (data.total !== undefined && payload.amount === undefined) payload.amount = data.total;
+    if (data.due_date !== undefined || data.dueDate !== undefined) {
+      payload.due_date = data.due_date ?? data.dueDate;
+    }
+    return payload;
+  }
+
+  async getAll(): Promise<Invoice[]> {
+    const data = await httpClient.get<ApiInvoiceDTO[]>(this.baseUrl);
+    return data.map((item) => this.mapToEntity(item));
   }
 
   async getById(id: string): Promise<Invoice | null> {
     try {
-        const d = await httpClient.get<any>(`${this.baseUrl}/by-id/${id}`);
-        return {
-          id: d.id,
-          invoiceNumber: d.invoice_number,
-          hotel: d.hotel_name || 'Unknown',
-          amount: d.amount,
-          baseAmount: d.amount,
-          gst: 0,
-          total: d.amount,
-          status: d.status,
-          dueDate: new Date(d.due_date).toLocaleDateString(),
-          issuedDate: new Date(d.generated_on).toLocaleDateString(),
-          daysOverdue: 0
-        };
-    } catch (error) {
-        return null;
+      const data = await httpClient.get<ApiInvoiceDTO>(`${this.baseUrl}/by-id/${id}`);
+      return this.mapToEntity(data);
+    } catch (_error) {
+      return null;
     }
   }
 
   async create(data: Omit<Invoice, 'id'>): Promise<Invoice> {
-    const payload = {
-      hotel_id: (data as any).hotelId || (data as any).hotel_id,
-      amount: data.total || data.amount,
-      status: data.status || 'Pending',
-      period_start: data.period || 'Unknown',
-      period_end: data.period || 'Unknown',
-      due_date: data.dueDate,
-    };
-
-    const result = await httpClient.post<any>(this.baseUrl, payload);
-    
-    return {
-      id: result.id,
-      invoiceNumber: result.invoice_number,
-      hotel: result.hotel_name || 'Unknown',
-      amount: result.amount,
-      baseAmount: result.amount,
-      gst: 0,
-      total: result.amount,
-      status: result.status,
-      dueDate: result.due_date,
-      issuedDate: result.generated_on
-    };
+    const payload = this.toCreatePayload(data);
+    const result = await httpClient.post<ApiInvoiceDTO>(this.baseUrl, payload);
+    return this.mapToEntity(result);
   }
 
   async update(id: string, data: Partial<Invoice>): Promise<Invoice> {
-      const payload: any = {};
-      if (data.status) payload.status = data.status;
-      if (data.amount !== undefined) payload.amount = data.amount;
-      if (data.dueDate) payload.due_date = data.dueDate;
-
-      const result = await httpClient.patch<any>(`${this.baseUrl}/${id}`, payload);
-      
-      return {
-          id: result.id,
-          invoiceNumber: result.invoice_number,
-          hotel: result.hotel_name || 'Unknown',
-          amount: result.amount,
-          baseAmount: result.amount,
-          gst: 0,
-          total: result.amount,
-          status: result.status,
-          dueDate: result.due_date,
-          issuedDate: result.generated_on
-      };
+    const payload = this.toUpdatePayload(data);
+    const result = await httpClient.patch<ApiInvoiceDTO>(`${this.baseUrl}/${id}`, payload);
+    return this.mapToEntity(result);
   }
 
   async delete(id: string): Promise<void> {

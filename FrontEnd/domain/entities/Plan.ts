@@ -1,6 +1,6 @@
 // Plan domain entity — pure TypeScript, no framework dependencies
 
-export type PlanTheme = 'blue' | 'purple' | 'orange';
+export type PlanTheme = 'blue' | 'purple' | 'orange' | string;
 
 export interface PlanData {
   id: string;
