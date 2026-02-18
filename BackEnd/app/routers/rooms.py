@@ -20,7 +20,11 @@ from app.services.room_service import RoomService
 router = APIRouter(prefix="/api/hotels/{hotel_id}", tags=["rooms"])
 
 
-@router.get("/buildings", response_model=List[BuildingResponse])
+@router.get(
+    "/buildings",
+    response_model=List[BuildingResponse],
+    dependencies=[Depends(require_permission("hotel:rooms:read"))],
+)
 def get_buildings(hotel_id: UUID, db: Session = Depends(get_db)):
     return RoomService(db).get_buildings(hotel_id=hotel_id)
 
@@ -34,7 +38,11 @@ def create_building(hotel_id: UUID, building: BuildingCreate, db: Session = Depe
     return RoomService(db).create_building(hotel_id=hotel_id, payload=building)
 
 
-@router.get("/categories", response_model=List[RoomCategoryResponse])
+@router.get(
+    "/categories",
+    response_model=List[RoomCategoryResponse],
+    dependencies=[Depends(require_permission("hotel:rooms:read"))],
+)
 def get_categories(hotel_id: UUID, db: Session = Depends(get_db)):
     return RoomService(db).get_categories(hotel_id=hotel_id)
 
@@ -58,7 +66,11 @@ def delete_category(hotel_id: UUID, category_id: str, db: Session = Depends(get_
     return None
 
 
-@router.get("/rooms", response_model=List[RoomResponse])
+@router.get(
+    "/rooms",
+    response_model=List[RoomResponse],
+    dependencies=[Depends(require_permission("hotel:rooms:read"))],
+)
 def get_rooms(hotel_id: UUID, db: Session = Depends(get_db)):
     return RoomService(db).get_rooms(hotel_id=hotel_id)
 

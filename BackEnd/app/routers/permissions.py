@@ -34,7 +34,7 @@ def list_all_permissions(db: Session = Depends(get_db)):
     dependencies=[Depends(require_permission("hotel:users:read"))],
 )
 def list_hotel_permissions(hotel_id: UUID, db: Session = Depends(get_db)):
-    return PermissionService(db).list_hotel_permissions()
+    return PermissionService(db).list_hotel_permissions(hotel_id=hotel_id)
 
 
 @router.get(

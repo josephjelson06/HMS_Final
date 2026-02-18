@@ -67,7 +67,11 @@ def update_invoice(invoice_id: UUID, data: InvoiceUpdate, db: Session = Depends(
     return SubscriptionService(db).update_invoice(invoice_id=invoice_id, payload=data)
 
 
-@router.get("/invoices/{hotel_id}", response_model=List[InvoiceSchema])
+@router.get(
+    "/invoices/{hotel_id}",
+    response_model=List[InvoiceSchema],
+    dependencies=[Depends(require_permission("hotel:billing:read"))],
+)
 def get_hotel_invoices(hotel_id: UUID, db: Session = Depends(get_db)):
     return SubscriptionService(db).get_hotel_invoices(hotel_id=hotel_id)
 

@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from app.models.hotel import Hotel
 from app.models.role import Permission, Role, RolePermission
 
 
@@ -15,7 +16,17 @@ class PermissionService:
     def list_all_permissions(self) -> list[Permission]:
         return self.db.query(Permission).order_by(Permission.permission_key).all()
 
-    def list_hotel_permissions(self) -> list[Permission]:
+    def _ensure_hotel_exists(self, hotel_id: UUID) -> None:
+        hotel = (
+            self.db.query(Hotel)
+            .filter(Hotel.id == hotel_id, Hotel.tenant_type == "hotel")
+            .first()
+        )
+        if not hotel:
+            raise HTTPException(status_code=404, detail="Hotel not found")
+
+    def list_hotel_permissions(self, hotel_id: UUID) -> list[Permission]:
+        self._ensure_hotel_exists(hotel_id)
         return (
             self.db.query(Permission)
             .filter(Permission.permission_key.startswith("hotel:"))

@@ -123,6 +123,11 @@ class UserService:
                 raise HTTPException(status_code=400, detail="Email already registered")
             if not payload.role:
                 raise HTTPException(status_code=400, detail="Role is required")
+            if payload.hotel_id is not None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="hotel_id is not allowed for platform user creation",
+                )
 
             platform_tenant = self._ensure_platform_tenant()
             user_count = self.db.query(User).count()
@@ -274,6 +279,11 @@ class UserService:
         check_user_limit(self.db, hotel_id)
         if not payload.role:
             raise HTTPException(status_code=400, detail="Role is required")
+        if payload.hotel_id is not None and payload.hotel_id != hotel_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Payload hotel_id must match path hotel_id",
+            )
 
         db_user = self.db.query(User).filter(User.email == payload.email).first()
         if db_user:
