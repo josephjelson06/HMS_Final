@@ -3,12 +3,11 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 
-class PlanBase(BaseModel):
+class PlanCreate(BaseModel):
     name: str
     price: float
     rooms: int
     kiosks: int
-    # subscribers removed from base
     support: str
     included: List[str]
     theme: str
@@ -17,16 +16,11 @@ class PlanBase(BaseModel):
     is_archived: bool = False
 
 
-class PlanCreate(PlanBase):
-    pass
-
-
 class PlanUpdate(BaseModel):
     name: Optional[str] = None
     price: Optional[float] = None
     rooms: Optional[int] = None
     kiosks: Optional[int] = None
-    # subscribers removed
     support: Optional[str] = None
     included: Optional[List[str]] = None
     theme: Optional[str] = None
@@ -35,9 +29,19 @@ class PlanUpdate(BaseModel):
     is_archived: Optional[bool] = None
 
 
-class Plan(PlanBase):
+class Plan(BaseModel):
     id: UUID
-    subscribers: int = 0  # Added here as computed field
+    name: Optional[str] = None
+    price: Optional[float] = None
+    rooms: Optional[int] = None
+    kiosks: Optional[int] = None
+    support: Optional[str] = None
+    included: Optional[List[str]] = None
+    theme: Optional[str] = None
+    max_roles: Optional[int] = None
+    max_users: Optional[int] = None
+    is_archived: Optional[bool] = False
+    subscribers: int = 0
 
     class Config:
         from_attributes = True

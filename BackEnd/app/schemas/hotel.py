@@ -19,18 +19,18 @@ class HotelPlan(str, Enum):
 
 class HotelBase(BaseModel):
     name: str = Field(..., min_length=1)
-    gstin: str
-    owner: str = Field(..., min_length=1)
-    email: EmailStr
-    mobile: str = Field(..., min_length=10)
+    gstin: Optional[str] = None
+    owner: Optional[str] = None
+    email: Optional[EmailStr] = None
+    mobile: Optional[str] = None
     pan: Optional[str] = None
     legal_name: Optional[str] = None
     logo: Optional[str] = None
-    plan: str = "Starter"
+    plan: Optional[str] = "Starter"
     kiosks: int = Field(default=0, ge=0)
     status: str = "Onboarding"
     mrr: float = Field(default=0.0, ge=0.0)
-    address: str
+    address: Optional[str] = None
 
 
 class KioskDetails(BaseModel):
@@ -41,6 +41,10 @@ class KioskDetails(BaseModel):
 
 
 class HotelCreate(HotelBase):
+    owner: str = Field(..., min_length=1)
+    email: EmailStr
+    mobile: str = Field(..., min_length=10)
+    address: str
     kiosks_details: Optional[List[KioskDetails]] = None
 
 

@@ -57,6 +57,7 @@ class User(UserBase):
                     "avatar",
                     "mobile",
                     "department",
+                    "role",
                     "is_active",
                     "created_at",
                 ]:

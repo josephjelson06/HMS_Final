@@ -1,5 +1,5 @@
 from uuid import UUID
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 
 
@@ -25,6 +25,17 @@ class RoomCategoryBase(BaseModel):
     rate: float
     occupancy: int
     amenities: List[str]
+
+    @field_validator("amenities", mode="before")
+    @classmethod
+    def normalize_amenities(cls, value):
+        if value is None:
+            return []
+        if isinstance(value, str):
+            if not value:
+                return []
+            return [item.strip() for item in value.split(",") if item.strip()]
+        return value
 
 
 class RoomCategoryCreate(RoomCategoryBase):
