@@ -48,7 +48,7 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
       role: data.role,
       mobile: data.mobile,
       status: data.status,
-      password: 'password123',
+      password: 'changeme123',
       department: data.role
     };
     const result = await httpClient.post<any>(`api/hotels/${hotelId}/users`, payload);

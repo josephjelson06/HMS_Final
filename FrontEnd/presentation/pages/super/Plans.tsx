@@ -47,7 +47,7 @@ const PlanCard: React.FC<{
     }
   };
 
-  const style = themeStyles[plan.theme];
+  const style = themeStyles[plan.theme] ?? themeStyles.blue;
 
   return (
     <GlassCard noPadding clipContent className={`flex flex-col h-full border-2 transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 ${style.border} ${style.shadow} ${plan.isArchived ? 'opacity-50 grayscale' : ''}`}>

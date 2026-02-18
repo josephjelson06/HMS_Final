@@ -19,17 +19,17 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, user, onClose, on
   const { roles } = useUsers();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const [name, setName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
-  const [mobile, setMobile] = useState(user.mobile);
-  const [role, setRole] = useState(user.role);
+  const [name, setName] = useState(user.name || '');
+  const [email, setEmail] = useState(user.email || '');
+  const [mobile, setMobile] = useState(user.mobile || '');
+  const [role, setRole] = useState(user.role || '');
 
   useEffect(() => {
     if (isOpen) {
-      setName(user.name);
-      setEmail(user.email);
-      setMobile(user.mobile);
-      setRole(user.role);
+      setName(user.name || '');
+      setEmail(user.email || '');
+      setMobile(user.mobile || '');
+      setRole(user.role || '');
     }
   }, [isOpen, user]);
 
