@@ -15,12 +15,26 @@ from app.schemas.role import RoleCreate, RoleUpdate
 logger = logging.getLogger(__name__)
 
 
+PROTECTED_PLATFORM_ROLE_NAMES = {"super admin"}
+PROTECTED_HOTEL_ROLE_NAMES = {"general manager"}
+
+
+def _normalized_role_name(name: str | None) -> str:
+    return (name or "").strip().lower()
+
+
 class RoleService:
     def __init__(self, db: Session):
         self.db = db
 
     def _count_users_for_role(self, role_id: UUID) -> int:
         return self.db.query(func.count(UserRole.user_id)).filter(UserRole.role_id == role_id).scalar() or 0
+
+    def _is_protected_role(self, role: Role) -> bool:
+        role_name = _normalized_role_name(role.name)
+        if role.tenant_id is None:
+            return role_name in PROTECTED_PLATFORM_ROLE_NAMES
+        return role_name in PROTECTED_HOTEL_ROLE_NAMES
 
     def get_platform_roles(self) -> list[Role]:
         roles = self.db.query(Role).filter(Role.tenant_id.is_(None)).all()
@@ -63,9 +77,11 @@ class RoleService:
         if not db_role:
             raise HTTPException(status_code=404, detail="Role not found")
 
-        user_count = self._count_users_for_role(db_role.id)
-        if user_count > 0:
-            raise HTTPException(status_code=400, detail="Cannot delete role with assigned users")
+        if self._is_protected_role(db_role):
+            raise HTTPException(status_code=400, detail="Protected role cannot be deleted")
+
+        # Role deletion should orphan users, not delete them.
+        self.db.query(UserRole).filter(UserRole.role_id == db_role.id).delete()
 
         self.db.delete(db_role)
         self.db.commit()
@@ -158,9 +174,11 @@ class RoleService:
         if not db_role:
             raise HTTPException(status_code=404, detail="Role not found in this hotel")
 
-        user_count = self._count_users_for_role(db_role.id)
-        if user_count > 0:
-            raise HTTPException(status_code=400, detail="Cannot delete role with assigned users")
+        if self._is_protected_role(db_role):
+            raise HTTPException(status_code=400, detail="Protected role cannot be deleted")
+
+        # Role deletion should orphan users, not delete them.
+        self.db.query(UserRole).filter(UserRole.role_id == db_role.id).delete()
 
         self.db.delete(db_role)
         self.db.commit()

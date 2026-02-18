@@ -5,7 +5,7 @@ import PropertySettings from "@/presentation/pages/hotel/PropertySettings";
 
 export default function HotelSettingsPage() {
   return (
-    <PermissionGate requiredPermission="hotel:settings:read">
+    <PermissionGate requiredPermission="" adminOnly>
       <PropertySettings />
     </PermissionGate>
   );

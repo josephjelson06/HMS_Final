@@ -7,14 +7,22 @@ export function useHotels() {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    if (authLoading) return;
+
+    if (!user) {
+      setHotels([]);
+      setLoading(false);
+      return;
+    }
+
     const load = async () => {
       setLoading(true);
       try {
         // Hotel users should only fetch their own hotel to avoid platform-only endpoint 403.
-        if (user?.hotelId) {
+        if (user.role === 'hotel' && user.hotelId) {
           const hotel = await repositories.hotels.getById(user.hotelId);
           setHotels(hotel ? [hotel] : []);
         } else {
@@ -28,7 +36,7 @@ export function useHotels() {
       }
     };
     load();
-  }, [user?.hotelId]);
+  }, [authLoading, user]);
 
   const createHotel = async (data: Omit<Hotel, 'id'> & { kiosks_details?: { serial_number: string, location: string }[] }) => {
     const hotel = await repositories.hotels.create(data);

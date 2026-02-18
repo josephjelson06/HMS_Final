@@ -70,7 +70,10 @@ def ensure_baseline_permissions(db: Session) -> dict[str, Permission]:
 
     if created:
         print(f"Created {created} missing Permission rows.")
-    return existing
+    all_hotel_permissions = (
+        db.query(Permission).filter(Permission.permission_key.like("hotel:%")).all()
+    )
+    return {p.permission_key: p for p in all_hotel_permissions}
 
 
 def backfill_gm_roles(db: Session, perms_by_key: dict[str, Permission]) -> None:
@@ -127,4 +130,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

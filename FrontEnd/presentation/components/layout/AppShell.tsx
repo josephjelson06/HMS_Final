@@ -18,6 +18,8 @@ interface AppShellProps {
   onOpenMobileMenu: () => void;
   onLogout: () => void;
   permissions?: string[];
+  isAdmin?: boolean;
+  isOrphan?: boolean;
 }
 
 const AppShell: React.FC<AppShellProps> = ({
@@ -34,6 +36,8 @@ const AppShell: React.FC<AppShellProps> = ({
   onOpenMobileMenu,
   onLogout,
   permissions = [],
+  isAdmin = false,
+  isOrphan = false,
 }) => {
   const { isDarkMode } = useTheme();
 
@@ -68,6 +72,7 @@ const AppShell: React.FC<AppShellProps> = ({
         onCloseMobile={onCloseMobile}
         onLogout={onLogout}
         permissions={permissions}
+        isOrphan={isOrphan}
       />
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
@@ -78,6 +83,7 @@ const AppShell: React.FC<AppShellProps> = ({
           isSidebarCollapsed={isSidebarCollapsed}
           onToggleSidebar={onToggleCollapse}
           onLogout={onLogout}
+          isAdmin={isAdmin}
         />
         
         <main className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth custom-scrollbar">

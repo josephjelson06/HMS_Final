@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, Building, User, CreditCard, Monitor, CheckCircle2, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ChevronRight, ChevronLeft, Building, User, CreditCard, Monitor, CheckCircle2, Trash2, AlertTriangle } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
@@ -19,7 +19,7 @@ interface AddHotelModalProps {
 }
 
 const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreateHotel }) => {
-  const { plans: apiPlans } = usePlans();
+  const { plans: apiPlans, loading: plansLoading } = usePlans();
   const [step, setStep] = useState(1);
   const totalSteps = 5;
   const [loading, setLoading] = useState(false);
@@ -38,13 +38,17 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
 
   const [kiosks, setKiosks] = useState<KioskData[]>([]);
   const [currentKiosk, setCurrentKiosk] = useState<KioskData>({ serialNumber: '', location: '' });
+  const activePlans = useMemo(
+    () => apiPlans.filter(p => !p.isArchived && !p.is_archived),
+    [apiPlans]
+  );
+  const hasNoActivePlans = !plansLoading && activePlans.length === 0;
 
   useEffect(() => {
-    const activePlans = apiPlans.filter(p => !p.isArchived);
     if (activePlans.length > 0 && !formData.plan) {
       setFormData(prev => ({ ...prev, plan: activePlans[0].name }));
     }
-  }, [apiPlans, formData.plan]);
+  }, [activePlans, formData.plan]);
 
   const handleAddKiosk = () => {
     if (currentKiosk.serialNumber && currentKiosk.location) {
@@ -66,7 +70,6 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
   useEffect(() => {
     if (isOpen) {
       setStep(1);
-      const activePlans = apiPlans.filter(p => !p.isArchived);
       setFormData({
         name: '',
         gstin: '',
@@ -81,12 +84,20 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
       setKiosks([]);
       setCurrentKiosk({ serialNumber: '', location: '' });
     }
-  }, [isOpen, apiPlans]);
+  }, [isOpen]);
 
   const handleSubmit = async () => {
+    if (hasNoActivePlans) {
+      alert('Create a pricing plan first.');
+      return;
+    }
+
     setLoading(true);
     try {
-      const selectedPlan = apiPlans.find(p => p.name === formData.plan);
+      const selectedPlan = activePlans.find(p => p.name === formData.plan);
+      if (!selectedPlan) {
+        throw new Error('Selected pricing tier is invalid. Please choose an active plan.');
+      }
       const mrr = selectedPlan ? selectedPlan.price : 0;
 
       await onCreateHotel({
@@ -104,9 +115,9 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
         pan: formData.pan
       });
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create hotel", error);
-      alert("Failed to create hotel. Please try again.");
+      alert(error?.message || "Failed to create hotel. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -145,16 +156,37 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
           <Button
             variant="action"
             size="md"
-            disabled={loading}
+            disabled={loading || hasNoActivePlans || plansLoading}
             onClick={() => step === 5 ? handleSubmit() : setStep(step + 1)}
             iconRight={loading ? undefined : <ChevronRight size={18} />}
           >
-            {loading ? 'Processing...' : step === 5 ? 'Confirm & Create Tenant' : 'Next Step'}
+            {loading ? 'Processing...' : hasNoActivePlans ? 'Create Plan First' : step === 5 ? 'Confirm & Create Tenant' : 'Next Step'}
           </Button>
         </div>
       }
     >
       <div className="p-8">
+        {hasNoActivePlans && (
+          <div className="mb-6 rounded-xl border border-orange-500/30 bg-orange-500/10 p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle size={18} className="mt-0.5 text-orange-500" />
+              <div className="space-y-2">
+                <p className="text-sm font-bold text-orange-600 dark:text-orange-400">
+                  Create a pricing plan first.
+                </p>
+                <p className="text-xs text-orange-700/80 dark:text-orange-300/80">
+                  Hotel onboarding is blocked until at least one active pricing tier exists.
+                </p>
+                <a
+                  href="/super/plans"
+                  className="inline-flex text-xs font-bold uppercase tracking-wider text-orange-600 underline underline-offset-2 hover:text-orange-500"
+                >
+                  Go to Plans
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
         <StepIndicator />
         {step === 1 && (
           <div className="space-y-6">
@@ -228,7 +260,7 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({ isOpen, onClose, onCreate
           <div className="space-y-6">
             <div className="flex items-center gap-2 mb-2"><CreditCard size={16} className="text-accent" /><span className="text-xs font-bold uppercase dark:text-white">Subscription Setup</span></div>
             <div className="grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-              {apiPlans.filter(p => !p.isArchived).map((p) => (
+              {activePlans.map((p) => (
                 <div 
                   key={p.id} 
                   onClick={() => handleChange('plan', p.name)}

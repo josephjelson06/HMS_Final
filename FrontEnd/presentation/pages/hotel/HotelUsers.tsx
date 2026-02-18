@@ -146,6 +146,14 @@ const HotelUsers: React.FC<{ initialTab?: Tab }> = ({ initialTab = 'STAFF' }) =>
           setActiveTab('ROLES');
           refetch();
         }}
+        onEditRole={async (roleId, payload) => {
+          const targetRole = allRoles.find((r) => r.id === roleId || r.name === roleId);
+          if (!targetRole) {
+            throw new Error('Role not found');
+          }
+          await updateRole(targetRole.name, { desc: payload.description });
+          await refetch();
+        }}
       />
     );
   }

@@ -1,4 +1,9 @@
-import type { IAuthService, AuthUser, LoginCredentials } from '../../domain/contracts/IAuthService';
+import type {
+  IAuthService,
+  AuthUser,
+  LoginCredentials,
+  ProfileUpdatePayload,
+} from '../../domain/contracts/IAuthService';
 import { httpClient } from '../http/client';
 import { setCookie } from '../browser/cookies';
 
@@ -13,22 +18,30 @@ export class ApiAuthService implements IAuthService {
     }
   }
 
+  private mapAuthUser(response: any): AuthUser {
+    const role = response.user_type === 'platform' ? 'super' : 'hotel';
+    return {
+      id: response.id?.toString(),
+      name: response.name ?? '',
+      email: response.email ?? '',
+      role,
+      roleName: response.role_name ?? undefined,
+      userType: response.user_type ?? undefined,
+      hotelId: response.tenant_id?.toString(),
+      permissions: response.permissions ?? [],
+      mobile: response.mobile ?? undefined,
+      employee_id: response.employee_id ?? undefined,
+      status: response.status ?? undefined,
+      isAdmin: Boolean(response.is_admin),
+      isOrphan: Boolean(response.is_orphan),
+    };
+  }
+
   async login(credentials: LoginCredentials): Promise<AuthUser> {
     try {
       // POST /auth/login returns the user object and sets the HttpOnly cookie
       const response = await httpClient.post<any>('/auth/login', credentials);
-      
-      const role = response.user_type === 'platform' ? 'super' : 'hotel';
-
-      const user: AuthUser = {
-        id: response.id.toString(),
-        name: response.name,
-        email: response.email,
-        role: role,
-        permissions: response.permissions ?? [],
-        // Map user_type/tenant fields if needed, but UI seems to rely on 'role' string or hotelId
-        hotelId: response.tenant_id?.toString()
-      };
+      const user = this.mapAuthUser(response);
 
       // If backend returns token in body, set it in client cookie as fallback
       if (response.access_token) {
@@ -64,18 +77,7 @@ export class ApiAuthService implements IAuthService {
     try {
         // Fetch from /auth/me (cookie is sent automatically)
         const response = await httpClient.get<any>('/auth/me');
-        
-      const role = response.user_type === 'platform' ? 'super' : 'hotel';
-      
-      const user: AuthUser = {
-        id: response.id.toString(),
-        name: response.name,
-        email: response.email,
-        role: role,
-        permissions: response.permissions ?? [],
-        // Map user_type/tenant fields if needed, but UI seems to rely on 'role' string or hotelId
-        hotelId: response.tenant_id?.toString()
-      };
+        const user = this.mapAuthUser(response);
         this.currentUser = user;
         return user;
     } catch (error) {
@@ -88,5 +90,12 @@ export class ApiAuthService implements IAuthService {
      if (this.currentUser) return true;
      const user = await this.getCurrentUser();
      return user !== null;
+  }
+
+  async updateMyProfile(profile: ProfileUpdatePayload): Promise<AuthUser> {
+    const response = await httpClient.patch<any>('/auth/me', profile);
+    const user = this.mapAuthUser(response);
+    this.currentUser = user;
+    return user;
   }
 }

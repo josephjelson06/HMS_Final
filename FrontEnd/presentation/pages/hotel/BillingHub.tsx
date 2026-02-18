@@ -167,7 +167,7 @@ const BillingHub: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-8 py-6 text-center">
-                    <StatusBadge status={inv.status} />
+                    <StatusBadge status={inv.status as InvoiceStatus} />
                   </td>
                   <td className="px-6 py-6 text-center">
                       {inv.rateAudited ? (

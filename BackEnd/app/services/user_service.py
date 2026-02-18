@@ -18,9 +18,39 @@ from app.schemas.user import UserCreate, UserUpdate
 logger = logging.getLogger(__name__)
 
 
+SUPER_ADMIN_ROLE_NAME = "super admin"
+GENERAL_MANAGER_ROLE_NAME = "general manager"
+
+
+def _normalized_role_name(name: str | None) -> str:
+    return (name or "").strip().lower()
+
+
 class UserService:
     def __init__(self, db: Session):
         self.db = db
+
+    def _is_protected_role(self, role: Role) -> bool:
+        role_name = _normalized_role_name(role.name)
+        if role.tenant_id is None:
+            return role_name == SUPER_ADMIN_ROLE_NAME
+        return role_name == GENERAL_MANAGER_ROLE_NAME
+
+    def _count_role_users(self, role_id: UUID, tenant_id: UUID | None = None) -> int:
+        query = self.db.query(UserRole).filter(UserRole.role_id == role_id)
+        if tenant_id is not None:
+            query = query.filter(UserRole.tenant_id == tenant_id)
+        return query.count()
+
+    def _get_user_role(self, user_id: UUID, tenant_id: UUID | None) -> Role | None:
+        query = (
+            self.db.query(Role)
+            .join(UserRole, UserRole.role_id == Role.id)
+            .filter(UserRole.user_id == user_id)
+        )
+        if tenant_id is not None:
+            query = query.filter(UserRole.tenant_id == tenant_id)
+        return query.first()
 
     def _attach_role_names(self, users: list[User], tenant_id: UUID | None = None) -> list[User]:
         for user in users:
@@ -39,7 +69,12 @@ class UserService:
         role_obj = None
         try:
             role_id = UUID(role_value)
-            role_obj = self.db.query(Role).filter(Role.id == role_id).first()
+            role_query = self.db.query(Role).filter(Role.id == role_id)
+            if tenant_id is None:
+                role_query = role_query.filter(Role.tenant_id.is_(None))
+            else:
+                role_query = role_query.filter(Role.tenant_id == tenant_id)
+            role_obj = role_query.first()
         except (ValueError, TypeError):
             role_query = self.db.query(Role).filter(Role.name == role_value)
             if tenant_id is None:
@@ -86,6 +121,8 @@ class UserService:
             db_user = self.db.query(User).filter(User.email == payload.email).first()
             if db_user:
                 raise HTTPException(status_code=400, detail="Email already registered")
+            if not payload.role:
+                raise HTTPException(status_code=400, detail="Role is required")
 
             platform_tenant = self._ensure_platform_tenant()
             user_count = self.db.query(User).count()
@@ -106,21 +143,22 @@ class UserService:
             self.db.add(new_user)
             self.db.flush()
 
-            if payload.role:
-                role_obj = self._resolve_role(payload.role, tenant_id=None)
-                if role_obj:
-                    self.db.add(
-                        UserRole(
-                            tenant_id=platform_tenant.id,
-                            user_id=new_user.id,
-                            role_id=role_obj.id,
-                        )
-                    )
-                else:
-                    logger.warning(
-                        "Role '%s' not found; user created without role assignment",
-                        payload.role,
-                    )
+            role_obj = self._resolve_role(payload.role, tenant_id=None)
+            if not role_obj:
+                raise HTTPException(status_code=400, detail=f"Role '{payload.role}' not found")
+            if self._is_protected_role(role_obj) and self._count_role_users(role_obj.id) >= 1:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Role '{role_obj.name}' already has an assigned user",
+                )
+
+            self.db.add(
+                UserRole(
+                    tenant_id=platform_tenant.id,
+                    user_id=new_user.id,
+                    role_id=role_obj.id,
+                )
+            )
 
             self.db.commit()
             self.db.refresh(new_user)
@@ -139,6 +177,7 @@ class UserService:
             raise HTTPException(status_code=404, detail="User not found")
 
         update_data = payload.model_dump(exclude_unset=True)
+        role_field_supplied = "role" in update_data
         if "password" in update_data:
             password = update_data.pop("password")
             update_data["password_hash"] = get_password_hash(password)
@@ -150,22 +189,57 @@ class UserService:
         for key, value in update_data.items():
             setattr(db_user, key, value)
 
-        if role_to_assign:
+        current_role = self._get_user_role(db_user.id, tenant_id=db_user.tenant_id)
+        if role_field_supplied:
+            if not role_to_assign:
+                raise HTTPException(status_code=400, detail="Role is required")
+
             role_obj = self._resolve_role(role_to_assign, tenant_id=None)
-            if role_obj:
-                self.db.query(UserRole).filter(
-                    UserRole.user_id == db_user.id,
-                    UserRole.tenant_id == db_user.tenant_id,
-                ).delete()
-                self.db.add(
-                    UserRole(
-                        tenant_id=db_user.tenant_id,
-                        user_id=db_user.id,
-                        role_id=role_obj.id,
-                    )
+            if not role_obj:
+                raise HTTPException(status_code=400, detail=f"Role '{role_to_assign}' not found")
+
+            if (
+                current_role
+                and self._is_protected_role(current_role)
+                and current_role.id != role_obj.id
+                and self._count_role_users(current_role.id) <= 1
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot remove the only user assigned to role '{current_role.name}'",
                 )
-            else:
-                logger.warning("Role '%s' not found; role not updated", role_to_assign)
+
+            if (
+                self._is_protected_role(role_obj)
+                and current_role
+                and current_role.id != role_obj.id
+                and self._count_role_users(role_obj.id) >= 1
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Role '{role_obj.name}' already has an assigned user",
+                )
+            if (
+                self._is_protected_role(role_obj)
+                and current_role is None
+                and self._count_role_users(role_obj.id) >= 1
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Role '{role_obj.name}' already has an assigned user",
+                )
+
+            self.db.query(UserRole).filter(
+                UserRole.user_id == db_user.id,
+                UserRole.tenant_id == db_user.tenant_id,
+            ).delete()
+            self.db.add(
+                UserRole(
+                    tenant_id=db_user.tenant_id,
+                    user_id=db_user.id,
+                    role_id=role_obj.id,
+                )
+            )
 
         self.db.commit()
         self.db.refresh(db_user)
@@ -175,6 +249,20 @@ class UserService:
         db_user = self.db.query(User).filter(User.id == user_id, User.user_type == "platform").first()
         if not db_user:
             raise HTTPException(status_code=404, detail="User not found")
+
+        assigned_roles = (
+            self.db.query(Role)
+            .join(UserRole, UserRole.role_id == Role.id)
+            .filter(UserRole.user_id == db_user.id)
+            .all()
+        )
+        for role in assigned_roles:
+            if self._is_protected_role(role) and self._count_role_users(role.id) <= 1:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot delete the only user assigned to role '{role.name}'",
+                )
+
         self.db.delete(db_user)
         self.db.commit()
 
@@ -184,6 +272,8 @@ class UserService:
 
     def create_hotel_user(self, hotel_id: UUID, payload: UserCreate) -> User:
         check_user_limit(self.db, hotel_id)
+        if not payload.role:
+            raise HTTPException(status_code=400, detail="Role is required")
 
         db_user = self.db.query(User).filter(User.email == payload.email).first()
         if db_user:
@@ -205,12 +295,16 @@ class UserService:
         self.db.add(new_user)
         self.db.flush()
 
-        if payload.role:
-            role_obj = self._resolve_role(payload.role, tenant_id=hotel_id)
-            if role_obj:
-                self.db.add(UserRole(tenant_id=hotel_id, user_id=new_user.id, role_id=role_obj.id))
-            else:
-                logger.warning("Role '%s' not found for hotel %s", payload.role, hotel_id)
+        role_obj = self._resolve_role(payload.role, tenant_id=hotel_id)
+        if not role_obj:
+            raise HTTPException(status_code=400, detail=f"Role '{payload.role}' not found")
+        if self._is_protected_role(role_obj) and self._count_role_users(role_obj.id, tenant_id=hotel_id) >= 1:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Role '{role_obj.name}' already has an assigned user",
+            )
+
+        self.db.add(UserRole(tenant_id=hotel_id, user_id=new_user.id, role_id=role_obj.id))
 
         self.db.commit()
         self.db.refresh(new_user)
@@ -222,6 +316,7 @@ class UserService:
             raise HTTPException(status_code=404, detail="User not found in this hotel")
 
         update_data = payload.model_dump(exclude_unset=True)
+        role_field_supplied = "role" in update_data
         if "password" in update_data:
             password = update_data.pop("password")
             update_data["password_hash"] = get_password_hash(password)
@@ -233,20 +328,51 @@ class UserService:
         for key, value in update_data.items():
             setattr(db_user, key, value)
 
-        if role_to_assign:
+        current_role = self._get_user_role(db_user.id, tenant_id=hotel_id)
+        if role_field_supplied:
+            if not role_to_assign:
+                raise HTTPException(status_code=400, detail="Role is required")
+
             role_obj = self._resolve_role(role_to_assign, tenant_id=hotel_id)
-            if role_obj:
-                self.db.query(UserRole).filter(
-                    UserRole.user_id == db_user.id,
-                    UserRole.tenant_id == hotel_id,
-                ).delete()
-                self.db.add(UserRole(tenant_id=hotel_id, user_id=db_user.id, role_id=role_obj.id))
-            else:
-                logger.warning(
-                    "Role '%s' not found for hotel %s; role not updated",
-                    role_to_assign,
-                    hotel_id,
+            if not role_obj:
+                raise HTTPException(status_code=400, detail=f"Role '{role_to_assign}' not found")
+
+            if (
+                current_role
+                and self._is_protected_role(current_role)
+                and current_role.id != role_obj.id
+                and self._count_role_users(current_role.id, tenant_id=hotel_id) <= 1
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot remove the only user assigned to role '{current_role.name}'",
                 )
+
+            if (
+                self._is_protected_role(role_obj)
+                and current_role
+                and current_role.id != role_obj.id
+                and self._count_role_users(role_obj.id, tenant_id=hotel_id) >= 1
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Role '{role_obj.name}' already has an assigned user",
+                )
+            if (
+                self._is_protected_role(role_obj)
+                and current_role is None
+                and self._count_role_users(role_obj.id, tenant_id=hotel_id) >= 1
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Role '{role_obj.name}' already has an assigned user",
+                )
+
+            self.db.query(UserRole).filter(
+                UserRole.user_id == db_user.id,
+                UserRole.tenant_id == hotel_id,
+            ).delete()
+            self.db.add(UserRole(tenant_id=hotel_id, user_id=db_user.id, role_id=role_obj.id))
 
         self.db.commit()
         self.db.refresh(db_user)
@@ -256,5 +382,19 @@ class UserService:
         db_user = self.db.query(User).filter(User.id == user_id, User.tenant_id == hotel_id).first()
         if not db_user:
             raise HTTPException(status_code=404, detail="User not found in this hotel")
+
+        assigned_roles = (
+            self.db.query(Role)
+            .join(UserRole, UserRole.role_id == Role.id)
+            .filter(UserRole.user_id == db_user.id, UserRole.tenant_id == hotel_id)
+            .all()
+        )
+        for role in assigned_roles:
+            if self._is_protected_role(role) and self._count_role_users(role.id, tenant_id=hotel_id) <= 1:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot delete the only user assigned to role '{role.name}'",
+                )
+
         self.db.delete(db_user)
         self.db.commit()

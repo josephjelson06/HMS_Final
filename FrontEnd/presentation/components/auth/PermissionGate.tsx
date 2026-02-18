@@ -7,6 +7,8 @@ interface PermissionGateProps {
   children: React.ReactNode;
   /** If true, always allow access (used for pages like Profile that everyone can see) */
   alwaysAllow?: boolean;
+  /** If true, only admin users (SA/GM) are allowed */
+  adminOnly?: boolean;
 }
 
 /**
@@ -14,7 +16,12 @@ interface PermissionGateProps {
  * If the user has the wildcard "*" permission (platform admin), they pass all checks.
  * If the permission is missing, the <UnauthorizedPage /> is rendered instead.
  */
-const PermissionGate: React.FC<PermissionGateProps> = ({ requiredPermission, children, alwaysAllow }) => {
+const PermissionGate: React.FC<PermissionGateProps> = ({
+  requiredPermission,
+  children,
+  alwaysAllow,
+  adminOnly,
+}) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -22,6 +29,14 @@ const PermissionGate: React.FC<PermissionGateProps> = ({ requiredPermission, chi
   }
 
   if (alwaysAllow) {
+    return <>{children}</>;
+  }
+
+  if (adminOnly && !user?.isAdmin) {
+    return <UnauthorizedPage />;
+  }
+
+  if (!requiredPermission) {
     return <>{children}</>;
   }
 

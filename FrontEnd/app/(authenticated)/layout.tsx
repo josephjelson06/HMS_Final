@@ -25,7 +25,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
   const pathname = usePathname();
 
   const [ready, setReady] = useState(false);
-  const { user: authUser } = useAuth();
+  const { user: authUser, loading: authLoading } = useAuth();
 
   // Layout state
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -45,6 +45,8 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
   }, [pathname]);
 
   useEffect(() => {
+    if (authLoading) return;
+
     const isAuthed = getCookie(AUTH_COOKIE) === "1";
     const role = getCookie(ROLE_COOKIE) as ViewMode;
 
@@ -67,13 +69,21 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
       }
     }
 
+    if (authUser?.isOrphan) {
+      const profilePath = role === "hotel" ? "/hotel/profile" : "/super/profile";
+      if (pathname !== profilePath) {
+        router.replace(profilePath);
+        return;
+      }
+    }
+
     const isImp = getCookie(IMPERSONATING_COOKIE) === "1";
     const hotel = getCookie(IMPERSONATED_HOTEL_COOKIE);
     setIsImpersonating(isImp && !!hotel);
     setImpersonatedHotel(hotel);
 
     setReady(true);
-  }, [router, viewMode]);
+  }, [authLoading, authUser?.isOrphan, pathname, router, viewMode]);
 
   const startImpersonation = useCallback((hotelName: string) => {
     setImpersonatedHotel(hotelName);
@@ -131,6 +141,8 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
           onLogout={onLogout}
           permissions={authUser?.permissions || []}
+          isAdmin={Boolean(authUser?.isAdmin)}
+          isOrphan={Boolean(authUser?.isOrphan)}
         >
           {children}
         </AppShell>

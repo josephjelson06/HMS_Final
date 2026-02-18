@@ -19,7 +19,7 @@ class HotelService:
         self.repository = HotelRepository(db)
 
     def _ensure_hotel_permissions(self) -> dict[str, Permission]:
-        """Ensure baseline hotel permissions exist and return them keyed by permission_key."""
+        """Ensure baseline hotel permissions exist and return all hotel-scope permissions."""
         baseline = {
             # read permissions used by hotel pages
             "hotel:dashboard:read": "View hotel dashboard",
@@ -52,7 +52,12 @@ class HotelService:
                 self.db.flush()
                 existing[key] = perm
 
-        return existing
+        all_hotel_permissions = (
+            self.db.query(Permission)
+            .filter(Permission.permission_key.like("hotel:%"))
+            .all()
+        )
+        return {perm.permission_key: perm for perm in all_hotel_permissions}
 
     def get_all(self, skip: int = 0, limit: int = 100, q: Optional[str] = None) -> List[Hotel]:
         return self.repository.get_all(skip, limit, q)
@@ -64,13 +69,28 @@ class HotelService:
         try:
             hotel_data = hotel_in.model_dump()
 
-            plan_name = hotel_data.pop("plan", "Starter")
-            plan = self.db.query(Plan).filter(Plan.name == plan_name).first()
-            if not plan:
-                plan = self.db.query(Plan).filter(Plan.name == "Starter").first()
+            # Hard prerequisite: at least one active pricing tier must exist.
+            active_plan_exists = (
+                self.db.query(Plan.id).filter(Plan.is_archived.isnot(True)).first()
+            )
+            if not active_plan_exists:
+                raise ValueError(
+                    "At least one active pricing tier must exist before onboarding a hotel."
+                )
 
+            plan_name = (hotel_data.pop("plan", "") or "").strip()
+            if not plan_name:
+                raise ValueError("A pricing tier is required to onboard a hotel.")
+
+            plan = (
+                self.db.query(Plan)
+                .filter(Plan.name == plan_name, Plan.is_archived.isnot(True))
+                .first()
+            )
             if not plan:
-                raise ValueError(f"Plan '{plan_name}' (or default 'Starter') not found.")
+                raise ValueError(
+                    f"Plan '{plan_name}' was not found or is archived."
+                )
 
             hotel_data["plan_id"] = plan.id
 

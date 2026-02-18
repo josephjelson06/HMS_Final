@@ -148,6 +148,9 @@ const UsersManagement: React.FC = () => {
         saveRolePerms={setRolePermissions}
         onUpdateStatus={handleToggleRoleStatus}
         onDelete={handleRemoveRole}
+        onEditRole={async (roleId, payload) => {
+          await updateRole(roleId, { description: payload.description } as any);
+        }}
       />
     );
   }

@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Save, ArrowRight, Check, X } from 'lucide-react';
+import { Shield, Check } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
-import { useUsers } from '../../../application/hooks/useUsers';
 import type { Role } from '@/domain/entities/User';
 
 interface EditRoleModalProps {
   isOpen: boolean;
   onClose: () => void;
   role: Role & { id?: string };
+  onSaveRole: (payload: { description?: string }) => Promise<void>;
 }
 
-const EditRoleModal: React.FC<EditRoleModalProps> = ({ isOpen, onClose, role }) => {
-  const { updateRole } = useUsers();
+const EditRoleModal: React.FC<EditRoleModalProps> = ({ isOpen, onClose, role, onSaveRole }) => {
   const [roleName, setRoleName] = useState(role.name);
   const [description, setDescription] = useState(role.desc || role.description || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -29,12 +28,8 @@ const EditRoleModal: React.FC<EditRoleModalProps> = ({ isOpen, onClose, role }) 
   const handleSave = async () => {
     if (!roleName) return;
     setIsSaving(true);
-    const roleId = (role as any).id || role.name;
     try {
-      await updateRole(roleId, {
-        name: roleName,
-        description: description,
-      } as any);
+      await onSaveRole({ description });
       setTimeout(() => {
           onClose();
       }, 800);

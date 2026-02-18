@@ -19,11 +19,14 @@ class UserResponse(BaseModel):
     email: str
     name: str | None = None
     role: str | None = None
+    role_name: str | None = None
     user_type: str
     tenant_id: UUID | None = None
     tenant_type: str
     access_token: str | None = None
     permissions: List[str] = []
+    is_admin: bool = False
+    is_orphan: bool = False
     mobile: str | None = None
     employee_id: str | None = None
     status: str | None = None

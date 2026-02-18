@@ -25,9 +25,22 @@ const RoomDetailPanel: React.FC<RoomDetailPanelProps> = ({ isOpen, room, onClose
   const [currentStatus, setCurrentStatus] = useState<RoomStatus>('CLEAN_VACANT');
   const [housekeeper, setHousekeeper] = useState('Unassigned');
 
+  const normalizeRoomStatus = (value?: string): RoomStatus => {
+    if (
+      value === 'CLEAN_VACANT' ||
+      value === 'DIRTY_VACANT' ||
+      value === 'CLEAN_OCCUPIED' ||
+      value === 'DIRTY_OCCUPIED' ||
+      value === 'MAINTENANCE'
+    ) {
+      return value;
+    }
+    return 'CLEAN_VACANT';
+  };
+
   useEffect(() => {
     if (isOpen && room) {
-      setCurrentStatus(room.status);
+      setCurrentStatus(normalizeRoomStatus(room.status));
       setHousekeeper(room.housekeeper || 'Unassigned');
     }
   }, [isOpen, room]);

@@ -25,9 +25,16 @@ const GuestDetailPanel: React.FC<GuestDetailPanelProps> = ({ isOpen, guest, onCl
   const [isVerifying, setIsVerifying] = useState(false);
   const [localKycStatus, setLocalKycStatus] = useState<KYCStatus>('Pending');
 
+  const normalizeKycStatus = (value?: string): KYCStatus => {
+    if (value === 'Verified' || value === 'Pending' || value === 'Manual Review' || value === 'Failed') {
+      return value;
+    }
+    return 'Pending';
+  };
+
   useEffect(() => {
     if (isOpen) {
-      setLocalKycStatus(guest?.kycStatus || 'Pending');
+      setLocalKycStatus(normalizeKycStatus(guest?.kycStatus));
     }
   }, [isOpen, guest]);
 

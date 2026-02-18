@@ -2,7 +2,7 @@
 import React from 'react';
 import { Search, Bell, Moon, Sun, ChevronDown, User, LogOut, Settings, Menu } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
-import GlassDropdown from '../ui/GlassDropdown';
+import GlassDropdown, { type DropdownItem } from '../ui/GlassDropdown';
 
 interface HeaderProps {
   viewMode?: 'super' | 'hotel';
@@ -11,6 +11,7 @@ interface HeaderProps {
   isSidebarCollapsed?: boolean;
   onToggleSidebar?: () => void;
   onLogout?: () => void;
+  isAdmin?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -19,9 +20,29 @@ const Header: React.FC<HeaderProps> = ({
   onOpenMobileMenu,
   isSidebarCollapsed,
   onToggleSidebar,
-  onLogout
+  onLogout,
+  isAdmin = false,
 }) => {
   const { isDarkMode, toggleTheme } = useTheme();
+  const dropdownItems: DropdownItem[] = [
+    {
+      icon: User,
+      label: 'My Profile',
+      onClick: () => onNavigate?.(viewMode === 'hotel' ? 'hotel-profile' : 'profile'),
+      hasSeparatorAfter: !isAdmin,
+    },
+    ...(isAdmin
+      ? [
+          {
+            icon: Settings,
+            label: 'Settings',
+            onClick: () => onNavigate?.(viewMode === 'hotel' ? 'hotel-settings' : 'platform-settings'),
+            hasSeparatorAfter: true,
+          } as DropdownItem,
+        ]
+      : []),
+    { icon: LogOut, label: 'Log Out', variant: 'danger', onClick: onLogout },
+  ];
 
   return (
     <header className="z-30 flex items-center justify-between px-4 md:px-8 py-4 md:py-6 shrink-0 bg-transparent border-b border-white/5">
@@ -84,11 +105,7 @@ const Header: React.FC<HeaderProps> = ({
                 <ChevronDown size={14} className="text-gray-400 hidden sm:block" />
             </div>
           }
-          items={[
-            { icon: User, label: 'My Profile', onClick: () => onNavigate?.(viewMode === 'hotel' ? 'hotel-profile' : 'profile') },
-            { icon: Settings, label: 'Settings', onClick: () => onNavigate?.(viewMode === 'hotel' ? 'hotel-settings' : 'platform-settings'), hasSeparatorAfter: true },
-            { icon: LogOut, label: 'Log Out', variant: 'danger', onClick: onLogout },
-          ]}
+          items={dropdownItems}
         />
 
       </div>

@@ -10,12 +10,15 @@ export function useAuth() {
 
   useEffect(() => {
     async function checkSession() {
-      const currentUser = await authService.getCurrentUser();
-      if (currentUser) {
-        setUser(currentUser);
-        setIsAuthenticated(true);
+      try {
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+          setIsAuthenticated(true);
+        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     checkSession();
   }, []);
@@ -42,5 +45,14 @@ export function useAuth() {
     setIsAuthenticated(false);
   }, []);
 
-  return { user, isAuthenticated, loading, error, login, logout };
+  const updateMyProfile = useCallback(
+    async (payload: { name?: string; mobile?: string; password?: string }) => {
+      const updated = await authService.updateMyProfile(payload);
+      setUser(updated);
+      return updated;
+    },
+    [],
+  );
+
+  return { user, isAuthenticated, loading, error, login, logout, updateMyProfile };
 }

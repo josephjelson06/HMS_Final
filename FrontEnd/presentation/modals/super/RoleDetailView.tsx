@@ -18,12 +18,13 @@ interface RoleDetailViewProps {
   saveRolePerms: (id: string, perms: string[]) => Promise<void>;
   onUpdateStatus?: (id: string) => Promise<void>;
   onDelete?: (id: string, name: string) => void;
+  onEditRole?: (id: string, payload: { description?: string }) => Promise<void>;
 }
 
 const RoleDetailView: React.FC<RoleDetailViewProps> = ({ 
   role, users, onBack, type = 'super',
   fetchAvailable, fetchRolePerms, saveRolePerms,
-  onUpdateStatus, onDelete
+  onUpdateStatus, onDelete, onEditRole
 }) => {
   console.log("RoleDetailView rendered for role:", role);
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'PERMISSIONS' | 'MEMBERS'>('OVERVIEW');
@@ -131,6 +132,10 @@ const RoleDetailView: React.FC<RoleDetailViewProps> = ({
         isOpen={isEditing} 
         onClose={() => setIsEditing(false)} 
         role={role} 
+        onSaveRole={async (payload) => {
+          if (!onEditRole) return;
+          await onEditRole(roleId, payload);
+        }}
       />
     </div>
   );
