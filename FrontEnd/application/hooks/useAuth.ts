@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { AuthUser } from '../../domain/contracts/IAuthService';
+import type { AuthUser, ProfileUpdatePayload } from '../../domain/entities/Auth';
 import { authService } from '../../infrastructure/config/container';
 
 export function useAuth() {
@@ -46,7 +46,7 @@ export function useAuth() {
   }, []);
 
   const updateMyProfile = useCallback(
-    async (payload: { name?: string; mobile?: string; password?: string }) => {
+    async (payload: ProfileUpdatePayload) => {
       const updated = await authService.updateMyProfile(payload);
       setUser(updated);
       return updated;

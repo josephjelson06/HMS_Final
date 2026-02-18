@@ -10,6 +10,7 @@ export * from './entities/common';
 export * from './entities/HotelStaff';
 export * from './entities/Subscription';
 export * from './entities/Settings';
+export * from './entities/Auth';
 
 // Contracts (original 8)
 export type { IHotelRepository } from './contracts/IHotelRepository';

@@ -1,9 +1,7 @@
 import type {
   IAuthService,
-  AuthUser,
-  LoginCredentials,
-  ProfileUpdatePayload,
 } from '../../domain/contracts/IAuthService';
+import type { AuthUser, LoginCredentials, ProfileUpdatePayload } from '../../domain/entities/Auth';
 import { httpClient } from '../http/client';
 import { setCookie } from '../browser/cookies';
 
