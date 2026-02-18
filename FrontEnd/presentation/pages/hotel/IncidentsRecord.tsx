@@ -70,7 +70,7 @@ const IncidentsRecord: React.FC = () => {
               }`}
             >
               <div className="flex justify-between items-start mb-3">
-                <PriorityBadge level={inc.priority} />
+                <PriorityBadge level={inc.priority as IncidentPriority} />
                 {inc.slaBreached && (
                   <span className="flex items-center gap-1 text-[8px] font-black text-red-500 uppercase animate-pulse leading-none whitespace-nowrap">
                     <AlertCircle size={10} /> SLA Breached

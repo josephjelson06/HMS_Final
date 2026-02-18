@@ -143,7 +143,7 @@ const GuestRegistry: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-8 py-6 align-middle">
-                    <StatusBadge status={g.status} />
+                    <StatusBadge status={g.status as GuestStatus} />
                   </td>
                 </tr>
               ))}

@@ -42,7 +42,8 @@ const HotelHelp: React.FC = () => {
       'In Progress': 'bg-purple-500/10 text-purple-500 border-purple-500/20',
       'Waiting on Client': 'bg-amber-500/10 text-amber-500 border-amber-500/20',
       Resolved: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-      Closed: 'bg-gray-500/10 text-gray-500 border-gray-500/20'
+      Closed: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+      Pending: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
     };
     return <span className={`inline-block px-3 py-1.5 rounded-full border text-[8px] font-bold uppercase tracking-widest leading-none whitespace-nowrap ${styles[status]}`}>{status}</span>;
   };
@@ -122,7 +123,7 @@ const HotelHelp: React.FC = () => {
             >
               <div className="flex justify-between items-start mb-4">
                 <span className="text-[10px] font-mono font-black text-accent-strong tracking-tighter opacity-70">#{t.id}</span>
-                <StatusBadge status={t.status} />
+                <StatusBadge status={t.status as TicketStatus} />
               </div>
               
               <h4 className="text-base font-black dark:text-white leading-tight mb-4 group-hover:text-accent transition-colors line-clamp-2 min-h-[2.5rem]">
@@ -132,7 +133,7 @@ const HotelHelp: React.FC = () => {
               <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
                 <div className="flex flex-col gap-1">
                   <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">{t.category}</span>
-                  <PriorityBadge level={t.priority} />
+                  <PriorityBadge level={t.priority as TicketPriority} />
                 </div>
                 <div className="text-right">
                   <p className="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">Last Update</p>

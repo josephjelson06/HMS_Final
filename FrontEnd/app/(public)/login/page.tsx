@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { useSearchParams } from "next/navigation";
@@ -13,7 +13,7 @@ const ROLE_COOKIE = "hms_role";
 const IMPERSONATING_COOKIE = "hms_impersonating";
 const IMPERSONATED_HOTEL_COOKIE = "hms_impersonated_hotel";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
@@ -41,3 +41,10 @@ export default function LoginPage() {
   );
 }
 
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
