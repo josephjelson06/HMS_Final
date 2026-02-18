@@ -1,7 +1,7 @@
 from uuid import UUID
 from pydantic import BaseModel, Field, EmailStr
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 
 class HotelStatus(str, Enum):
@@ -33,8 +33,15 @@ class HotelBase(BaseModel):
     address: str
 
 
+class KioskDetails(BaseModel):
+    id: Optional[UUID] = None
+    serial_number: str
+    location: str
+    hotel_id: Optional[UUID] = None
+
+
 class HotelCreate(HotelBase):
-    pass
+    kiosks_details: Optional[List[KioskDetails]] = None
 
 
 class HotelUpdate(BaseModel):
@@ -55,6 +62,7 @@ class HotelUpdate(BaseModel):
 
 class Hotel(HotelBase):
     id: UUID
+    kiosk_list: Optional[List[KioskDetails]] = None
 
     class Config:
         from_attributes = True

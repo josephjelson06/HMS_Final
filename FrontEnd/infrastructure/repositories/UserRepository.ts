@@ -94,17 +94,57 @@ export class ApiUserRepository implements IUserRepository {
 
   async getRoles(): Promise<Role[]> {
     const data = await httpClient.get<any[]>('api/roles');
-    return data;
+    return data.map(r => ({
+      id: String(r.id),
+      name: r.name,
+      description: r.description || r.desc || '',
+      desc: r.desc || r.description || '',
+      permissions: [],
+      userCount: r.userCount || 0,
+      color: r.color || 'blue',
+      status: r.status || 'Active'
+    }));
   }
 
   async createRole(data: Role): Promise<Role> {
-    const result = await httpClient.post<any>('api/roles', data);
-    return result;
+    const payload = {
+      name: data.name,
+      description: data.description || data.desc || '',
+      color: data.color || 'blue',
+      status: data.status || 'Active'
+    };
+    const result = await httpClient.post<any>('api/roles', payload);
+    return {
+      id: String(result.id),
+      name: result.name,
+      description: result.description || result.desc || '',
+      desc: result.desc || result.description || '',
+      permissions: [],
+      userCount: result.userCount || 0,
+      color: result.color || 'blue',
+      status: result.status || 'Active'
+    };
   }
 
   async updateRole(id: string, data: Partial<Role>): Promise<Role> {
-    const result = await httpClient.patch<any>(`api/roles/${id}`, data);
-    return result;
+    const payload: any = {};
+    if (data.description !== undefined || data.desc !== undefined) {
+      payload.description = data.description || data.desc;
+    }
+    if (data.color !== undefined) payload.color = data.color;
+    if (data.status !== undefined) payload.status = data.status;
+
+    const result = await httpClient.patch<any>(`api/roles/${id}`, payload);
+    return {
+      id: String(result.id),
+      name: result.name,
+      description: result.description || result.desc || '',
+      desc: result.desc || result.description || '',
+      permissions: [],
+      userCount: result.userCount || 0,
+      color: result.color || 'blue',
+      status: result.status || 'Active'
+    };
   }
 
   async deleteRole(id: string): Promise<void> {

@@ -8,7 +8,6 @@ from app.repositories.hotel_repository import HotelRepository
 from app.schemas.hotel import HotelCreate, HotelUpdate
 from app.models.hotel import Hotel
 from app.models.plan import Plan
-from app.models.kiosk import Kiosk
 from app.models.auth import Role, User, UserRole
 from app.core.auth.security import get_password_hash
 
@@ -40,10 +39,11 @@ class HotelService:
 
         hotel_data["plan_id"] = plan.id
 
-        # Kiosks separation
-        kiosks_data = []
-        if "kiosks_details" in hotel_data:
-            kiosks_data = hotel_data.pop("kiosks_details")
+        # Kiosk details are accepted for compatibility, but kiosk records are no longer
+        # persisted from this flow. We only keep the aggregate count.
+        kiosks_data = hotel_data.pop("kiosks_details", []) or []
+        if kiosks_data and not hotel_data.get("kiosks"):
+            hotel_data["kiosks"] = len(kiosks_data)
 
         # Tenant Key Generation
         if "tenant_key" not in hotel_data:
@@ -61,18 +61,8 @@ class HotelService:
         db_hotel = Hotel(**hotel_data)
         new_hotel = self.repository.create(db_hotel)
 
-        # 3. Create Kiosks
+        # 3. Keep kiosk aggregate in sync when optional kiosk details are supplied.
         if kiosks_data:
-            for k_data in kiosks_data:
-                new_kiosk = Kiosk(
-                    serial_number=k_data.serial_number,
-                    location=k_data.location,
-                    hotel_id=new_hotel.id,
-                )
-                self.db.add(new_kiosk)
-
-            # Update count logic could be here, but simpler to just add kiosks.
-            # In original router code, it updated hotel.kiosks = len(kiosks_data)
             new_hotel.kiosks = len(kiosks_data)
             self.db.add(new_hotel)
 

@@ -15,24 +15,41 @@ export class ApiRoomRepository implements IRoomRepository {
     return all.find(r => r.id === id) || null;
   }
 
+  private toRoomPayload(data: Room): Record<string, unknown> {
+    const buildingId = data.building_id;
+    const categoryId = data.category_id;
+
+    if (buildingId === undefined || categoryId === undefined) {
+      throw new Error('Room payload must include building_id and category_id.');
+    }
+
+    return {
+      id: data.id,
+      floor: data.floor,
+      status: data.status,
+      type: data.type,
+      building_id: buildingId,
+      category_id: categoryId
+    };
+  }
+
   async create(data: Room, hotelId: string): Promise<Room> {
-    // The backend expects specific payloads. 
-    // Frontend Room entity has { building: string (name), floor: number, category: string, status... }
-    // Backend RoomCreate schema has { id: str, floor: int, status: str, type: str, building_id: int, category_id: str }
-    
-    // We assume the caller (useRooms) has already mapped names to IDs or we do it here.
-    // Ideally, Room entity should probably use IDs for relations, but legacy uses names.
-    // For now, we just pass data through. If backend fails, we'll debug.
-    return httpClient.post<Room>(`${this.baseUrl}${hotelId}/rooms`, data);
+    return httpClient.post<Room>(`${this.baseUrl}${hotelId}/rooms`, this.toRoomPayload(data));
   }
 
   async batchCreate(data: Room[], hotelId: string): Promise<Room[]> {
-    return httpClient.post<Room[]>(`${this.baseUrl}${hotelId}/rooms/batch`, data);
+    return httpClient.post<Room[]>(`${this.baseUrl}${hotelId}/rooms/batch`, data.map(room => this.toRoomPayload(room)));
   }
 
   async update(id: string, data: Partial<Room>, hotelId: string): Promise<Room> {
-     // Similarly, map frontend updates to backend
-    return httpClient.put<Room>(`${this.baseUrl}${hotelId}/rooms/${id}`, data);
+    const payload: Record<string, unknown> = {};
+    if (data.floor !== undefined) payload.floor = data.floor;
+    if (data.status !== undefined) payload.status = data.status;
+    if (data.type !== undefined) payload.type = data.type;
+    if (data.building_id !== undefined) payload.building_id = data.building_id;
+    if (data.category_id !== undefined) payload.category_id = data.category_id;
+
+    return httpClient.put<Room>(`${this.baseUrl}${hotelId}/rooms/${id}`, payload);
   }
 
   async delete(id: string, hotelId: string): Promise<void> {
@@ -46,8 +63,8 @@ export class ApiRoomRepository implements IRoomRepository {
   }
 
   async createType(data: Omit<RoomType, 'id'>, hotelId: string): Promise<RoomType> {
-     // Backend expects RoomCategoryCreate
-     return httpClient.post<RoomType>(`${this.baseUrl}${hotelId}/categories`, data);
+    const { units, ...payload } = data;
+    return httpClient.post<RoomType>(`${this.baseUrl}${hotelId}/categories`, payload);
   }
 
   async deleteType(id: string, hotelId: string): Promise<void> {

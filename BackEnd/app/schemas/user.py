@@ -79,7 +79,8 @@ class User(UserBase):
 
 class RoleSchema(BaseModel):
     name: str
-    desc: str
+    description: str
+    desc: Optional[str] = None
     color: str
     userCount: int
     status: str

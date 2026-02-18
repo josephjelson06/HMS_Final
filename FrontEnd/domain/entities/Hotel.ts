@@ -4,10 +4,10 @@ export type HotelStatus = 'Active' | 'Suspended' | 'Onboarding' | 'Past Due';
 export type HotelPlan = 'Starter' | 'Professional' | 'Enterprise';
 
 export interface Kiosk {
-  id: string; // or number? let's stick to string for consistency
+  id?: string;
   serial_number: string;
   location: string;
-  hotel_id: string;
+  hotel_id?: string;
 }
 
 export interface Hotel {

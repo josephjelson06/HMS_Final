@@ -161,7 +161,7 @@ def create_rooms_batch(
     dependencies=[Depends(require_permission("hotel:rooms:write"))],
 )
 def update_room(
-    hotel_id: UUID, room_id: UUID, room: RoomUpdate, db: Session = Depends(get_db)
+    hotel_id: UUID, room_id: str, room: RoomUpdate, db: Session = Depends(get_db)
 ):
     db_room = (
         db.query(Room).filter(Room.id == room_id, Room.tenant_id == hotel_id).first()
@@ -183,7 +183,7 @@ def update_room(
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(require_permission("hotel:rooms:write"))],
 )
-def delete_room(hotel_id: UUID, room_id: UUID, db: Session = Depends(get_db)):
+def delete_room(hotel_id: UUID, room_id: str, db: Session = Depends(get_db)):
     db_room = (
         db.query(Room).filter(Room.id == room_id, Room.tenant_id == hotel_id).first()
     )

@@ -1,4 +1,4 @@
-import type { IPlanRepository } from '../../domain/contracts/IPlanRepository';
+import type { IPlanRepository, PlanCreateInput, PlanUpdateInput } from '../../domain/contracts/IPlanRepository';
 import type { PlanData } from '../../domain/entities/Plan';
 import { httpClient } from '../http/client';
 
@@ -19,13 +19,12 @@ export class ApiPlanRepository implements IPlanRepository {
     }
   }
 
-  async create(data: Omit<PlanData, 'id'>): Promise<PlanData> {
+  async create(data: PlanCreateInput): Promise<PlanData> {
     const payload = {
       name: data.name,
       price: data.price,
       rooms: data.rooms,
       kiosks: data.kiosks,
-      subscribers: data.subscribers,
       support: data.support,
       included: data.included,
       theme: data.theme,
@@ -35,16 +34,17 @@ export class ApiPlanRepository implements IPlanRepository {
     return this.mapToEntity(result);
   }
 
-  async update(id: string, data: Partial<PlanData>): Promise<PlanData> {
+  async update(id: string, data: PlanUpdateInput): Promise<PlanData> {
     const payload: any = {};
     if (data.name) payload.name = data.name;
     if (data.price !== undefined) payload.price = data.price;
     if (data.rooms !== undefined) payload.rooms = data.rooms;
     if (data.kiosks !== undefined) payload.kiosks = data.kiosks;
-    if (data.subscribers !== undefined) payload.subscribers = data.subscribers;
     if (data.support) payload.support = data.support;
     if (data.included) payload.included = data.included;
     if (data.theme) payload.theme = data.theme;
+    if (data.max_roles !== undefined) payload.max_roles = data.max_roles;
+    if (data.max_users !== undefined) payload.max_users = data.max_users;
     if (data.isArchived !== undefined) payload.is_archived = data.isArchived;
 
     const result = await httpClient.patch<any>(`${this.baseUrl}/${id}`, payload);
@@ -62,11 +62,14 @@ export class ApiPlanRepository implements IPlanRepository {
       price: data.price,
       rooms: data.rooms,
       kiosks: data.kiosks,
-      subscribers: data.subscribers,
+      subscribers: data.subscribers ?? 0,
       support: data.support,
       included: data.included,
       theme: data.theme,
-      isArchived: data.is_archived
+      max_roles: data.max_roles,
+      max_users: data.max_users,
+      isArchived: data.is_archived,
+      is_archived: data.is_archived
     };
   }
 }

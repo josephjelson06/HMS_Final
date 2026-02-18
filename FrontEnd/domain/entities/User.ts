@@ -20,7 +20,7 @@ export interface Role {
   name: string;
   description?: string;
   desc?: string; // Legacy support
-  permissions: string[];
+  permissions?: string[];
   userCount?: number;
   color?: string;
   status?: 'Active' | 'Inactive';

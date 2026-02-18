@@ -94,7 +94,13 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
   // ── Role CRUD (hotel-scoped) ─────────────────────────────────
 
   async createRole(data: Omit<HotelRole, 'id' | 'userCount'>, hotelId: string): Promise<HotelRole> {
-    const result = await httpClient.post<any>(`api/hotels/${hotelId}/roles`, data);
+    const payload = {
+      name: data.name,
+      description: data.desc || '',
+      color: data.color || 'blue',
+      status: data.status || 'Active'
+    };
+    const result = await httpClient.post<any>(`api/hotels/${hotelId}/roles`, payload);
     return {
       id: result.id,
       name: result.name,
@@ -106,7 +112,12 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
   }
 
   async updateRole(name: string, data: Partial<HotelRole>, hotelId: string): Promise<HotelRole> {
-    const result = await httpClient.patch<any>(`api/hotels/${hotelId}/roles/${name}`, data);
+    const payload: any = {};
+    if (data.desc !== undefined) payload.description = data.desc;
+    if (data.color !== undefined) payload.color = data.color;
+    if (data.status !== undefined) payload.status = data.status;
+
+    const result = await httpClient.patch<any>(`api/hotels/${hotelId}/roles/${name}`, payload);
     return {
       id: result.id,
       name: result.name,

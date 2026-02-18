@@ -8,10 +8,13 @@ export interface PlanData {
   price: number;
   rooms: number;
   kiosks: number;
-  subscribers: number;
+  subscribers?: number;
   support: string;
   included: string[];
   theme: PlanTheme;
-  isArchived?: boolean; // From types/plan.ts
+  max_roles?: number;
+  max_users?: number;
+  isArchived?: boolean;
+  is_archived?: boolean;
 }
 

@@ -1,4 +1,4 @@
-export type SubscriptionStatus = 'Active' | 'Expiring Soon' | 'Expired' | 'Cancelled';
+export type SubscriptionStatus = 'Active' | 'Expiring Soon' | 'Expired' | 'Cancelled' | 'Suspended';
 export type SubscriptionPlan = 'Starter' | 'Professional' | 'Enterprise';
 
 export interface Subscription {

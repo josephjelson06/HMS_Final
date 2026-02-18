@@ -1,7 +1,7 @@
 // Room domain entities — pure TypeScript, no framework dependencies
 
 export interface Building {
-  id: string;
+  id: number;
   name: string;
   hotel_id: string;
 }
@@ -11,17 +11,19 @@ export type RoomViewMode = 'GRID' | 'TIMELINE' | 'TYPES';
 
 export interface Room {
   id: string;
-  building: string;
   floor: number;
-  category: string;
-  status: RoomStatus;
+  status: RoomStatus | string;
+  type: string;
+  building_id?: number;
+  category_id?: string;
+  building?: string;
+  category?: string;
   guestName?: string;
   lastUpdate: string;
   isDND?: boolean;
   hasIncident?: boolean;
   maintenanceNote?: string;
   maintenanceETA?: string;
-  type: 'Hostel Room' | 'Apartment' | 'Hostel';
   housekeeper?: string;
 }
 
@@ -30,7 +32,7 @@ export interface RoomType {
   name: string;
   rate: number;
   occupancy: number;
-  units: number;
+  units?: number;
   amenities: string[];
 }
 

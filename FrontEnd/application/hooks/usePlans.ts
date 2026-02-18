@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { PlanData } from '../../domain/entities/Plan';
+import type { PlanCreateInput, PlanUpdateInput } from '../../domain/contracts/IPlanRepository';
 import { repositories } from '../../infrastructure/config/container';
 
 export function usePlans() {
@@ -14,13 +15,13 @@ export function usePlans() {
       .finally(() => setLoading(false));
   }, []);
 
-  const createPlan = async (data: Omit<PlanData, 'id'>) => {
+  const createPlan = async (data: PlanCreateInput) => {
     const plan = await repositories.plans.create(data);
     setPlans(prev => [...prev, plan]);
     return plan;
   };
 
-  const updatePlan = async (id: string, data: Partial<PlanData>) => {
+  const updatePlan = async (id: string, data: PlanUpdateInput) => {
     const plan = await repositories.plans.update(id, data);
     setPlans(prev => prev.map(p => p.id === id ? plan : p));
     return plan;
