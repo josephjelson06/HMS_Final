@@ -9,6 +9,7 @@ export * from './entities/Invoice';
 export * from './entities/common';
 export * from './entities/HotelStaff';
 export * from './entities/Subscription';
+export * from './entities/Settings';
 
 // Contracts (original 8)
 export type { IHotelRepository } from './contracts/IHotelRepository';
@@ -21,4 +22,5 @@ export type { IAuthService } from './contracts/IAuthService';
 // Contracts (9 new)
 export type { IHotelStaffRepository } from './contracts/IHotelStaffRepository';
 export type { ISubscriptionRepository } from './contracts/ISubscriptionRepository';
+export type { ISettingsRepository } from './contracts/ISettingsRepository';
 

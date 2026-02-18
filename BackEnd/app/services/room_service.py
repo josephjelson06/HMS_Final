@@ -40,6 +40,29 @@ class RoomService:
         db_category.amenities = db_category.amenities.split(",") if db_category.amenities else []
         return db_category
 
+    def delete_category(self, hotel_id: UUID, category_id: str) -> None:
+        db_category = (
+            self.db.query(RoomCategory)
+            .filter(RoomCategory.id == category_id, RoomCategory.tenant_id == hotel_id)
+            .first()
+        )
+        if not db_category:
+            raise HTTPException(status_code=404, detail="Room category not found")
+
+        room_using_category = (
+            self.db.query(Room)
+            .filter(Room.category_id == category_id, Room.tenant_id == hotel_id)
+            .first()
+        )
+        if room_using_category:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot delete category while rooms are assigned to it",
+            )
+
+        self.db.delete(db_category)
+        self.db.commit()
+
     def get_rooms(self, hotel_id: UUID) -> list[Room]:
         return self.db.query(Room).filter(Room.tenant_id == hotel_id).all()
 

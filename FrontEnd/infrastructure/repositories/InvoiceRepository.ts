@@ -26,7 +26,7 @@ export class ApiInvoiceRepository implements IInvoiceRepository {
 
   async getById(id: string): Promise<Invoice | null> {
     try {
-        const d = await httpClient.get<any>(`${this.baseUrl}/${id}`);
+        const d = await httpClient.get<any>(`${this.baseUrl}/by-id/${id}`);
         return {
           id: d.id,
           invoiceNumber: d.invoice_number,

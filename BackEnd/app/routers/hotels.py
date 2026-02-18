@@ -1,6 +1,6 @@
 import logging
 from fastapi import APIRouter, HTTPException, status, Depends
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -22,9 +22,14 @@ router = APIRouter(
     response_model=List[Hotel],
     dependencies=[Depends(require_permission("platform:hotels:read"))],
 )
-def read_hotels(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_hotels(
+    skip: int = 0,
+    limit: int = 100,
+    q: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
     service = HotelService(db)
-    return service.get_all(skip=skip, limit=limit)
+    return service.get_all(skip=skip, limit=limit, q=q)
 
 
 @router.get("/{hotel_id}", response_model=Hotel)

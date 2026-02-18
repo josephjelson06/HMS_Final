@@ -127,6 +127,18 @@ class SubscriptionService:
             result.append(validated)
         return result
 
+    def get_invoice_by_id(self, invoice_id: UUID):
+        invoice = self.db.query(Invoice).filter(Invoice.id == invoice_id).first()
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+
+        from app.schemas.invoice import Invoice as InvoiceSchema
+
+        validated = InvoiceSchema.model_validate(invoice)
+        validated.hotel_name = invoice.tenant.name if invoice.tenant else "Unknown Hotel"
+        validated.invoice_number = self._invoice_number(invoice)
+        return validated
+
     def create_invoice(self, payload: InvoiceCreate):
         try:
             hotel = self.db.query(Hotel).filter(Hotel.id == payload.hotel_id).first()

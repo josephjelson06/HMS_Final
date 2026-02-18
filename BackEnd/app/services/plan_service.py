@@ -27,6 +27,17 @@ class PlanService:
             plan.subscribers = counts_dict.get(plan.id, 0)
         return plans
 
+    def get_by_id(self, plan_id: UUID) -> Plan:
+        plan = self.db.query(Plan).filter(Plan.id == plan_id).first()
+        if not plan:
+            raise HTTPException(status_code=404, detail="Plan not found")
+
+        subscribers = (
+            self.db.query(func.count(Hotel.id)).filter(Hotel.plan_id == plan.id).scalar() or 0
+        )
+        plan.subscribers = subscribers
+        return plan
+
     def create(self, payload: PlanCreate) -> Plan:
         try:
             plan = Plan(**payload.model_dump())

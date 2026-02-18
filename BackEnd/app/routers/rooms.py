@@ -48,6 +48,16 @@ def create_category(hotel_id: UUID, category: RoomCategoryCreate, db: Session = 
     return RoomService(db).create_category(hotel_id=hotel_id, payload=category)
 
 
+@router.delete(
+    "/categories/{category_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_permission("hotel:rooms:write"))],
+)
+def delete_category(hotel_id: UUID, category_id: str, db: Session = Depends(get_db)):
+    RoomService(db).delete_category(hotel_id=hotel_id, category_id=category_id)
+    return None
+
+
 @router.get("/rooms", response_model=List[RoomResponse])
 def get_rooms(hotel_id: UUID, db: Session = Depends(get_db)):
     return RoomService(db).get_rooms(hotel_id=hotel_id)

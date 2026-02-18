@@ -1,24 +1,13 @@
+import type { ISettingsRepository } from '../../domain/contracts/ISettingsRepository';
+import type { PlatformSettings } from '../../domain/entities/Settings';
 import { httpClient } from '../http/client';
 
-export interface PlatformSettings {
-    name: string;
-    gstin?: string;
-    pan?: string;
-    address?: string;
-    email?: string;
-    mobile?: string;
-    legal_name?: string;
-    logo?: string;
+export class ApiSettingsRepository implements ISettingsRepository {
+  async getSettings(): Promise<PlatformSettings> {
+    return httpClient.get<PlatformSettings>('/api/settings/');
+  }
+
+  async updateSettings(settings: Partial<PlatformSettings>): Promise<PlatformSettings> {
+    return httpClient.put<PlatformSettings>('/api/settings/', settings);
+  }
 }
-
-export const ApiSettingsRepository = {
-    getSettings: async (): Promise<PlatformSettings> => {
-        const response = await httpClient.get<PlatformSettings>('/api/settings/');
-        return response;
-    },
-
-    updateSettings: async (settings: Partial<PlatformSettings>): Promise<PlatformSettings> => {
-        const response = await httpClient.put<PlatformSettings>('/api/settings/', settings);
-        return response;
-    }
-};

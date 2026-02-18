@@ -18,8 +18,8 @@ class HotelService:
         self.db = db
         self.repository = HotelRepository(db)
 
-    def get_all(self, skip: int = 0, limit: int = 100) -> List[Hotel]:
-        return self.repository.get_all(skip, limit)
+    def get_all(self, skip: int = 0, limit: int = 100, q: Optional[str] = None) -> List[Hotel]:
+        return self.repository.get_all(skip, limit, q)
 
     def get_by_id(self, hotel_id: UUID) -> Optional[Hotel]:
         return self.repository.get_by_id(hotel_id)

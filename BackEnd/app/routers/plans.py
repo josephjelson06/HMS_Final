@@ -21,6 +21,15 @@ def get_all_plans(db: Session = Depends(get_db)):
     return PlanService(db).get_all()
 
 
+@router.get(
+    "/{plan_id}",
+    response_model=PlanSchema,
+    dependencies=[Depends(require_permission("platform:plans:read"))],
+)
+def get_plan_by_id(plan_id: UUID, db: Session = Depends(get_db)):
+    return PlanService(db).get_by_id(plan_id=plan_id)
+
+
 @router.post(
     "/",
     response_model=PlanSchema,

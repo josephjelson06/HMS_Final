@@ -9,6 +9,7 @@ import type { IUserRepository } from '../../domain/contracts/IUserRepository';
 import type { IPlanRepository } from '../../domain/contracts/IPlanRepository';
 import type { IInvoiceRepository } from '../../domain/contracts/IInvoiceRepository';
 import type { IAuthService } from '../../domain/contracts/IAuthService';
+import type { ISettingsRepository } from '../../domain/contracts/ISettingsRepository';
 
 // --- 9 new contracts ---
 import type { IHotelStaffRepository } from '../../domain/contracts/IHotelStaffRepository';
@@ -22,7 +23,7 @@ import { ApiPlanRepository } from '../repositories/PlanRepository';
 import { ApiInvoiceRepository } from '../repositories/InvoiceRepository';
 import { ApiHotelStaffRepository } from '../repositories/HotelStaffRepository';
 import { ApiSubscriptionRepository } from '../repositories/SubscriptionRepository';
-// import { ApiSettingsRepository } from '../repositories/SettingsRepository'; // If exists
+import { ApiSettingsRepository } from '../repositories/SettingsRepository';
 
 import { ApiAuthService } from '../services/ApiAuthService';
 
@@ -37,6 +38,7 @@ export interface Repositories {
   // 9 new
   hotelStaff: IHotelStaffRepository;
   subscriptions: ISubscriptionRepository;
+  settings: ISettingsRepository;
 }
 
 function createRepositories(): Repositories {
@@ -49,6 +51,7 @@ function createRepositories(): Repositories {
     invoices: new ApiInvoiceRepository(),
     hotelStaff: new ApiHotelStaffRepository(),
     subscriptions: new ApiSubscriptionRepository(),
+    settings: new ApiSettingsRepository(),
   };
 }
 

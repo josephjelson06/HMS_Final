@@ -21,6 +21,15 @@ def get_platform_users(db: Session = Depends(get_db)):
     return UserService(db).get_platform_users()
 
 
+@router.get(
+    "/users/{user_id}",
+    response_model=UserSchema,
+    dependencies=[Depends(require_permission("platform:users:read"))],
+)
+def get_platform_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
+    return UserService(db).get_platform_user_by_id(user_id=user_id)
+
+
 @router.post(
     "/users/",
     response_model=UserSchema,

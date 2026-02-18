@@ -19,10 +19,6 @@ export class ApiSubscriptionRepository implements ISubscriptionRepository {
     return all.find(s => s.id === id) || null;
   }
 
-  async create(data: Omit<Subscription, 'id'>): Promise<Subscription> {
-    throw new Error("Creation of subscription is handled via Hotel Creation");
-  }
-
   async update(id: string, data: Partial<Subscription>): Promise<Subscription> {
     // We map subscription update to our patch endpoint
     // The endpoint expects { plan?, is_auto_renew?, subscription_end_date?, mrr? }

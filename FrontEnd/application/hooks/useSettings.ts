@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ApiSettingsRepository, PlatformSettings } from '@/infrastructure/repositories/SettingsRepository';
+import type { PlatformSettings } from '@/domain/entities/Settings';
+import { repositories } from '@/infrastructure/config/container';
 
 export function useSettings() {
     const [settings, setSettings] = useState<PlatformSettings | null>(null);
@@ -9,7 +10,7 @@ export function useSettings() {
     const fetchSettings = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await ApiSettingsRepository.getSettings();
+            const data = await repositories.settings.getSettings();
             setSettings(data);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Failed to load settings'));
@@ -20,7 +21,7 @@ export function useSettings() {
 
     const updateSettings = async (data: Partial<PlatformSettings>) => {
         try {
-            const updated = await ApiSettingsRepository.updateSettings(data);
+            const updated = await repositories.settings.updateSettings(data);
             setSettings(updated);
             return updated;
         } catch (err) {

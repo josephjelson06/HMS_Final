@@ -6,11 +6,11 @@ import { httpClient } from '../http/client';
 export class ApiRoomRepository implements IRoomRepository {
   private baseUrl = 'api/hotels/';
 
-  async getAll(hotelId: string = '1'): Promise<Room[]> {
+  async getAll(hotelId: string): Promise<Room[]> {
     return httpClient.get<Room[]>(`${this.baseUrl}${hotelId}/rooms`);
   }
 
-  async getById(id: string, hotelId: string = '1'): Promise<Room | null> {
+  async getById(id: string, hotelId: string): Promise<Room | null> {
     const all = await this.getAll(hotelId);
     return all.find(r => r.id === id) || null;
   }
@@ -56,7 +56,7 @@ export class ApiRoomRepository implements IRoomRepository {
     return httpClient.delete(`${this.baseUrl}${hotelId}/rooms/${id}`);
   }
 
-  async getTypes(hotelId: string = '1'): Promise<RoomType[]> {
+  async getTypes(hotelId: string): Promise<RoomType[]> {
     const types = await httpClient.get<RoomType[]>(`${this.baseUrl}${hotelId}/categories`);
     // Ensure amenities is an array if backend sends string
     return types.map(t => ({...t, amenities: Array.isArray(t.amenities) ? t.amenities : []}));
@@ -68,14 +68,10 @@ export class ApiRoomRepository implements IRoomRepository {
   }
 
   async deleteType(id: string, hotelId: string): Promise<void> {
-     // Backend endpoint for deleting category might not exist yet, or we use a generic one.
-     // If not implemented, we can throw or no-op. 
-     // rooms.py does NOT have delete_category.
-     console.warn('deleteType not implemented on backend');
-     return Promise.resolve();
+     return httpClient.delete(`${this.baseUrl}${hotelId}/categories/${id}`);
   }
 
-  async getBuildings(hotelId: string = '1'): Promise<Building[]> {
+  async getBuildings(hotelId: string): Promise<Building[]> {
     return httpClient.get<Building[]>(`${this.baseUrl}${hotelId}/buildings`);
   }
 

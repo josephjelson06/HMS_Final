@@ -40,6 +40,15 @@ def get_all_invoices(db: Session = Depends(get_db)):
     return SubscriptionService(db).get_all_invoices()
 
 
+@router.get(
+    "/invoices/by-id/{invoice_id}",
+    response_model=InvoiceSchema,
+    dependencies=[Depends(require_permission("platform:invoices:read"))],
+)
+def get_invoice_by_id(invoice_id: UUID, db: Session = Depends(get_db)):
+    return SubscriptionService(db).get_invoice_by_id(invoice_id=invoice_id)
+
+
 @router.post(
     "/invoices",
     response_model=InvoiceSchema,

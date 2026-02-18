@@ -74,6 +74,13 @@ class UserService:
         users = self.db.query(User).filter(User.user_type == "platform").all()
         return self._attach_role_names(users)
 
+    def get_platform_user_by_id(self, user_id: UUID) -> User:
+        user = self.db.query(User).filter(User.id == user_id, User.user_type == "platform").first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        self._attach_role_names([user])
+        return user
+
     def create_platform_user(self, payload: UserCreate) -> User:
         try:
             db_user = self.db.query(User).filter(User.email == payload.email).first()
