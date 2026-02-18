@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.auth.middleware import TenantContextMiddleware
 from app.routers import (
     auth_simple,  # New simplified auth
     hotels,
@@ -13,25 +12,12 @@ from app.routers import (
     permissions,
     # auth, # Disable old auth
 )
-from app.database import engine, Base
-import app.models.invoice  # noqa: F401
-import app.models.plan  # noqa: F401
-import app.models.user  # noqa: F401
-import app.models.role  # noqa: F401
-import app.models.room  # noqa: F401
-
-# Create all tables in the database
-# In production, uses Alebmic for migrations
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="HMS Backend API",
     description="Backend API for Hotel Management System",
     version="1.0.0",
 )
-
-# Add Tenant Context Middleware
-app.add_middleware(TenantContextMiddleware)
 
 # Configure CORS to allow requests from the frontend
 origins = [

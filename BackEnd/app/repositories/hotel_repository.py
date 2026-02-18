@@ -16,8 +16,6 @@ class HotelRepository:
 
     def create(self, hotel: HotelModel) -> HotelModel:
         self.db.add(hotel)
-        self.db.commit()
-        self.db.refresh(hotel)
         return hotel
 
     def update(
@@ -31,8 +29,6 @@ class HotelRepository:
             setattr(db_hotel, key, value)
 
         self.db.add(db_hotel)
-        self.db.commit()
-        self.db.refresh(db_hotel)
         return db_hotel
 
     def delete(self, hotel_id: UUID) -> bool:
@@ -41,5 +37,4 @@ class HotelRepository:
             return False
 
         self.db.delete(db_hotel)
-        self.db.commit()
         return True

@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 from uuid import UUID
@@ -6,6 +7,8 @@ from app.database import get_db
 from app.schemas.hotel import Hotel, HotelCreate, HotelUpdate
 from app.services.hotel_service import HotelService
 from app.modules.rbac import require_permission
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/hotels",
@@ -46,10 +49,7 @@ def create_hotel(hotel: HotelCreate, db: Session = Depends(get_db)):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
-        db.rollback()
+        logger.exception("Failed to create hotel")
         raise HTTPException(status_code=400, detail=f"Creation failed: {str(e)}")
 
 

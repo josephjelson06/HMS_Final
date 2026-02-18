@@ -17,11 +17,12 @@ from app.core.config import get_settings
 from app.database import Base
 
 # Import all models to ensure they are attached to Base.metadata
-from app.models.auth import Tenant, User
-from app.models.role import Role
-from app.models.room import Room, RoomCategory, Building
-from app.models.plan import Plan
-from app.models.invoice import Invoice
+import app.models.hotel  # noqa: F401
+import app.models.invoice  # noqa: F401
+import app.models.plan  # noqa: F401
+import app.models.role  # noqa: F401
+import app.models.room  # noqa: F401
+import app.models.user  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
