@@ -12,7 +12,7 @@ import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import InvoiceDetail from '../../modals/hotel/InvoiceDetail';
 import NewPOSBillModal from '../../modals/hotel/NewPOSBillModal';
-import type { InvoiceStatus, BillingInvoice as InvoiceRecord } from '@/domain/entities/BillingInvoice';
+import type { DetachedInvoiceStatus as InvoiceStatus, DetachedBillingInvoice as InvoiceRecord } from '@/application/hooks/_detachedTypes';
 import { useBilling } from '@/application/hooks/useBilling';
 
 const BillingHub: React.FC = () => {

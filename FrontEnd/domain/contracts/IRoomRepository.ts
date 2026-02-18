@@ -1,4 +1,4 @@
-import type { Room, RoomType, Booking, Building } from '../entities/Room';
+import type { Room, RoomType, Building } from '../entities/Room';
 
 export interface IRoomRepository {
   getAll(hotelId?: string): Promise<Room[]>;
@@ -12,5 +12,4 @@ export interface IRoomRepository {
   deleteType(id: string, hotelId: string): Promise<void>;
   getBuildings(hotelId?: string): Promise<Building[]>;
   createBuilding(name: string, hotelId: string): Promise<Building>;
-  getBookings(hotelId?: string): Promise<Booking[]>;
 }

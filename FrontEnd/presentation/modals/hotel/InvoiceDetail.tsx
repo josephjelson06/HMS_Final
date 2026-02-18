@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import GlassCard from '../../components/ui/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
-import type { BillingInvoice as InvoiceRecord } from '@/domain/entities/BillingInvoice';
+import type { DetachedBillingInvoice as InvoiceRecord } from '@/application/hooks/_detachedTypes';
 
 interface InvoiceDetailProps {
   invoice: InvoiceRecord;

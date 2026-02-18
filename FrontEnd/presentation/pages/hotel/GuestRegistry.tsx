@@ -9,7 +9,7 @@ import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import GuestDetailPanel from '../../modals/hotel/GuestDetailPanel';
-import type { GuestStatus, Guest } from '@/domain/entities/Guest';
+import type { DetachedGuestStatus as GuestStatus, DetachedGuest as Guest } from '@/application/hooks/_detachedTypes';
 import { useGuests } from '@/application/hooks/useGuests';
 
 

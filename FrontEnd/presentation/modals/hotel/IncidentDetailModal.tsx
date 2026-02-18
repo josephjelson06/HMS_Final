@@ -6,7 +6,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
-import type { Incident } from '@/domain/entities/Incident';
+import type { DetachedIncident as Incident } from '@/application/hooks/_detachedTypes';
 
 interface IncidentDetailModalProps {
   isOpen: boolean;

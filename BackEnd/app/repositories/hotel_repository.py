@@ -1,9 +1,7 @@
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 from uuid import UUID
 from app.models.hotel import Hotel as HotelModel
-from app.models.plan import Plan
-from app.schemas.hotel import HotelCreate, HotelUpdate
 
 
 class HotelRepository:
@@ -16,69 +14,20 @@ class HotelRepository:
     def get_by_id(self, hotel_id: UUID) -> Optional[HotelModel]:
         return self.db.query(HotelModel).filter(HotelModel.id == hotel_id).first()
 
-    def create(self, hotel_in: HotelCreate) -> HotelModel:
-        hotel_data = hotel_in.model_dump()
-
-        # Handle plan string -> ID resolution
-        plan_name = hotel_data.pop("plan", "Starter")
-        plan = self.db.query(Plan).filter(Plan.name == plan_name).first()
-        if not plan:
-            # Fallback to Starter if requested plan not found
-            plan = self.db.query(Plan).filter(Plan.name == "Starter").first()
-
-        if not plan:
-            # If even Starter is missing, we have a seed issue, but handle gracefully-ish?
-            # We can't create tenant without plan_id (NOT NULL).
-            # Raise error.
-            raise ValueError(
-                f"Plan '{plan_name}' (or default 'Starter') not found in database."
-            )
-
-        hotel_data["plan_id"] = plan.id
-
-        if "kiosks_details" in hotel_data:
-            del hotel_data["kiosks_details"]
-        import random
-        import string
-
-        # Generate tenant_key if not present
-        if "tenant_key" not in hotel_data:
-            base_slug = hotel_data.get("name", "hotel").lower().replace(" ", "-")
-            # Remove non-alphanumeric chars (keep hyphens) - simple cleanup
-            base_slug = "".join(c for c in base_slug if c.isalnum() or c == "-")
-
-            # Add random suffix
-            suffix = "".join(
-                random.choices(string.ascii_lowercase + string.digits, k=6)
-            )
-            hotel_data["tenant_key"] = f"{base_slug}-{suffix}"
-
-        # Ensure tenant_type is set
-        if "tenant_type" not in hotel_data:
-            hotel_data["tenant_type"] = "hotel"
-
-        db_hotel = HotelModel(**hotel_data)
-        self.db.add(db_hotel)
+    def create(self, hotel: HotelModel) -> HotelModel:
+        self.db.add(hotel)
         self.db.commit()
-        self.db.refresh(db_hotel)
-        return db_hotel
+        self.db.refresh(hotel)
+        return hotel
 
-    def update(self, hotel_id: UUID, hotel_in: HotelUpdate) -> Optional[HotelModel]:
+    def update(
+        self, hotel_id: UUID, hotel_data: Dict[str, Any]
+    ) -> Optional[HotelModel]:
         db_hotel = self.get_by_id(hotel_id)
         if not db_hotel:
             return None
 
-        update_data = hotel_in.model_dump(exclude_unset=True)
-
-        # Handle plan update
-        if "plan" in update_data:
-            plan_name = update_data.pop("plan")
-            if plan_name:
-                plan = self.db.query(Plan).filter(Plan.name == plan_name).first()
-                if plan:
-                    update_data["plan_id"] = plan.id
-
-        for key, value in update_data.items():
+        for key, value in hotel_data.items():
             setattr(db_hotel, key, value)
 
         self.db.add(db_hotel)

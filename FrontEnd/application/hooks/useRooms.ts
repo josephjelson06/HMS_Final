@@ -13,18 +13,24 @@ export function useRooms() {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchData = useCallback(async () => {
-    if (!user?.hotelId) return;
+    if (!user?.hotelId) {
+      setRooms([]);
+      setRoomTypes([]);
+      setBookings([]);
+      setBuildings([]);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
-      const [r, t, b, bld] = await Promise.all([
+      const [r, t, bld] = await Promise.all([
         repositories.rooms.getAll(user.hotelId),
         repositories.rooms.getTypes(user.hotelId),
-        repositories.rooms.getBookings(user.hotelId),
         repositories.rooms.getBuildings(user.hotelId),
       ]);
       setRooms(r);
       setRoomTypes(t);
-      setBookings(b);
+      setBookings([]);
       setBuildings(bld);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch rooms'));

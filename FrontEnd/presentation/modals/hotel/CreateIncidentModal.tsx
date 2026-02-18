@@ -3,7 +3,7 @@ import { ShieldAlert, CheckCircle2 } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
-import type { IncidentPriority, IncidentCategory } from '@/domain/entities/Incident';
+import type { DetachedIncidentPriority as IncidentPriority, DetachedIncidentCategory as IncidentCategory } from '@/application/hooks/_detachedTypes';
 
 interface CreateIncidentModalProps {
   isOpen: boolean;

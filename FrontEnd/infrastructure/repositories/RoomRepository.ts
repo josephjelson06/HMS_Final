@@ -1,6 +1,6 @@
 
 import type { IRoomRepository } from '../../domain/contracts/IRoomRepository';
-import type { Room, RoomType, Booking, Building } from '../../domain/entities/Room';
+import type { Room, RoomType, Building } from '../../domain/entities/Room';
 import { httpClient } from '../http/client';
 
 export class ApiRoomRepository implements IRoomRepository {
@@ -64,10 +64,5 @@ export class ApiRoomRepository implements IRoomRepository {
 
   async createBuilding(name: string, hotelId: string): Promise<Building> {
     return httpClient.post<Building>(`${this.baseUrl}${hotelId}/buildings`, { name }); 
-  }
-
-  async getBookings(hotelId: string = '1'): Promise<Booking[]> {
-    // Return empty array for now as Booking CRUD is not fully implemented
-    return []; 
   }
 }

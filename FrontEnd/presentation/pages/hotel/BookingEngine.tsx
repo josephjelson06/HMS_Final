@@ -10,9 +10,8 @@ import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import GuestDetailPanel from '../../modals/hotel/GuestDetailPanel';
 import NewBookingWizard from '../../modals/hotel/NewBookingWizard';
-import type { Guest } from '@/domain/entities/Guest';
-import type { BookingBlock } from '@/domain/entities/Booking';
-import { BOOKING_CELL_WIDTH as CELL_WIDTH, BOOKING_ROOM_LIST_WIDTH as ROOM_LIST_WIDTH, BOOKING_DAYS_TO_SHOW as DAYS_TO_SHOW, BOOKING_ROW_HEIGHT as ROW_HEIGHT } from '@/domain/entities/Booking';
+import type { DetachedGuest as Guest, DetachedBookingBlock as BookingBlock } from '@/application/hooks/_detachedTypes';
+import { DETACHED_BOOKING_CELL_WIDTH as CELL_WIDTH, DETACHED_BOOKING_ROOM_LIST_WIDTH as ROOM_LIST_WIDTH, DETACHED_BOOKING_DAYS_TO_SHOW as DAYS_TO_SHOW, DETACHED_BOOKING_ROW_HEIGHT as ROW_HEIGHT } from '@/application/hooks/_detachedTypes';
 import { useBookings } from '@/application/hooks/useBookings';
 
 const BookingEngine: React.FC = () => {

@@ -12,7 +12,7 @@ import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import IncidentDetailModal from '../../modals/hotel/IncidentDetailModal';
 import CreateIncidentModal from '../../modals/hotel/CreateIncidentModal';
-import type { IncidentCategory, IncidentPriority, IncidentStatus, Incident } from '@/domain/entities/Incident';
+import type { DetachedIncidentCategory as IncidentCategory, DetachedIncidentPriority as IncidentPriority, DetachedIncidentStatus as IncidentStatus, DetachedIncident as Incident } from '@/application/hooks/_detachedTypes';
 import { useIncidents } from '@/application/hooks/useIncidents';
 
 const IncidentsRecord: React.FC = () => {

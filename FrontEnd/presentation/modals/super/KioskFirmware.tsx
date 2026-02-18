@@ -7,7 +7,7 @@ import {
 import GlassCard from '../../components/ui/GlassCard';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import AddFirmwareModal from './AddFirmwareModal';
-import type { FirmwareRelease } from '@/domain/entities/Kiosk';
+import type { DetachedFirmwareRelease as FirmwareRelease } from '@/application/hooks/_detachedTypes';
 import { useKiosks } from '@/application/hooks/useKiosks';
 
 const KioskFirmware: React.FC = () => {

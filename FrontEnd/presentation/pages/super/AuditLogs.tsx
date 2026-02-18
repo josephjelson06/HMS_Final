@@ -9,7 +9,7 @@ import GlassCard from '../../components/ui/GlassCard';
 import Pagination from '../../components/ui/Pagination';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
-import type { AuditLog as AuditEntry } from '@/domain/entities/AuditLog';
+import type { DetachedAuditLog as AuditEntry } from '@/application/hooks/_detachedTypes';
 import { useAuditLogs } from '@/application/hooks/useAuditLogs';
 
 const ActionBadge = ({ action }: { action: AuditEntry['action'] }) => {

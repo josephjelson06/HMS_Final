@@ -16,10 +16,7 @@ from app.models.auth import Tenant, User
 from app.models.role import Role
 from app.models.room import Room, RoomCategory, Building
 from app.models.room import Room, RoomCategory, Building
-from app.models.incident import Incident
 from app.models.plan import Plan
-from app.models.kiosk import Kiosk
-from app.models.ticket import Ticket
 from app.models.invoice import Invoice
 from app.core.auth.security import get_password_hash
 
@@ -306,66 +303,9 @@ def seed_all():
 
         db.commit()
 
-        # 6. Seed Incidents
-        print("\n--- Seeding Incidents ---")
-        incidents_data = load_json("data_incidents.json")
-        for inc in incidents_data:
-            t_key = inc.get("tenant_key")
-            h_id = tenant_map.get(t_key)
+        # 6. (Incidents removed)
 
-            if not h_id:
-                continue
-
-            db.execute(text(f"SET LOCAL app.tenant_id = '{h_id}'"))
-
-            incident = Incident(
-                subject=inc["subject"],
-                description=inc["description"],
-                room=inc["room"],
-                priority=inc["priority"],
-                status=inc["status"],
-                category=inc["category"],
-                guest_name=inc["guest_name"],
-                reported_by=inc["reported_by"],
-                assigned_to=inc["assigned_to"],
-                tenant_id=h_id,
-                created_at=datetime.utcnow().isoformat(),
-                updated_at=datetime.utcnow().isoformat(),
-            )
-            db.add(incident)
-
-        db.commit()
-        print("Incidents Seeding Complete.")
-
-        # 7. Seed Tickets (Hotel -> Platform Support)
-        print("\n--- Seeding Tickets ---")
-        tickets_path = os.path.join(os.path.dirname(__file__), "seeds", "tickets.json")
-        if os.path.exists(tickets_path):
-            tickets_data = load_json("tickets.json")
-            for t_data in tickets_data:
-                t_key = t_data.get("tenant_key")
-                h_id = tenant_map.get(t_key)
-
-                if not h_id:
-                    continue
-
-                db.execute(text(f"SET LOCAL app.tenant_id = '{h_id}'"))
-
-                ticket = Ticket(
-                    subject=t_data["subject"],
-                    description=t_data["description"],
-                    priority=t_data["priority"],
-                    status=t_data["status"],
-                    category=t_data["category"],
-                    tenant_id=h_id,
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
-                )
-                db.add(ticket)
-            db.commit()
-            print("Tickets Seeded.")
-        else:
-            print("tickets.json not found, skipping.")
+        # 7. (Tickets removed)
 
     except Exception as e:
         print(f"CRITICAL ERROR SEEDING: {e}")

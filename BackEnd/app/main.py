@@ -9,21 +9,16 @@ from app.routers import (
     users,
     roles,
     rooms,
-    incidents,
-    tickets,
     settings,
     permissions,
     # auth, # Disable old auth
 )
 from app.database import engine, Base
-import app.models.kiosk  # noqa: F401
 import app.models.invoice  # noqa: F401
 import app.models.plan  # noqa: F401
 import app.models.user  # noqa: F401
 import app.models.role  # noqa: F401
 import app.models.room  # noqa: F401
-import app.models.incident  # noqa: F401
-import app.models.ticket  # noqa: F401
 
 # Create all tables in the database
 # In production, uses Alebmic for migrations
@@ -62,8 +57,6 @@ app.include_router(plans.router)
 app.include_router(users.router)
 app.include_router(roles.router)
 app.include_router(rooms.router)
-app.include_router(incidents.router)
-app.include_router(tickets.router)
 app.include_router(settings.router)
 app.include_router(permissions.router)
 app.include_router(auth_simple.router)  # Mounts at /auth/login etc.

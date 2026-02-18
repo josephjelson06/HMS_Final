@@ -5,7 +5,7 @@ import {
   HelpCircle, Info, ChevronRight
 } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
-import type { HotelTicket as Ticket } from '@/domain/entities/HotelTicket';
+import type { DetachedHotelTicket as Ticket } from '@/application/hooks/_detachedTypes';
 
 interface HotelTicketDetailModalProps {
   isOpen: boolean;

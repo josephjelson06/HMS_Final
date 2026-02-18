@@ -3,7 +3,7 @@ import { Send, Camera, Info, Plus, ChevronDown, Loader2 } from 'lucide-react';
 import ModalShell from '../../components/ui/ModalShell';
 import GlassInput from '../../components/ui/GlassInput';
 import Button from '../../components/ui/Button';
-import type { HotelTicketCategory, HotelTicketPriority } from '@/domain/entities/HotelTicket';
+import type { DetachedHotelTicketCategory as HotelTicketCategory, DetachedHotelTicketPriority as HotelTicketPriority } from '@/application/hooks/_detachedTypes';
 
 interface NewTicketModalProps {
   isOpen: boolean;

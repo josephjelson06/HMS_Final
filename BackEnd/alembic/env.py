@@ -20,10 +20,7 @@ from app.database import Base
 from app.models.auth import Tenant, User
 from app.models.role import Role
 from app.models.room import Room, RoomCategory, Building
-from app.models.incident import Incident
 from app.models.plan import Plan
-from app.models.kiosk import Kiosk
-from app.models.ticket import Ticket
 from app.models.invoice import Invoice
 
 # this is the Alembic Config object, which provides

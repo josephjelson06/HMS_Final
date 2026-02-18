@@ -1,8 +1,7 @@
 from uuid import UUID
 from pydantic import BaseModel, Field, EmailStr
 from enum import Enum
-from typing import Optional, List
-from app.schemas.kiosk import KioskCreate, Kiosk
+from typing import Optional
 
 
 class HotelStatus(str, Enum):
@@ -35,7 +34,7 @@ class HotelBase(BaseModel):
 
 
 class HotelCreate(HotelBase):
-    kiosks_details: Optional[List[KioskCreate]] = None
+    pass
 
 
 class HotelUpdate(BaseModel):
@@ -56,7 +55,6 @@ class HotelUpdate(BaseModel):
 
 class Hotel(HotelBase):
     id: UUID
-    kiosk_list: List[Kiosk] = []
 
     class Config:
         from_attributes = True

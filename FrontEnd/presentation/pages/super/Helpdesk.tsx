@@ -8,8 +8,7 @@ import PageHeader from '../../components/ui/PageHeader';
 import HelpdeskDetailModal from '../../modals/super/HelpdeskDetailModal';
 import { useAdminTickets } from '@/application/hooks/useAdminTickets';
 // import { useAdminIncidents } from '@/application/hooks/useAdminIncidents'; // Removed
-import type { IncidentPriority, IncidentStatus } from '@/domain/entities/Incident';
-import type { HotelTicket as Ticket, HotelTicketStatus as Status } from '@/domain/entities/HotelTicket';
+import type { DetachedIncidentPriority as IncidentPriority, DetachedIncidentStatus as IncidentStatus, DetachedHotelTicket as Ticket, DetachedHotelTicketStatus as Status } from '@/application/hooks/_detachedTypes';
 
 const PriorityBadge = ({ priority }: { priority: string }) => {
   const styles: Record<string, string> = {

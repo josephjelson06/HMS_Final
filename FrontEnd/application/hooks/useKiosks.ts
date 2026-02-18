@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Kiosk, FirmwareRelease } from '../../domain/entities/Kiosk';
-import { repositories } from '../../infrastructure/config/container';
+import type { DetachedKiosk as Kiosk, DetachedFirmwareRelease as FirmwareRelease } from './_detachedTypes';
 
 export function useKiosks() {
   const [kiosks, setKiosks] = useState<Kiosk[]>([]);
@@ -9,13 +8,10 @@ export function useKiosks() {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    Promise.all([
-      repositories.kiosks.getAll(),
-      repositories.kiosks.getFirmwareReleases(),
-    ])
-      .then(([k, f]) => { setKiosks(k); setFirmware(f); })
-      .catch(setError)
-      .finally(() => setLoading(false));
+    setKiosks([]);
+    setFirmware([]);
+    setError(null);
+    setLoading(false);
   }, []);
 
   return { kiosks, firmware, loading, error };
