@@ -1,18 +1,34 @@
 import { useState, useEffect } from 'react';
 import type { Hotel } from '../../domain/entities/Hotel';
 import { repositories } from '../../infrastructure/config/container';
+import { useAuth } from './useAuth';
 
 export function useHotels() {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
-    repositories.hotels.getAll()
-      .then(setHotels)
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, []);
+    const load = async () => {
+      setLoading(true);
+      try {
+        // Hotel users should only fetch their own hotel to avoid platform-only endpoint 403.
+        if (user?.hotelId) {
+          const hotel = await repositories.hotels.getById(user.hotelId);
+          setHotels(hotel ? [hotel] : []);
+        } else {
+          const all = await repositories.hotels.getAll();
+          setHotels(all);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch hotels'));
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [user?.hotelId]);
 
   const createHotel = async (data: Omit<Hotel, 'id'> & { kiosks_details?: { serial_number: string, location: string }[] }) => {
     const hotel = await repositories.hotels.create(data);

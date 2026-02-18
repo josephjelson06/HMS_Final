@@ -25,6 +25,7 @@ export class ApiAuthService implements IAuthService {
         name: response.name,
         email: response.email,
         role: role,
+        permissions: response.permissions ?? [],
         // Map user_type/tenant fields if needed, but UI seems to rely on 'role' string or hotelId
         hotelId: response.tenant_id?.toString()
       };
@@ -71,6 +72,7 @@ export class ApiAuthService implements IAuthService {
         name: response.name,
         email: response.email,
         role: role,
+        permissions: response.permissions ?? [],
         // Map user_type/tenant fields if needed, but UI seems to rely on 'role' string or hotelId
         hotelId: response.tenant_id?.toString()
       };

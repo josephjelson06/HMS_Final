@@ -8,7 +8,7 @@ from app.repositories.hotel_repository import HotelRepository
 from app.schemas.hotel import HotelCreate, HotelUpdate
 from app.models.hotel import Hotel
 from app.models.plan import Plan
-from app.models.role import Role, UserRole
+from app.models.role import Role, UserRole, Permission, RolePermission
 from app.models.user import User
 from app.core.auth.security import get_password_hash
 
@@ -17,6 +17,42 @@ class HotelService:
     def __init__(self, db: Session):
         self.db = db
         self.repository = HotelRepository(db)
+
+    def _ensure_hotel_permissions(self) -> dict[str, Permission]:
+        """Ensure baseline hotel permissions exist and return them keyed by permission_key."""
+        baseline = {
+            # read permissions used by hotel pages
+            "hotel:dashboard:read": "View hotel dashboard",
+            "hotel:guests:read": "View guest registry",
+            "hotel:rooms:read": "View rooms",
+            "hotel:incidents:read": "View incidents",
+            "hotel:users:read": "View hotel staff",
+            "hotel:reports:read": "View hotel reports",
+            "hotel:settings:read": "View hotel settings",
+            "hotel:rates:read": "View rates",
+            "hotel:bookings:read": "View bookings",
+            "hotel:billing:read": "View billing",
+            # write permissions needed for common actions
+            "hotel:rooms:write": "Manage rooms",
+            "hotel:users:write": "Manage hotel staff",
+            "hotel:settings:write": "Manage hotel settings",
+        }
+
+        existing = {
+            p.permission_key: p
+            for p in self.db.query(Permission)
+            .filter(Permission.permission_key.in_(list(baseline.keys())))
+            .all()
+        }
+
+        for key, desc in baseline.items():
+            if key not in existing:
+                perm = Permission(permission_key=key, description=desc)
+                self.db.add(perm)
+                self.db.flush()
+                existing[key] = perm
+
+        return existing
 
     def get_all(self, skip: int = 0, limit: int = 100, q: Optional[str] = None) -> List[Hotel]:
         return self.repository.get_all(skip, limit, q)
@@ -78,6 +114,11 @@ class HotelService:
             self.db.add(gm_role)
             self.db.add(fd_role)
             self.db.flush()
+
+            # Grant GM all hotel permissions by default
+            perms = self._ensure_hotel_permissions()
+            for perm in perms.values():
+                self.db.add(RolePermission(role_id=gm_role.id, permission_id=perm.id))
 
             tenant_key = getattr(new_hotel, "tenant_key", "hotel")
             gm_email = f"gm@{tenant_key}.hotel"
