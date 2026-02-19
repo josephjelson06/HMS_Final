@@ -56,8 +56,9 @@ export class ApiUserRepository implements IUserRepository {
       name: data.name,
       email: data.email,
       phone: data.phone ?? data.mobile,
-      role_id: data.role?.id, // Send ID, backend expects role_id for linking
-      password: 'password123', // Default or handled elsewhere
+      role_id: data.role?.id,
+      tenant_id: data.tenantId, // Added tenant_id
+      password: 'password123',
     };
     const result = await httpClient.post<ApiUserDTO>(this.baseUrl, payload);
     return this.mapUser(result);
@@ -69,6 +70,7 @@ export class ApiUserRepository implements IUserRepository {
     if (data.email !== undefined) payload.email = data.email;
     if (data.status !== undefined) payload.status = data.status;
     if (data.role?.id !== undefined) payload.role_id = data.role.id;
+    if (data.tenantId !== undefined) payload.tenant_id = data.tenantId; // Added tenant_id
     if (data.phone !== undefined || data.mobile !== undefined) {
       payload.phone = data.phone ?? data.mobile;
     }
