@@ -76,6 +76,9 @@ export function useUsers() {
     deleteUser,
     createRole,
     updateRole,
-    deleteRole
+    deleteRole,
+    getAvailablePermissions: repositories.users.getAvailablePermissions.bind(repositories.users),
+    getRolePermissions: repositories.users.getRolePermissions.bind(repositories.users),
+    setRolePermissions: repositories.users.setRolePermissions.bind(repositories.users)
   };
 }
