@@ -17,3 +17,21 @@ class SupportTicketRead(ORMBase):
     category: str | None
     priority: str | None
     status: str | None
+
+
+class SupportMessageCreate(BaseModel):
+    message: str
+    is_internal: bool = False
+
+
+class SupportMessageRead(ORMBase):
+    id: UUID
+    ticket_id: UUID
+    sender_id: UUID | None
+    message: str
+    created_at: str | None  # Datetime serialized
+    is_internal: bool
+
+
+class SupportTicketDetail(SupportTicketRead):
+    messages: list[SupportMessageRead] = []

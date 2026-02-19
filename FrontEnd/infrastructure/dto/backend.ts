@@ -58,4 +58,24 @@ export interface ApiSubscriptionDTO {
   status: string;
 }
 
-// Dead DTOs removed: ApiKioskDTO, ApiBuildingDTO, ApiRoom*, ApiInvoice*, ApiSettings*
+// Support DTOs
+export interface ApiMessageDTO {
+  id: string;
+  ticket_id: string;
+  sender_id?: string | null;
+  message: string;
+  created_at?: string | null;
+  is_internal: boolean;
+}
+
+export interface ApiTicketDTO {
+  id: string;
+  tenant_id: string;
+  title: string;
+  description?: string | null;
+  category?: string | null;
+  priority?: string | null;
+  status?: string | null;
+  created_at?: string | null;
+  messages?: ApiMessageDTO[];
+}
