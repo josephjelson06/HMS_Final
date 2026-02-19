@@ -106,6 +106,7 @@ def bootstrap():
         plans = [
             {
                 "name": "Starter",
+                "price": 0.0,
                 "period_months": 1,
                 "max_users": 5,
                 "max_roles": 3,
@@ -113,6 +114,7 @@ def bootstrap():
             },
             {
                 "name": "Professional",
+                "price": 49.99,
                 "period_months": 1,
                 "max_users": 20,
                 "max_roles": 10,
@@ -120,6 +122,7 @@ def bootstrap():
             },
             {
                 "name": "Enterprise",
+                "price": 199.99,
                 "period_months": 12,
                 "max_users": 999,
                 "max_roles": 999,
@@ -131,6 +134,10 @@ def bootstrap():
             exists = db.query(Plan).filter(Plan.name == p_data["name"]).first()
             if not exists:
                 db.add(Plan(**p_data))
+            else:
+                # Update existing plan price if needed (optional, but good for this request)
+                exists.price = p_data["price"]
+
         db.commit()
 
         logger.info("Bootstrap completed successfully!")

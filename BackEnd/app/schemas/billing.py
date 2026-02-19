@@ -7,6 +7,7 @@ from app.schemas.base import ORMBase
 class PlanRead(ORMBase):
     id: UUID
     name: str
+    price: float = 0.0  # Added price
     period_months: int
     max_users: int | None
     max_roles: int | None

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, ForeignKey, TIMESTAMP
+from sqlalchemy import String, ForeignKey, TIMESTAMP, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -15,6 +15,7 @@ class Plan(Base):
     )
 
     name: Mapped[str] = mapped_column(String, nullable=False)
+    price: Mapped[float] = mapped_column(Float, default=0.0)  # Added price
     period_months: Mapped[int] = mapped_column()
 
     max_users: Mapped[int | None]

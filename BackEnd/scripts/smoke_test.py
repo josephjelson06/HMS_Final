@@ -55,6 +55,12 @@ def test_api():
         print("Error: No plans found!")
         sys.exit(1)
 
+    for p in plans:
+        print(f" - Plan: {p['name']}, Price: {p.get('price')}")
+        if "price" not in p:
+            print("Error: Price field missing in plan response!")
+            sys.exit(1)
+
     # 3. Onboard Tenant
     print("\n3. Onboarding Tenant...")
     onboard_payload = {
@@ -65,6 +71,17 @@ def test_api():
         "manager_phone": "1234567890",
         "password": "managerpass123",
     }
+    # Note: If tenant already exists from previous run, we might want to handle generic error or skip
+    # But for smoke test, failing on 400 (if handled) is okay to catch.
+    # However, unique constraint on email might block multiple runs.
+    # We can try/except or just let it fail if we want a fresh run.
+    # Let's clean up existing tenant or just append random number to email
+    import random
+
+    suffix = random.randint(1000, 9999)
+    onboard_payload["manager_email"] = f"manager{suffix}@testhotel.com"
+    onboard_payload["hotel_name"] = f"Test Hotel {suffix}"
+
     status, tenant = make_request(
         f"{BASE_URL}/api/onboard", method="POST", data=onboard_payload
     )
