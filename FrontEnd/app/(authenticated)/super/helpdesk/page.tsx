@@ -2,7 +2,6 @@
 
 import Helpdesk from "@/presentation/pages/super/Helpdesk";
 
-export default function SuperHelpdeskPage() {
+export default function HelpdeskPage() {
   return <Helpdesk />;
 }
-

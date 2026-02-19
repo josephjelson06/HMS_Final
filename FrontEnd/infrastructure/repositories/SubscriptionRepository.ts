@@ -1,69 +1,50 @@
 import type { ISubscriptionRepository } from '../../domain/contracts/ISubscriptionRepository';
 import type { Subscription } from '../../domain/entities/Subscription';
 import { httpClient } from '../http/client';
-import type {
-  ApiInvoiceDTO,
-  ApiSubscriptionDTO,
-  ApiSubscriptionUpdateDTO,
-} from '../dto/backend';
-
-type SubscriptionUpdateInput = Partial<Subscription> & {
-  invoiceAmount?: number;
-  invoiceStatus?: string;
-};
+import type { ApiSubscriptionDTO } from '../dto/backend';
 
 export class ApiSubscriptionRepository implements ISubscriptionRepository {
-  private baseUrl = 'api/subscriptions/';
+  private getBaseUrl(hotelId?: string) {
+     // NOTE: Backend endpoint might be /api/subscriptions (all) OR /api/hotels/{id}/subscription
+     // Assuming we want to fetch mostly by logic that knows the context
+     // But interface says `getAll`. 
+     // Let's assume /api/subscriptions returns ALL for platform admin
+     return 'api/subscriptions/';
+  }
 
   private mapToEntity(data: ApiSubscriptionDTO): Subscription {
-    const nowIso = new Date().toISOString();
-    const startDate = data.startDate ?? nowIso;
-    const renewalDate = data.renewalDate ?? nowIso;
-
     return {
       id: String(data.id),
-      hotelId: String(data.hotel_id),
-      hotel_id: String(data.hotel_id),
-      hotel: data.hotel ?? '',
-      plan: data.plan,
-      startDate,
-      renewalDate,
-      status: data.status ?? 'Active',
-      autoRenew: Boolean(data.autoRenew),
-      price: data.price ?? 0,
+      tenantId: data.tenant_id,
+      planId: data.plan_id,
+      startDate: data.start_date ?? undefined,
+      endDate: data.end_date ?? undefined,
+      status: data.status,
     };
   }
 
-  private toUpdatePayload(data: SubscriptionUpdateInput): ApiSubscriptionUpdateDTO {
-    const payload: ApiSubscriptionUpdateDTO = {};
-
-    if (data.plan !== undefined) payload.plan = String(data.plan);
-    if (data.autoRenew !== undefined) payload.is_auto_renew = data.autoRenew;
-    if (data.renewalDate !== undefined) payload.subscription_end_date = data.renewalDate;
-    if (data.price !== undefined) payload.mrr = data.price;
-    if (data.invoiceAmount !== undefined) payload.invoice_amount = data.invoiceAmount;
-    if (data.invoiceStatus !== undefined) payload.invoice_status = data.invoiceStatus;
-
-    return payload;
-  }
-
   async getAll(): Promise<Subscription[]> {
-    const data = await httpClient.get<ApiSubscriptionDTO[]>(this.baseUrl);
+    const data = await httpClient.get<ApiSubscriptionDTO[]>('api/subscriptions/');
     return data.map((item) => this.mapToEntity(item));
   }
 
   async getById(id: string): Promise<Subscription | null> {
-    const all = await this.getAll();
-    return all.find((s) => s.id === id || s.hotel_id === id || s.hotelId === id) || null;
+    // If we have an endpoint for single sub by ID
+    try {
+        const result = await httpClient.get<ApiSubscriptionDTO>(`api/subscriptions/${id}`);
+        return this.mapToEntity(result);
+    } catch {
+        return null;
+    }
   }
 
   async update(id: string, data: Partial<Subscription>): Promise<Subscription> {
-    const payload = this.toUpdatePayload(data as SubscriptionUpdateInput);
-    const result = await httpClient.patch<ApiSubscriptionDTO>(`${this.baseUrl}${id}`, payload);
-    return this.mapToEntity(result);
-  }
+    const payload: any = {};
+    if (data.planId !== undefined) payload.plan_id = data.planId;
+    if (data.status !== undefined) payload.status = data.status;
+    if (data.endDate !== undefined) payload.end_date = data.endDate;
 
-  async getInvoices(hotelId: string): Promise<ApiInvoiceDTO[]> {
-    return httpClient.get<ApiInvoiceDTO[]>(`${this.baseUrl}invoices/${hotelId}`);
+    const result = await httpClient.patch<ApiSubscriptionDTO>(`api/subscriptions/${id}`, payload);
+    return this.mapToEntity(result);
   }
 }

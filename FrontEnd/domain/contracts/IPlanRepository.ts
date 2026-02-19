@@ -1,7 +1,7 @@
 import type { PlanData } from '../entities/Plan';
 
-export type PlanCreateInput = Omit<PlanData, 'id' | 'subscribers'>;
-export type PlanUpdateInput = Partial<Omit<PlanData, 'id' | 'subscribers'>>;
+export type PlanCreateInput = Omit<PlanData, 'id'>;
+export type PlanUpdateInput = Partial<Omit<PlanData, 'id'>>;
 
 export interface IPlanRepository {
   getAll(): Promise<PlanData[]>;

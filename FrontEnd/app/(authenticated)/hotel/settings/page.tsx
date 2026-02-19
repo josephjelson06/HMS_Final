@@ -1,12 +1,5 @@
-"use client";
+import { notFound } from "next/navigation";
 
-import PermissionGate from "@/presentation/components/auth/PermissionGate";
-import PropertySettings from "@/presentation/pages/hotel/PropertySettings";
-
-export default function HotelSettingsPage() {
-  return (
-    <PermissionGate requiredPermission="" adminOnly>
-      <PropertySettings />
-    </PermissionGate>
-  );
+export default function Page() {
+  notFound();
 }

@@ -1,12 +1,5 @@
-"use client";
+import { notFound } from "next/navigation";
 
-import PermissionGate from "@/presentation/components/auth/PermissionGate";
-import IncidentsRecord from "@/presentation/pages/hotel/IncidentsRecord";
-
-export default function HotelIncidentsPage() {
-  return (
-    <PermissionGate requiredPermission="hotel:incidents:read">
-      <IncidentsRecord />
-    </PermissionGate>
-  );
+export default function Page() {
+  notFound();
 }

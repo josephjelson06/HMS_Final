@@ -28,7 +28,8 @@ export class ApiAuthService implements IAuthService {
       hotelId: response.tenant_id?.toString(),
       permissions: response.permissions ?? [],
       mobile: response.mobile ?? undefined,
-      employee_id: response.employee_id ?? undefined,
+      // employee_id removed from AuthUser
+      tenantId: response.tenant_id ? String(response.tenant_id) : undefined,
       status: response.status ?? undefined,
       isAdmin: Boolean(response.is_admin),
       isOrphan: Boolean(response.is_orphan),

@@ -1,52 +1,37 @@
 // User domain entities — pure TypeScript, no framework dependencies
-import type React from 'react';
 
-export interface User {
-  id: string;
-  employeeId?: string; // Optional in types/user.ts
-  name: string;
-  email: string;
-  role: string;
-  status: 'Active' | 'Disabled' | 'Inactive' | string;
-  phone?: string;
-  mobile?: string;
-  lastLogin?: string;
-  avatar?: string;
-  dateAdded?: string;
+export interface PermissionAction {
+  key: string;
+  label?: string; // Optional - strictly speaking BE just sends keys now, but UI might map them
 }
 
 export interface Role {
   id: string;
   name: string;
   description?: string;
-  desc?: string; // Legacy support
+  status?: string;
+  color?: string;
   permissions?: string[];
   userCount?: number;
-  color?: string;
-  status?: 'Active' | 'Inactive';
 }
 
-export interface PermissionAction {
-  key: string;
-  label: string;
-  granted: boolean;
-}
-
-export interface PermissionModule {
-  name: string;
-  icon: React.ElementType; // Requires React import
-  actions: PermissionAction[];
-}
-
-export interface StaffMember {
+export interface User {
   id: string;
-  name: string;
   email: string;
-  phone: string;
-  role: string;
-  department: string;
-  status: 'Active' | 'Inactive' | string;
-  lastLogin: string;
+  name: string;
+  role?: Role;     // Nested role object
+  tenantId?: string;
+  status?: string;
+  phone?: string;
+  mobile?: string;
+  lastLogin?: string;
   avatar?: string;
+  dateAdded?: string;
+  employeeId?: string; // Optional, might be removed if not in BE
+  isAdmin?: boolean;
 }
 
+// Deprecated but kept if needed for UI mapping compatibility temporarily
+export interface StaffMember extends User {
+  department?: string;
+}

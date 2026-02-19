@@ -1,73 +1,40 @@
 import type { IUserRepository } from '../../domain/contracts/IUserRepository';
-import type { User, Role, StaffMember } from '../../domain/entities/User';
+import type { User, Role } from '../../domain/entities/User';
 import { httpClient } from '../http/client';
 import type {
   ApiPermissionDTO,
   ApiRoleDTO,
-  ApiRolePermissionsDTO,
   ApiUserDTO,
 } from '../dto/backend';
 
-type UserCreatePayload = {
-  name?: string;
-  email: string;
-  mobile?: string;
-  department?: string;
-  password?: string;
-  role?: string;
-};
-
-type UserUpdatePayload = {
-  name?: string;
-  email?: string;
-  mobile?: string;
-  department?: string;
-  password?: string;
-  status?: string;
-  role?: string;
-};
-
 export class ApiUserRepository implements IUserRepository {
-  private baseUrl = 'api/users/';
-
-  private mapUserStatus(status: string | null | undefined): User['status'] {
-    if (!status) {
-      return 'Inactive';
-    }
-    return status;
-  }
-
-  private mapRoleStatus(status: string | null | undefined): Role['status'] {
-    return status === 'Inactive' ? 'Inactive' : 'Active';
-  }
-
-  private resolveDepartment(data: Partial<ApiUserDTO> & { role?: string }): string {
-    return data.department ?? data.role ?? '';
-  }
+  private baseUrl = 'api/platform/users/';
+  private roleUrl = 'api/platform/roles/';
 
   private mapUser = (data: ApiUserDTO): User => ({
     id: String(data.id),
-    employeeId: data.employee_id ?? undefined,
     name: data.name ?? '',
     email: data.email ?? '',
-    role: data.role ?? '',
-    status: this.mapUserStatus(data.status),
-    mobile: data.mobile ?? undefined,
-    phone: data.mobile ?? undefined,
+    phone: data.phone ?? data.mobile ?? undefined,
+    mobile: data.mobile ?? data.phone ?? undefined,
+    status: data.status ?? undefined,
     lastLogin: data.last_login ?? undefined,
-    dateAdded: data.date_added ?? undefined,
     avatar: data.avatar ?? undefined,
+    dateAdded: data.date_added ?? undefined,
+    tenantId: data.tenant_id ? String(data.tenant_id) : undefined,
+    // employeeId not in DTO 
+    isAdmin: data.is_admin,
+    role: data.role ? this.mapRole(data.role) : undefined,
   });
 
   private mapRole = (data: ApiRoleDTO): Role => ({
     id: String(data.id),
     name: data.name,
-    description: data.description || data.desc || '',
-    desc: data.desc || data.description || '',
-    permissions: [],
-    userCount: data.userCount ?? 0,
-    color: data.color || 'blue',
-    status: this.mapRoleStatus(data.status),
+    description: data.description ?? '',
+    status: data.status ?? undefined,
+    color: data.color ?? 'blue',
+    permissions: data.permissions ?? [],
+    userCount: undefined, // Backend doesn't return count on generic DTO usually
   });
 
   async getAll(): Promise<User[]> {
@@ -85,28 +52,25 @@ export class ApiUserRepository implements IUserRepository {
   }
 
   async create(data: Omit<User, 'id'>): Promise<User> {
-    const payload: UserCreatePayload = {
+    const payload = {
       name: data.name,
       email: data.email,
-      mobile: data.mobile ?? data.phone,
-      department: this.resolveDepartment(data as Partial<ApiUserDTO> & { role?: string }),
-      role: data.role,
+      phone: data.phone ?? data.mobile,
+      role_id: data.role?.id, // Send ID, backend expects role_id for linking
+      password: 'password123', // Default or handled elsewhere
     };
     const result = await httpClient.post<ApiUserDTO>(this.baseUrl, payload);
     return this.mapUser(result);
   }
 
   async update(id: string, data: Partial<User>): Promise<User> {
-    const payload: UserUpdatePayload = {};
+    const payload: any = {};
     if (data.name !== undefined) payload.name = data.name;
     if (data.email !== undefined) payload.email = data.email;
     if (data.status !== undefined) payload.status = data.status;
-    if (data.role !== undefined) payload.role = data.role;
-    if (data.mobile !== undefined || data.phone !== undefined) {
-      payload.mobile = data.mobile ?? data.phone;
-    }
-    if ((data as Partial<ApiUserDTO>).department !== undefined) {
-      payload.department = (data as Partial<ApiUserDTO>).department ?? undefined;
+    if (data.role?.id !== undefined) payload.role_id = data.role.id;
+    if (data.phone !== undefined || data.mobile !== undefined) {
+      payload.phone = data.phone ?? data.mobile;
     }
 
     const result = await httpClient.patch<ApiUserDTO>(`${this.baseUrl}${id}`, payload);
@@ -117,67 +81,55 @@ export class ApiUserRepository implements IUserRepository {
     await httpClient.delete(`${this.baseUrl}${id}`);
   }
 
+  // Role Management
   async getRoles(): Promise<Role[]> {
-    const data = await httpClient.get<ApiRoleDTO[]>('api/roles/');
+    const data = await httpClient.get<ApiRoleDTO[]>(this.roleUrl);
     return data.map(this.mapRole);
   }
 
   async createRole(data: Role): Promise<Role> {
     const payload = {
       name: data.name,
-      description: data.description || data.desc || '',
-      color: data.color || 'blue',
-      status: data.status || 'Active'
+      description: data.description,
+      color: data.color,
+      status: data.status
     };
-    const result = await httpClient.post<ApiRoleDTO>('api/roles/', payload);
+    const result = await httpClient.post<ApiRoleDTO>(this.roleUrl, payload);
     return this.mapRole(result);
   }
 
   async updateRole(id: string, data: Partial<Role>): Promise<Role> {
-    const payload: { description?: string; color?: string; status?: string } = {};
-    if (data.description !== undefined || data.desc !== undefined) {
-      payload.description = data.description || data.desc;
-    }
+    const payload: any = {};
+    if (data.name !== undefined) payload.name = data.name;
+    if (data.description !== undefined) payload.description = data.description;
     if (data.color !== undefined) payload.color = data.color;
     if (data.status !== undefined) payload.status = data.status;
 
-    const result = await httpClient.patch<ApiRoleDTO>(`api/roles/${id}`, payload);
+    const result = await httpClient.patch<ApiRoleDTO>(`${this.roleUrl}${id}`, payload);
     return this.mapRole(result);
   }
 
   async deleteRole(id: string): Promise<void> {
-    await httpClient.delete(`api/roles/${id}`);
+    await httpClient.delete(`${this.roleUrl}${id}`);
   }
 
-  async getAvailablePermissions(): Promise<{ id: string; permission_key: string; description: string }[]> {
+  // Permissions
+  async getAvailablePermissions(): Promise<{ id: string; key: string; description: string }[]> {
     const data = await httpClient.get<ApiPermissionDTO[]>('api/permissions/');
     return data.map((item) => ({
       id: item.id,
-      permission_key: item.permission_key,
+      key: item.key,
       description: item.description ?? '',
     }));
   }
 
   async getRolePermissions(roleId: string): Promise<{ role_id: string; role_name: string; permissions: string[] }> {
-    return await httpClient.get<ApiRolePermissionsDTO>(`api/roles/${roleId}/permissions`);
+    // Note: Backend might return this shape or just list of strings. Assuming standard shape.
+    // If backend endpoint is /roles/{id}/permissions
+    return await httpClient.get<any>(`${this.roleUrl}${roleId}/permissions`);
   }
 
   async setRolePermissions(roleId: string, permissions: string[]): Promise<void> {
-    await httpClient.put(`api/roles/${roleId}/permissions`, { permissions });
-  }
-
-  async getStaff(): Promise<StaffMember[]> {
-    const users = await this.getAll();
-    return users.map((u) => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      phone: u.mobile || u.phone || '',
-      role: u.role,
-      department: this.resolveDepartment(u as Partial<ApiUserDTO> & { role?: string }),
-      status: u.status,
-      lastLogin: u.lastLogin || 'Never',
-      avatar: u.avatar
-    }));
+    await httpClient.put(`${this.roleUrl}${roleId}/permissions`, { permissions });
   }
 }

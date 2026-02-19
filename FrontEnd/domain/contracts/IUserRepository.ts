@@ -6,12 +6,15 @@ export interface IUserRepository {
   create(data: Omit<User, 'id'>): Promise<User>;
   update(id: string, data: Partial<User>): Promise<User>;
   delete(id: string): Promise<void>;
+
+  // Role Management
   getRoles(): Promise<Role[]>;
   createRole(data: Role): Promise<Role>;
   updateRole(id: string, data: Partial<Role>): Promise<Role>;
   deleteRole(id: string): Promise<void>;
-  getStaff(): Promise<StaffMember[]>;
-  getAvailablePermissions(): Promise<{ id: string; permission_key: string; description: string }[]>;
+
+  // Permissions
+  getAvailablePermissions(): Promise<{ id: string; key: string; description: string }[]>;
   getRolePermissions(roleId: string): Promise<{ role_id: string; role_name: string; permissions: string[] }>;
   setRolePermissions(roleId: string, permissions: string[]): Promise<void>;
 }

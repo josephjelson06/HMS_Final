@@ -1,8 +1,5 @@
-"use client";
+import { notFound } from "next/navigation";
 
-import Invoices from "@/presentation/pages/super/Invoices";
-
-export default function SuperInvoicesPage() {
-  return <Invoices />;
+export default function Page() {
+  notFound();
 }
-

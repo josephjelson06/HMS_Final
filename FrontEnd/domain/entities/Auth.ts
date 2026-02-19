@@ -8,6 +8,7 @@ export interface AuthUser {
   roleName?: string;
   userType?: string;
   hotelId?: string;
+  tenantId?: string; // Standardized field
   status?: string;
   mobile?: string;
   phone?: string;
@@ -15,7 +16,6 @@ export interface AuthUser {
   avatar?: string;
   dateAdded?: string;
   permissions?: string[];
-  employee_id?: string;
   isAdmin?: boolean;
   isOrphan?: boolean;
 }

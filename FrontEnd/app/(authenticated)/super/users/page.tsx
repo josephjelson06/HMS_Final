@@ -2,7 +2,6 @@
 
 import UsersManagement from "@/presentation/pages/super/UsersManagement";
 
-export default function SuperUsersPage() {
+export default function UsersPage() {
   return <UsersManagement />;
 }
-

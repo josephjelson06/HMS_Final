@@ -24,32 +24,24 @@ export class ApiPlanRepository implements IPlanRepository {
     const payload = {
       name: data.name,
       price: data.price,
-      rooms: data.rooms,
-      kiosks: data.kiosks,
-      support: data.support,
-      included: data.included,
-      theme: data.theme,
-      max_roles: data.max_roles,
+      period_months: data.period_months,
       max_users: data.max_users,
-      is_archived: data.isArchived ?? data.is_archived ?? false,
+      max_roles: data.max_roles,
+      max_rooms: data.max_rooms,
     };
     const result = await httpClient.post<ApiPlanDTO>(this.baseUrl, payload);
     return this.mapToEntity(result);
   }
 
   async update(id: string, data: PlanUpdateInput): Promise<PlanData> {
-    const payload: Record<string, unknown> = {};
-    if (data.name) payload.name = data.name;
+    // Only send what's present
+    const payload: any = {};
+    if (data.name !== undefined) payload.name = data.name;
     if (data.price !== undefined) payload.price = data.price;
-    if (data.rooms !== undefined) payload.rooms = data.rooms;
-    if (data.kiosks !== undefined) payload.kiosks = data.kiosks;
-    if (data.support) payload.support = data.support;
-    if (data.included) payload.included = data.included;
-    if (data.theme) payload.theme = data.theme;
-    if (data.max_roles !== undefined) payload.max_roles = data.max_roles;
+    if (data.period_months !== undefined) payload.period_months = data.period_months;
     if (data.max_users !== undefined) payload.max_users = data.max_users;
-    if (data.isArchived !== undefined) payload.is_archived = data.isArchived;
-    if (data.is_archived !== undefined) payload.is_archived = data.is_archived;
+    if (data.max_roles !== undefined) payload.max_roles = data.max_roles;
+    if (data.max_rooms !== undefined) payload.max_rooms = data.max_rooms;
 
     const result = await httpClient.patch<ApiPlanDTO>(`${this.baseUrl}/${id}`, payload);
     return this.mapToEntity(result);
@@ -62,18 +54,12 @@ export class ApiPlanRepository implements IPlanRepository {
   private mapToEntity(data: ApiPlanDTO): PlanData {
     return {
       id: String(data.id),
-      name: data.name ?? '',
-      price: data.price ?? 0,
-      rooms: data.rooms ?? 0,
-      kiosks: data.kiosks ?? 0,
-      subscribers: data.subscribers ?? 0,
-      support: data.support ?? '',
-      included: data.included ?? [],
-      theme: data.theme ?? 'blue',
-      max_roles: data.max_roles ?? undefined,
+      name: data.name,
+      price: data.price,
+      period_months: data.period_months ?? undefined,
       max_users: data.max_users ?? undefined,
-      isArchived: data.is_archived ?? false,
-      is_archived: data.is_archived ?? false,
+      max_roles: data.max_roles ?? undefined,
+      max_rooms: data.max_rooms ?? undefined,
     };
   }
 }

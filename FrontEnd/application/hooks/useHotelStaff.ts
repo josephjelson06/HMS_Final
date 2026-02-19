@@ -1,97 +1,83 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { HotelStaffMember, HotelRole } from '@/domain/entities/HotelStaff';
-import { repositories } from '@/infrastructure/config/container';
-import { useAuth } from './useAuth';
+import { useState, useCallback } from 'react';
+import type { User, Role } from '../../domain/entities/User';
+import { repositories } from '../../infrastructure/config/container';
 
-export function useHotelStaff() {
-  const { user } = useAuth();
-  const [staff, setStaff] = useState<HotelStaffMember[]>([]);
-  const [roles, setRoles] = useState<HotelRole[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+export function useHotelStaff(hotelId: string) {
+  const [staff, setStaff] = useState<User[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
-    if (!user?.hotelId) return;
+  const fetchStaff = useCallback(async () => {
+    if (!hotelId) return;
+    setLoading(true);
     try {
-      setLoading(true);
-      const [staffData, rolesData] = await Promise.all([
-        repositories.hotelStaff.getAllStaff(user.hotelId),
-        repositories.hotelStaff.getAllRoles(user.hotelId),
-      ]);
-      setStaff(staffData);
-      setRoles(rolesData);
+      const data = await repositories.hotelStaff.getAllStaff(hotelId);
+      setStaff(data);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch hotel staff'));
+      setError('Failed to load staff');
     } finally {
       setLoading(false);
     }
-  }, [user?.hotelId]);
+  }, [hotelId]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const fetchRoles = useCallback(async () => {
+      if (!hotelId) return;
+      try {
+          const data = await repositories.hotelStaff.getAllRoles(hotelId);
+          setRoles(data);
+      } catch (err) {
+          setError('Failed to load roles');
+      }
+  }, [hotelId]);
 
-  // ── Staff CRUD ────────────────────────────────────────────
-  const createStaff = useCallback(async (data: Omit<HotelStaffMember, 'id'>) => {
-    if (!user?.hotelId) throw new Error('Unauthorized');
-    const created = await repositories.hotelStaff.createStaff(data, user.hotelId);
-    setStaff((prev) => [...prev, created]);
-    return created;
-  }, [user?.hotelId]);
+  const createStaff = async (data: Omit<User, 'id'>) => {
+      const newStaff = await repositories.hotelStaff.createStaff(data, hotelId);
+      setStaff(prev => [...prev, newStaff]);
+      return newStaff;
+  };
 
-  const updateStaff = useCallback(async (id: string, data: Partial<HotelStaffMember>) => {
-    if (!user?.hotelId) throw new Error('Unauthorized');
-    const updated = await repositories.hotelStaff.updateStaff(id, data, user.hotelId);
-    setStaff((prev) => prev.map((s) => (s.id === id ? updated : s)));
-    return updated;
-  }, [user?.hotelId]);
+  const updateStaff = async (id: string, data: Partial<User>) => {
+      const updated = await repositories.hotelStaff.updateStaff(id, data, hotelId);
+      setStaff(prev => prev.map(s => s.id === id ? updated : s));
+      return updated;
+  };
 
-  const deleteStaff = useCallback(async (id: string) => {
-    if (!user?.hotelId) throw new Error('Unauthorized');
-    await repositories.hotelStaff.deleteStaff(id, user.hotelId);
-    setStaff((prev) => prev.filter((s) => s.id !== id));
-  }, [user?.hotelId]);
+  const deleteStaff = async (id: string) => {
+      await repositories.hotelStaff.deleteStaff(id, hotelId);
+      setStaff(prev => prev.filter(s => s.id !== id));
+  }
 
-  // ── Role CRUD ─────────────────────────────────────────────
-  const createRole = useCallback(async (data: Omit<HotelRole, 'id' | 'userCount'>) => {
-    if (!user?.hotelId) throw new Error('Unauthorized');
-    const role = await repositories.hotelStaff.createRole(data, user.hotelId);
-    setRoles((prev) => [...prev, role]);
-    return role;
-  }, [user?.hotelId]);
+  // Role management
+  const createRole = async (data: Omit<Role, 'id' | 'userCount'>) => {
+      const newRole = await repositories.hotelStaff.createRole(data, hotelId);
+      setRoles(prev => [...prev, newRole]);
+      return newRole;
+  }
+  
+  const updateRole = async (id: string, data: Partial<Role>) => {
+      const updated = await repositories.hotelStaff.updateRole(id, data, hotelId);
+      setRoles(prev => prev.map(r => r.id === id ? updated : r));
+      return updated;
+  }
 
-  const updateRole = useCallback(async (name: string, data: Partial<HotelRole>) => {
-    if (!user?.hotelId) throw new Error('Unauthorized');
-    const role = await repositories.hotelStaff.updateRole(name, data, user.hotelId);
-    setRoles((prev) => prev.map((r) => (r.name === name ? role : r)));
-    return role;
-  }, [user?.hotelId]);
+  const deleteRole = async (id: string) => {
+      await repositories.hotelStaff.deleteRole(id, hotelId);
+      setRoles(prev => prev.filter(r => r.id !== id));
+  }
 
-  const deleteRole = useCallback(async (name: string) => {
-    if (!user?.hotelId) throw new Error('Unauthorized');
-    await repositories.hotelStaff.deleteRole(name, user.hotelId);
-    setRoles((prev) => prev.filter((r) => r.name !== name));
-  }, [user?.hotelId]);
-
-  // ── Permissions Matrix ────────────────────────────────────
-  const getAvailablePermissions = useCallback(async () => {
-    if (!user?.hotelId) throw new Error('Unauthorized');
-    return repositories.hotelStaff.getAvailablePermissions(user.hotelId);
-  }, [user?.hotelId]);
-
-  const getRolePermissions = useCallback(async (roleId: string) => {
-    if (!user?.hotelId) throw new Error('Unauthorized');
-    return repositories.hotelStaff.getRolePermissions(user.hotelId, roleId);
-  }, [user?.hotelId]);
-
-  const setRolePermissions = useCallback(async (roleId: string, permissions: string[]) => {
-    if (!user?.hotelId) throw new Error('Unauthorized');
-    await repositories.hotelStaff.setRolePermissions(user.hotelId, roleId, permissions);
-  }, [user?.hotelId]);
-
-  return {
-    staff, roles, loading, error,
-    createStaff, updateStaff, deleteStaff,
-    createRole, updateRole, deleteRole,
-    getAvailablePermissions, getRolePermissions, setRolePermissions,
-    refetch: fetchData,
+  return { 
+      staff, 
+      roles, 
+      loading, 
+      error, 
+      fetchStaff, 
+      fetchRoles, 
+      createStaff, 
+      updateStaff, 
+      deleteStaff,
+      createRole,
+      updateRole,
+      deleteRole
   };
 }
