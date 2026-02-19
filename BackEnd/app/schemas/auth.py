@@ -1,6 +1,5 @@
 from uuid import UUID
 from typing import List, Optional
-
 from pydantic import BaseModel
 
 
@@ -18,21 +17,14 @@ class UserResponse(BaseModel):
     id: UUID
     email: str
     name: str | None = None
-    role: str | None = None
-    role_name: str | None = None
-    user_type: str
+    user_type: str  # "platform" or "tenant"
     tenant_id: UUID | None = None
-    tenant_type: str
-    access_token: str | None = None
+
+    # Flattened role info for frontend convenience
+    role_name: str | None = None
     permissions: List[str] = []
-    is_admin: bool = False
-    is_orphan: bool = False
-    mobile: str | None = None
-    employee_id: str | None = None
-    status: str | None = None
 
+    access_token: str | None = None
 
-class ProfileUpdate(BaseModel):
-    name: Optional[str] = None
-    mobile: Optional[str] = None
-    password: Optional[str] = None
+    class Config:
+        from_attributes = True

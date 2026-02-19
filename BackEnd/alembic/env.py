@@ -14,15 +14,15 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.config import get_settings
-from app.database import Base
+from app.db.base import Base
 
 # Import all models to ensure they are attached to Base.metadata
-import app.models.hotel  # noqa: F401
-import app.models.invoice  # noqa: F401
-import app.models.plan  # noqa: F401
-import app.models.role  # noqa: F401
-import app.models.room  # noqa: F401
-import app.models.user  # noqa: F401
+import app.models.platform  # noqa: F401
+import app.models.tenant  # noqa: F401
+import app.models.permissions  # noqa: F401
+import app.models.mappings  # noqa: F401
+import app.models.billing  # noqa: F401
+import app.models.support  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

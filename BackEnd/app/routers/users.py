@@ -1,102 +1,104 @@
 ﻿from uuid import UUID
-
-from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
 from typing import List
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.modules.rbac import require_admin_role, require_permission
-from app.schemas.user import User as UserSchema, UserCreate, UserUpdate
-from app.services.user_service import UserService
+from app.schemas.platform import PlatformUserRead, PlatformUserCreate
+from app.schemas.tenant_users import TenantUserRead, TenantUserCreate, TenantUserUpdate
+from app.services.platform_user_service import PlatformUserService
+from app.services.tenant_user_service import TenantUserService
+from app.modules.rbac import require_permission, require_admin_role
 
-router = APIRouter(prefix="/api", tags=["users"])
+# We can split this into two routers or keep one with different prefixes
+router = APIRouter(tags=["Users"])
 
-
-@router.get(
-    "/users/",
-    response_model=List[UserSchema],
-    dependencies=[Depends(require_permission("platform:users:read"))],
-)
-def get_platform_users(db: Session = Depends(get_db)):
-    return UserService(db).get_platform_users()
+# --- Platform Users ---
 
 
-@router.get(
-    "/users/{user_id}",
-    response_model=UserSchema,
-    dependencies=[Depends(require_permission("platform:users:read"))],
-)
-def get_platform_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
-    return UserService(db).get_platform_user_by_id(user_id=user_id)
+@router.get("/api/platform/users", response_model=List[PlatformUserRead])
+def get_platform_users(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("platform:users:read")),
+):
+    service = PlatformUserService(db)
+    return service.get_all(skip, limit)
 
 
-@router.post(
-    "/users/",
-    response_model=UserSchema,
-    status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_admin_role("platform"))],
-)
-def create_platform_user(user: UserCreate, db: Session = Depends(get_db)):
-    return UserService(db).create_platform_user(payload=user)
+@router.post("/api/platform/users", response_model=PlatformUserRead)
+def create_platform_user(
+    payload: PlatformUserCreate,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("platform:users:write")),
+):
+    service = PlatformUserService(db)
+    return service.create(payload)
 
 
-@router.patch(
-    "/users/{user_id}",
-    response_model=UserSchema,
-    dependencies=[Depends(require_admin_role("platform"))],
-)
-def update_platform_user(user_id: UUID, user_update: UserUpdate, db: Session = Depends(get_db)):
-    return UserService(db).update_platform_user(user_id=user_id, payload=user_update)
+@router.delete("/api/platform/users/{user_id}")
+def delete_platform_user(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("platform:users:write")),
+):
+    service = PlatformUserService(db)
+    if not service.delete(user_id):
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User deleted"}
 
 
-@router.delete(
-    "/users/{user_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require_admin_role("platform"))],
-)
-def delete_platform_user(user_id: UUID, db: Session = Depends(get_db)):
-    UserService(db).delete_platform_user(user_id=user_id)
-    return None
+# --- Tenant Users ---
 
 
-@router.get(
-    "/hotels/{hotel_id}/users",
-    response_model=List[UserSchema],
-    dependencies=[Depends(require_permission("hotel:users:read"))],
-)
-def get_hotel_users(hotel_id: UUID, db: Session = Depends(get_db)):
-    return UserService(db).get_hotel_users(hotel_id=hotel_id)
+@router.get("/api/hotels/{hotel_id}/users", response_model=List[TenantUserRead])
+def get_tenant_users(
+    hotel_id: UUID,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    # Gate: must be platform admin OR tenant user with permission
+    _=Depends(require_permission("hotel:users:read")),
+):
+    service = TenantUserService(db)
+    return service.get_all(hotel_id, skip, limit)
 
 
-@router.post(
-    "/hotels/{hotel_id}/users",
-    response_model=UserSchema,
-    status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_admin_role("hotel"))],
-)
-def create_hotel_user(hotel_id: UUID, user: UserCreate, db: Session = Depends(get_db)):
-    return UserService(db).create_hotel_user(hotel_id=hotel_id, payload=user)
+@router.post("/api/hotels/{hotel_id}/users", response_model=TenantUserRead)
+def create_tenant_user(
+    hotel_id: UUID,
+    payload: TenantUserCreate,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:users:write")),
+):
+    service = TenantUserService(db)
+    return service.create(hotel_id, payload)
 
 
-@router.patch(
-    "/hotels/{hotel_id}/users/{user_id}",
-    response_model=UserSchema,
-    dependencies=[Depends(require_admin_role("hotel"))],
-)
-def update_hotel_user(
+@router.put("/api/hotels/{hotel_id}/users/{user_id}", response_model=TenantUserRead)
+def update_tenant_user(
     hotel_id: UUID,
     user_id: UUID,
-    user_update: UserUpdate,
+    payload: TenantUserUpdate,  # We should use schema, but update service took dict. Let's fix service usage.
     db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:users:write")),
 ):
-    return UserService(db).update_hotel_user(hotel_id=hotel_id, user_id=user_id, payload=user_update)
+    service = TenantUserService(db)
+    updated = service.update(hotel_id, user_id, payload.model_dump(exclude_unset=True))
+    if not updated:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated
 
 
-@router.delete(
-    "/hotels/{hotel_id}/users/{user_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require_admin_role("hotel"))],
-)
-def delete_hotel_user(hotel_id: UUID, user_id: UUID, db: Session = Depends(get_db)):
-    UserService(db).delete_hotel_user(hotel_id=hotel_id, user_id=user_id)
-    return None
+@router.delete("/api/hotels/{hotel_id}/users/{user_id}")
+def delete_tenant_user(
+    hotel_id: UUID,
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:users:write")),
+):
+    service = TenantUserService(db)
+    if not service.delete(hotel_id, user_id):
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User deleted"}

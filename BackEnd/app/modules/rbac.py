@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from uuid import UUID
+from typing import Union
 
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.auth.dependencies import get_current_user
 from app.database import get_db
-from app.models.role import Permission, Role, RolePermission, UserRole
-from app.models.user import User
+from app.models.platform import PlatformUser, PlatformRole
+from app.models.tenant import TenantUser, TenantRole
 
 
 SUPER_ADMIN_ROLE = "super admin"
@@ -19,48 +20,6 @@ def _normalized_role_name(role_name: str | None) -> str:
     return (role_name or "").strip().lower()
 
 
-def _get_user_roles(db: Session, user: User) -> list[Role]:
-    query = (
-        db.query(Role)
-        .join(UserRole, UserRole.role_id == Role.id)
-        .filter(UserRole.user_id == user.id)
-    )
-    if user.tenant_id is not None:
-        query = query.filter(UserRole.tenant_id == user.tenant_id)
-    return query.all()
-
-
-def _has_super_admin_role(roles: list[Role]) -> bool:
-    for role in roles:
-        if role.tenant_id is None and _normalized_role_name(role.name) == SUPER_ADMIN_ROLE:
-            return True
-    return False
-
-
-def _has_gm_role_for_tenant(roles: list[Role], hotel_id: UUID | None = None) -> bool:
-    for role in roles:
-        if (
-            role.tenant_id is not None
-            and _normalized_role_name(role.name) == GENERAL_MANAGER_ROLE
-            and (hotel_id is None or role.tenant_id == hotel_id)
-        ):
-            return True
-    return False
-
-
-def _get_user_permissions(db: Session, user: User, role_ids: list[UUID]) -> set[str]:
-    if not role_ids:
-        return set()
-
-    perm_rows = (
-        db.query(Permission.permission_key)
-        .join(RolePermission, RolePermission.permission_id == Permission.id)
-        .filter(RolePermission.role_id.in_(role_ids))
-        .all()
-    )
-    return {row[0] for row in perm_rows}
-
-
 def require_permission(permission: str):
     """Permission + tenant-boundary authorization gate."""
 
@@ -68,25 +27,38 @@ def require_permission(permission: str):
 
     def dependency(
         hotel_id: UUID | None = None,
-        current_user: User = Depends(get_current_user),
+        current_user: Union[PlatformUser, TenantUser] = Depends(get_current_user),
         db: Session = Depends(get_db),
-    ) -> User:
-        user_type = (current_user.user_type or "").lower()
-        roles = _get_user_roles(db, current_user)
-        role_ids = [role.id for role in roles]
-        permissions = _get_user_permissions(db, current_user, role_ids)
+    ) -> Union[PlatformUser, TenantUser]:
 
-        if required_scope == "platform" and user_type != "platform":
+        # Determine user type and role
+        is_platform = isinstance(current_user, PlatformUser)
+        user_type = "platform" if is_platform else "hotel"
+
+        # Get role and permissions via relationship
+        role = current_user.role
+        if not role:
+            # Should technically not happen due to FK constraints, but safe guard
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User has no role assigned",
+            )
+
+        # Gather permission keys
+        permissions = {p.key for p in role.permissions}
+
+        if required_scope == "platform" and not is_platform:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Platform scope required",
             )
 
         if required_scope == "hotel" and user_type not in {"hotel", "platform"}:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Hotel scope required",
-            )
+            # Platform users generally can access hotel scope if they have permission?
+            # Usually platform users have platform scope permissions like "platform:hotels:read".
+            # If a platform user tries to access a hotel route, strict tenant check might block them unless logic allows.
+            # For now, following old logic: platform users are super admins usually.
+            pass
 
         if (
             permission
@@ -94,22 +66,26 @@ def require_permission(permission: str):
             and "*" not in permissions
             and "*:*:*" not in permissions
         ):
+            # Check for super admin implicit match?
+            # If role is super admin, maybe bypass?
+            # But "Super Admin" role usually has all permissions assigned in DB.
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Missing permission: {permission}",
             )
 
-        # Hotel users cannot access other hotels' resources even if they have matching keys.
-        if (
-            required_scope == "hotel"
-            and hotel_id is not None
-            and user_type == "hotel"
-            and current_user.tenant_id != hotel_id
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Cross-tenant access denied",
-            )
+        # Tenant boundary check
+        # Platform users: can access any tenant if they have permission?
+        # Tenant users: must match tenant_id
+        if required_scope == "hotel" and hotel_id is not None:
+            if not is_platform:
+                # current_user is TenantUser
+                if current_user.tenant_id != hotel_id:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Cross-tenant access denied",
+                    )
+            # Platform users: allowed to access hotel_id if they have permission
 
         return current_user
 
@@ -127,12 +103,14 @@ def require_admin_role(scope: str):
 
     def dependency(
         hotel_id: UUID | None = None,
-        current_user: User = Depends(get_current_user),
-        db: Session = Depends(get_db),
-    ) -> User:
-        roles = _get_user_roles(db, current_user)
-        has_sa = _has_super_admin_role(roles)
-        has_gm = _has_gm_role_for_tenant(roles, hotel_id)
+        current_user: Union[PlatformUser, TenantUser] = Depends(get_current_user),
+    ) -> Union[PlatformUser, TenantUser]:
+
+        is_platform = isinstance(current_user, PlatformUser)
+        role_name = _normalized_role_name(current_user.role.name)
+
+        has_sa = is_platform and role_name == SUPER_ADMIN_ROLE
+        has_gm = not is_platform and role_name == GENERAL_MANAGER_ROLE
 
         if normalized_scope == "platform":
             if not has_sa:
@@ -143,12 +121,13 @@ def require_admin_role(scope: str):
             return current_user
 
         if normalized_scope == "hotel":
-            if (current_user.user_type or "").lower() == "hotel":
+            if not is_platform:
                 if hotel_id is not None and current_user.tenant_id != hotel_id:
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN,
                         detail="Cross-tenant admin access denied",
                     )
+
             if not (has_sa or has_gm):
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,

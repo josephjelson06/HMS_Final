@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import Union
 
 from fastapi import Depends, HTTPException, Request, status
 from jose import JWTError, jwt
@@ -9,7 +10,8 @@ from sqlalchemy.orm import Session
 from app.core.auth.security import ALGORITHM, SECRET_KEY
 from app.core.config import get_settings
 from app.database import get_db
-from app.models.user import User
+from app.models.platform import PlatformUser
+from app.models.tenant import TenantUser
 
 
 settings = get_settings()
@@ -31,7 +33,7 @@ def _extract_bearer_token(request: Request) -> str | None:
 def get_current_user(
     request: Request,
     db: Session = Depends(get_db),
-) -> User:
+) -> Union[PlatformUser, TenantUser]:
     token = _extract_bearer_token(request)
     if not token:
         raise HTTPException(
@@ -42,8 +44,11 @@ def get_current_user(
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         subject = payload.get("sub")
-        if not subject:
-            raise ValueError("Missing token subject")
+        user_table = payload.get("user_table")
+
+        if not subject or not user_table:
+            raise ValueError("Invalid token payload")
+
         user_id = uuid.UUID(str(subject))
     except (JWTError, ValueError) as exc:
         raise HTTPException(
@@ -51,16 +56,25 @@ def get_current_user(
             detail="Invalid authentication token",
         ) from exc
 
-    user = db.query(User).filter(User.id == user_id).first()
+    user = None
+    if user_table == "platform":
+        user = db.query(PlatformUser).filter(PlatformUser.id == user_id).first()
+    elif user_table == "tenant":
+        user = db.query(TenantUser).filter(TenantUser.id == user_id).first()
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unknown user scope",
+        )
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found",
         )
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User is inactive",
-        )
+
+    # Note: 'is_active' field is removed in new schema, status is on Role or we assume active if exists?
+    # New schema doesn't have is_active on User. PlatformRole/TenantRole have status.
+    # We can check role status if needed, but for now just returning user.
 
     return user

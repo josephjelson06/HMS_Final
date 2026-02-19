@@ -1,22 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import (
-    auth_simple,  # New simplified auth
-    hotels,
+    auth_simple,
+    tenants,
     subscriptions,
     plans,
     users,
     roles,
-    rooms,
-    settings,
     permissions,
-    # auth, # Disable old auth
+    support,
+    onboarding,
 )
 
 app = FastAPI(
     title="HMS Backend API",
     description="Backend API for Hotel Management System",
-    version="1.0.0",
+    version="2.0.0",
 )
 
 # Configure CORS to allow requests from the frontend
@@ -36,21 +35,20 @@ app.add_middleware(
 )
 
 
-app.include_router(hotels.router)
-# app.include_router(kiosk.router)
+app.include_router(tenants.router)
 app.include_router(subscriptions.router)
 app.include_router(plans.router)
 app.include_router(users.router)
 app.include_router(roles.router)
-app.include_router(rooms.router)
-app.include_router(settings.router)
 app.include_router(permissions.router)
-app.include_router(auth_simple.router)  # Mounts at /auth/login etc.
+app.include_router(auth_simple.router)
+app.include_router(support.router)
+app.include_router(onboarding.router)
 
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to HMS Backend API"}
+    return {"message": "Welcome to HMS Backend API v2"}
 
 
 @app.get("/health")

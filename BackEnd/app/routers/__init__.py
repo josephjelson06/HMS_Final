@@ -1,13 +1,23 @@
-from . import auth_simple, hotels, permissions, plans, roles, rooms, settings, subscriptions, users
+from . import (
+    auth_simple,
+    tenants,
+    permissions,
+    plans,
+    roles,
+    subscriptions,
+    users,
+    support,
+    onboarding,
+)
 
 __all__ = [
     "auth_simple",
-    "hotels",
+    "tenants",
     "permissions",
     "plans",
     "roles",
-    "rooms",
-    "settings",
     "subscriptions",
     "users",
+    "support",
+    "onboarding",
 ]

@@ -1,109 +1,82 @@
 ﻿from uuid import UUID
-
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 from typing import List
+from fastapi import APIRouter, Depends, HTTPException, Body
+from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.modules.rbac import require_admin_role, require_permission
-from app.schemas.permission import RolePermissionsIn, RolePermissionsOut
-from app.schemas.role import Role as RoleSchema, RoleCreate, RoleUpdate
-from app.services.role_service import RoleService
+from app.schemas.platform import PlatformRoleRead
+from app.schemas.tenant_roles import TenantRoleRead, TenantRoleCreate
+from app.services.platform_role_service import PlatformRoleService
+from app.services.tenant_role_service import TenantRoleService
+from app.modules.rbac import require_permission
 
-router = APIRouter(prefix="/api", tags=["roles"])
+router = APIRouter(tags=["Roles"])
 
-
-@router.get(
-    "/roles/",
-    response_model=List[RoleSchema],
-    dependencies=[Depends(require_permission("platform:roles:read"))],
-)
-def get_platform_roles(db: Session = Depends(get_db)):
-    return RoleService(db).get_platform_roles()
+# --- Platform Roles ---
 
 
-@router.post(
-    "/roles/",
-    response_model=RoleSchema,
-    status_code=201,
-    dependencies=[Depends(require_admin_role("platform"))],
-)
-def create_platform_role(role: RoleCreate, db: Session = Depends(get_db)):
-    return RoleService(db).create_platform_role(payload=role)
+@router.get("/api/platform/roles", response_model=List[PlatformRoleRead])
+def get_platform_roles(
+    db: Session = Depends(get_db), _=Depends(require_permission("platform:roles:read"))
+):
+    service = PlatformRoleService(db)
+    return service.get_all()
 
 
-@router.patch(
-    "/roles/{role_id}",
-    response_model=RoleSchema,
-    dependencies=[Depends(require_admin_role("platform"))],
-)
-def update_platform_role(role_id: UUID, role_update: RoleUpdate, db: Session = Depends(get_db)):
-    return RoleService(db).update_platform_role(role_id=role_id, payload=role_update)
+@router.post("/api/platform/roles", response_model=PlatformRoleRead)
+def create_platform_role(
+    name: str = Body(..., embed=True),
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("platform:roles:write")),
+):
+    service = PlatformRoleService(db)
+    return service.create(name)
 
 
-@router.delete(
-    "/roles/{role_id}",
-    status_code=204,
-    dependencies=[Depends(require_admin_role("platform"))],
-)
-def delete_platform_role(role_id: UUID, db: Session = Depends(get_db)):
-    RoleService(db).delete_platform_role(role_id=role_id)
-    return None
+@router.put("/api/platform/roles/{role_id}/permissions")
+def update_platform_role_permissions(
+    role_id: UUID,
+    permissions: List[str] = Body(...),
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("platform:roles:write")),
+):
+    service = PlatformRoleService(db)
+    service.update_permissions(role_id, permissions)
+    return {"message": "Permissions updated"}
 
 
-@router.get(
-    "/roles/{role_id}/permissions",
-    response_model=RolePermissionsOut,
-    dependencies=[Depends(require_permission("platform:roles:read"))],
-)
-def get_platform_role_permissions(role_id: UUID, db: Session = Depends(get_db)):
-    role_name, permissions = RoleService(db).get_platform_role_permissions(role_id=role_id)
-    return RolePermissionsOut(role_id=role_id, role_name=role_name, permissions=permissions)
+# --- Tenant Roles ---
 
 
-@router.put(
-    "/roles/{role_id}/permissions",
-    response_model=RolePermissionsOut,
-    dependencies=[Depends(require_admin_role("platform"))],
-)
-def set_platform_role_permissions(role_id: UUID, body: RolePermissionsIn, db: Session = Depends(get_db)):
-    role_name = RoleService(db).set_platform_role_permissions(role_id=role_id, permissions=body.permissions)
-    return RolePermissionsOut(role_id=role_id, role_name=role_name, permissions=body.permissions)
+@router.get("/api/hotels/{hotel_id}/roles", response_model=List[TenantRoleRead])
+def get_tenant_roles(
+    hotel_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:roles:read")),
+):
+    service = TenantRoleService(db)
+    return service.get_all(hotel_id)
 
 
-@router.get(
-    "/hotels/{hotel_id}/roles",
-    response_model=List[RoleSchema],
-    dependencies=[Depends(require_permission("hotel:users:read"))],
-)
-def get_hotel_roles(hotel_id: UUID, db: Session = Depends(get_db)):
-    return RoleService(db).get_hotel_roles(hotel_id=hotel_id)
+@router.post("/api/hotels/{hotel_id}/roles", response_model=TenantRoleRead)
+def create_tenant_role(
+    hotel_id: UUID,
+    payload: TenantRoleCreate,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:roles:write")),
+):
+    service = TenantRoleService(db)
+    return service.create(hotel_id, payload)
 
 
-@router.post(
-    "/hotels/{hotel_id}/roles",
-    response_model=RoleSchema,
-    status_code=201,
-    dependencies=[Depends(require_admin_role("hotel"))],
-)
-def create_hotel_role(hotel_id: UUID, role: RoleCreate, db: Session = Depends(get_db)):
-    return RoleService(db).create_hotel_role(hotel_id=hotel_id, payload=role)
-
-
-@router.patch(
-    "/hotels/{hotel_id}/roles/{role_name}",
-    response_model=RoleSchema,
-    dependencies=[Depends(require_admin_role("hotel"))],
-)
-def update_hotel_role(hotel_id: UUID, role_name: str, role_update: RoleUpdate, db: Session = Depends(get_db)):
-    return RoleService(db).update_hotel_role(hotel_id=hotel_id, role_name=role_name, payload=role_update)
-
-
-@router.delete(
-    "/hotels/{hotel_id}/roles/{role_name}",
-    status_code=204,
-    dependencies=[Depends(require_admin_role("hotel"))],
-)
-def delete_hotel_role(hotel_id: UUID, role_name: str, db: Session = Depends(get_db)):
-    RoleService(db).delete_hotel_role(hotel_id=hotel_id, role_name=role_name)
-    return None
+@router.put("/api/hotels/{hotel_id}/roles/{role_id}/permissions")
+def update_tenant_role_permissions(
+    hotel_id: UUID,
+    role_id: UUID,
+    permissions: List[str] = Body(...),
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:roles:write")),
+):
+    service = TenantRoleService(db)
+    service.update_permissions(hotel_id, role_id, permissions)
+    return {"message": "Permissions updated"}

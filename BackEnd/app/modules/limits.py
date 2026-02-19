@@ -5,33 +5,40 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.models.hotel import Hotel
-from app.models.plan import Plan
-from app.models.role import Role
-from app.models.room import Room
-from app.models.user import User
+from app.models.tenant import Tenant, TenantUser, TenantRole
+from app.models.billing import Plan
 
 
-def _load_plan_for_hotel(db: Session, hotel_id: UUID) -> Plan:
-    hotel = db.query(Hotel).filter(Hotel.id == hotel_id).first()
-    if hotel is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hotel not found")
+def _load_plan_for_tenant(db: Session, tenant_id: UUID) -> Plan:
+    tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+    if tenant is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found"
+        )
 
-    plan = db.query(Plan).filter(Plan.id == hotel.plan_id).first()
+    if not tenant.plan_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tenant is not linked to a plan",
+        )
+
+    plan = db.query(Plan).filter(Plan.id == tenant.plan_id).first()
     if plan is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Hotel is not linked to a valid plan",
+            detail="Linked plan not found",
         )
     return plan
 
 
-def check_user_limit(db: Session, hotel_id: UUID) -> None:
-    plan = _load_plan_for_hotel(db, hotel_id)
+def check_user_limit(db: Session, tenant_id: UUID) -> None:
+    plan = _load_plan_for_tenant(db, tenant_id)
     if plan.max_users is None:
         return
 
-    current_users = db.query(User).filter(User.tenant_id == hotel_id).count()
+    current_users = (
+        db.query(TenantUser).filter(TenantUser.tenant_id == tenant_id).count()
+    )
     if current_users >= plan.max_users:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -39,12 +46,14 @@ def check_user_limit(db: Session, hotel_id: UUID) -> None:
         )
 
 
-def check_role_limit(db: Session, hotel_id: UUID) -> None:
-    plan = _load_plan_for_hotel(db, hotel_id)
+def check_role_limit(db: Session, tenant_id: UUID) -> None:
+    plan = _load_plan_for_tenant(db, tenant_id)
     if plan.max_roles is None:
         return
 
-    current_roles = db.query(Role).filter(Role.tenant_id == hotel_id).count()
+    current_roles = (
+        db.query(TenantRole).filter(TenantRole.tenant_id == tenant_id).count()
+    )
     if current_roles >= plan.max_roles:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -52,14 +61,4 @@ def check_role_limit(db: Session, hotel_id: UUID) -> None:
         )
 
 
-def check_room_limit(db: Session, hotel_id: UUID, adding: int = 1) -> None:
-    plan = _load_plan_for_hotel(db, hotel_id)
-    if plan.rooms is None:
-        return
-
-    current_rooms = db.query(Room).filter(Room.tenant_id == hotel_id).count()
-    if current_rooms + adding > plan.rooms:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Room limit reached for current plan ({plan.rooms})",
-        )
+# Rooms removed, so check_room_limit is gone.

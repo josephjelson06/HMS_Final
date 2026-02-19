@@ -1,21 +1,6 @@
-from app.models.hotel import Hotel, Tenant
-from app.models.invoice import Invoice
-from app.models.plan import Plan
-from app.models.role import Permission, Role, RolePermission, UserRole
-from app.models.room import Building, Room, RoomCategory
-from app.models.user import User
-
-__all__ = [
-    "Building",
-    "Hotel",
-    "Invoice",
-    "Permission",
-    "Plan",
-    "Role",
-    "RolePermission",
-    "Room",
-    "RoomCategory",
-    "Tenant",
-    "User",
-    "UserRole",
-]
+from .platform import PlatformRole, PlatformUser
+from .tenant import Tenant, TenantRole, TenantUser
+from .permissions import Permission
+from .mappings import platform_role_permissions, tenant_role_permissions
+from .billing import Plan, Subscription
+from .support import SupportTicket

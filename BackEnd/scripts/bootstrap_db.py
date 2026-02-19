@@ -1,84 +1,143 @@
-import os
+import logging
 import sys
-import uuid
+import os
 
-# Bootstrap import path
-here = os.path.abspath(os.path.dirname(__file__))
-backend_root = os.path.abspath(os.path.join(here, ".."))
-if backend_root not in sys.path:
-    sys.path.insert(0, backend_root)
+# Add the project directory to the python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy.orm import Session
 from app.database import SessionLocal
-from app.models.hotel import Tenant
-from app.models.plan import Plan
-from app.models.user import User
+from app.models.platform import PlatformRole, PlatformUser
+from app.models.permissions import Permission
+from app.models.billing import Plan
+from app.models.mappings import platform_role_permissions
 from app.core.auth.security import get_password_hash
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+PLATFORM_PERMISSIONS = [
+    "platform:tenants:read",
+    "platform:tenants:write",
+    "platform:users:read",
+    "platform:users:write",
+    "platform:roles:read",
+    "platform:roles:write",
+    "platform:settings:read",
+    "platform:settings:write",
+]
+
+HOTEL_PERMISSIONS = [
+    "hotel:dashboard:read",
+    "hotel:users:read",
+    "hotel:users:write",
+    "hotel:roles:read",
+    "hotel:roles:write",
+    "hotel:billing:read",
+    "hotel:billing:write",
+    "hotel:support:read",
+    "hotel:support:write",
+    "hotel:guests:read",
+    "hotel:guests:write",
+]
 
 
 def bootstrap():
-    db: Session = SessionLocal()
+    db = SessionLocal()
     try:
-        # 1. Ensure a default Plan exists
-        plan = db.query(Plan).filter(Plan.name == "Free Plan").first()
-        if not plan:
-            plan = Plan(
-                id=uuid.uuid4(),
-                name="Free Plan",
-                price=0.0,
-                rooms=10,
-                kiosks=2,
-                support="Email",
-                included=[],
-                theme="default",
-                max_roles=5,
-                max_users=10,
-            )
-            db.add(plan)
-            db.flush()
-            print(f"Created default plan: {plan.name}")
-
-        # 2. Ensure Platform Tenant exists
-        platform_tenant = (
-            db.query(Tenant).filter(Tenant.tenant_type == "platform").first()
-        )
-        if not platform_tenant:
-            platform_tenant = Tenant(
-                id=uuid.uuid4(),
-                name="ATC Platform",
-                tenant_key="atc-platform",
-                tenant_type="platform",
-                email="admin@atc.com",
-                plan_id=plan.id,
-                status="Active",
-            )
-            db.add(platform_tenant)
-            db.flush()
-            print(f"Created platform tenant: {platform_tenant.name}")
-
-        # 3. Ensure Super Admin User exists
-        admin_email = "admin@atc.com"
-        admin_user = db.query(User).filter(User.email == admin_email).first()
-        if not admin_user:
-            admin_user = User(
-                id=uuid.uuid4(),
-                tenant_id=platform_tenant.id,
-                email=admin_email,
-                username="admin",
-                name="Platform Admin",
-                password_hash=get_password_hash("password123"),
-                user_type="platform",
-                is_active=True,
-            )
-            db.add(admin_user)
-            db.flush()
-            print(f"Created super admin user: {admin_email}")
-
+        # 1. Create Permissions
+        logger.info("Seeding permissions...")
+        all_perms = PLATFORM_PERMISSIONS + HOTEL_PERMISSIONS
+        for perm_key in all_perms:
+            exists = db.query(Permission).filter(Permission.key == perm_key).first()
+            if not exists:
+                db.add(Permission(key=perm_key, description=f"Permission {perm_key}"))
         db.commit()
-        print("Bootstrap successful!")
+
+        # 2. Create Super Admin Role
+        logger.info("Seeding Platform Super Admin Role...")
+        sa_role = (
+            db.query(PlatformRole).filter(PlatformRole.name == "Super Admin").first()
+        )
+        if not sa_role:
+            sa_role = PlatformRole(name="Super Admin")
+            db.add(sa_role)
+            db.commit()
+            db.refresh(sa_role)
+
+        # 3. Assign Platform Permissions to Super Admin
+        logger.info("Assigning permissions to Super Admin...")
+        # Clear existing
+        db.execute(
+            platform_role_permissions.delete().where(
+                platform_role_permissions.c.role_id == sa_role.id
+            )
+        )
+        # Add all platform permissions
+        perms = (
+            db.query(Permission).filter(Permission.key.in_(PLATFORM_PERMISSIONS)).all()
+        )
+        for p in perms:
+            db.execute(
+                platform_role_permissions.insert().values(
+                    role_id=sa_role.id, permission_id=p.id
+                )
+            )
+        db.commit()
+
+        # 4. Create Super Admin User
+        logger.info("Seeding Super Admin User...")
+        admin_email = "admin@atc.com"
+        admin = db.query(PlatformUser).filter(PlatformUser.email == admin_email).first()
+        if not admin:
+            admin = PlatformUser(
+                email=admin_email,
+                name="System Administrator",
+                password_hash=get_password_hash("password123"),
+                role_id=sa_role.id,
+            )
+            db.add(admin)
+            db.commit()
+            logger.info(f"Created admin user: {admin_email} / password123")
+        else:
+            logger.info("Admin user already exists")
+
+        # 5. Create Default Plans
+        logger.info("Seeding Default Plans...")
+        plans = [
+            {
+                "name": "Starter",
+                "period_months": 1,
+                "max_users": 5,
+                "max_roles": 3,
+                "max_rooms": 10,
+            },
+            {
+                "name": "Professional",
+                "period_months": 1,
+                "max_users": 20,
+                "max_roles": 10,
+                "max_rooms": 50,
+            },
+            {
+                "name": "Enterprise",
+                "period_months": 12,
+                "max_users": 999,
+                "max_roles": 999,
+                "max_rooms": 999,
+            },
+        ]
+
+        for p_data in plans:
+            exists = db.query(Plan).filter(Plan.name == p_data["name"]).first()
+            if not exists:
+                db.add(Plan(**p_data))
+        db.commit()
+
+        logger.info("Bootstrap completed successfully!")
+
     except Exception as e:
+        logger.error(f"Bootstrap failed: {e}")
         db.rollback()
-        print(f"Bootstrap failed: {e}")
         raise
     finally:
         db.close()
