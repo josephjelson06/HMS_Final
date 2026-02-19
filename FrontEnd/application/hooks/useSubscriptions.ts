@@ -19,5 +19,17 @@ export function useSubscriptions() {
     }
   }, []);
 
-  return { subscriptions, loading, error, fetchSubscriptions };
+  const updateSubscription = useCallback(async (id: string, data: Partial<Subscription>) => {
+    setLoading(true);
+    try {
+      await repositories.subscriptions.update(id, data);
+      await fetchSubscriptions();
+    } catch (err) {
+      setError('Failed to update subscription');
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchSubscriptions]);
+
+  return { subscriptions, loading, error, fetchSubscriptions, updateSubscription };
 }
