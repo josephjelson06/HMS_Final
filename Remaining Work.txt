@@ -1,6 +1,7 @@
 Platform Page
 - Dashboard Page -> Done
 - Tenant Details Page -> Done (Glitch fixed)
+- Fix Tenant Page Design -> Done
 
 Tenant Page
 - Dashboard Page
