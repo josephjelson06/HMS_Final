@@ -7,7 +7,21 @@ from app.schemas.billing import SubscriptionRead
 from app.services.subscription_service import SubscriptionService
 from app.modules.rbac import require_permission
 
+from typing import List
+
 router = APIRouter(tags=["Subscriptions"])
+
+
+@router.get("/api/subscriptions", response_model=List[SubscriptionRead])
+@router.get("/api/subscriptions/", response_model=List[SubscriptionRead])
+def get_subscriptions(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    # _=Depends(require_permission("platform:billing:read")),
+):
+    service = SubscriptionService(db)
+    return service.get_all(skip, limit)
 
 
 @router.get("/api/hotels/{hotel_id}/subscription", response_model=SubscriptionRead)

@@ -9,7 +9,7 @@ Tenant Page
 - Roles Page -> Done
 - Billing Page -> Done
 - Helpdesk Page -> Done
-- My Subscriptions Page
+- My Subscriptions Page -> [Skipped for now]
 
 From the commit
 (f525365599805cbca499a125642d5237be4da2a3)

@@ -224,7 +224,7 @@ const Tenants: React.FC = () => {
       {/* Page Header */}
       <PageHeader
         title="Hotels Registry"
-        subtitle={`Core Tenant Ecosystem ÔÇó ${filteredHotels.length} Accounts`}
+        subtitle={`Core Tenant Ecosystem • ${filteredHotels.length} Accounts`}
       >
         <Button
           size="lg"

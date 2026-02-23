@@ -1,5 +1,5 @@
 from uuid import UUID
-from datetime import date
+from datetime import datetime
 from pydantic import BaseModel
 from app.schemas.base import ORMBase
 
@@ -35,6 +35,6 @@ class PlanRead(ORMBase):
 class SubscriptionRead(ORMBase):
     id: UUID
     tenant_id: UUID
-    start_date: date
-    end_date: date
+    start_date: datetime
+    end_date: datetime
     status: str

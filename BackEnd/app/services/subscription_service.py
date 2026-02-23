@@ -11,6 +11,9 @@ class SubscriptionService:
     def __init__(self, db: Session):
         self.db = db
 
+    def get_all(self, skip: int = 0, limit: int = 100) -> List[Subscription]:
+        return self.db.query(Subscription).offset(skip).limit(limit).all()
+
     def get_by_tenant(self, tenant_id: UUID) -> Optional[Subscription]:
         # Return simpler active logic for now, or the latest
         return (

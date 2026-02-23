@@ -46,7 +46,7 @@ def create_tenant(
     return service.create(payload)
 
 
-@router.put("/{tenant_id}", response_model=TenantRead)
+@router.patch("/{tenant_id}", response_model=TenantRead)
 def update_tenant(
     tenant_id: UUID,
     payload: dict,  # Using dict for partial update simplicity for now

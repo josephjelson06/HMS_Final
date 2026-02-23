@@ -24,7 +24,7 @@ export class ApiSubscriptionRepository implements ISubscriptionRepository {
   }
 
   async getAll(): Promise<Subscription[]> {
-    const data = await httpClient.get<ApiSubscriptionDTO[]>('api/subscriptions/');
+    const data = await httpClient.get<ApiSubscriptionDTO[]>('api/subscriptions');
     return data.map((item) => this.mapToEntity(item));
   }
 
