@@ -1,0 +1,12 @@
+Platform Page
+- Dashboard Page
+- Tenant Details Page -> Glitching -> will do last
+
+Tenant Page
+- Dashboard Page
+- Help & Support Page
+- User Management Page
+- My Subscriptions Page
+
+From the commit
+(f525365599805cbca499a125642d5237be4da2a3)
