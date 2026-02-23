@@ -225,7 +225,7 @@ const Subscriptions: React.FC = () => {
                     ></div>
                   </td>
                   <td className="px-8 py-3 text-right text-xs font-black dark:text-white">
-                    Ôé╣{sub.price.toLocaleString()}
+                    ₹{sub.price.toLocaleString()}
                   </td>
                   <td className="px-8 py-3 text-center">
                     <GlassDropdown

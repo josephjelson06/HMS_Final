@@ -137,7 +137,7 @@ const PlanCard: React.FC<{
           <span
             className={`text-4xl font-black dark:text-white tracking-tighter`}
           >
-            Ôé╣{plan.price.toLocaleString()}
+            ₹{plan.price.toLocaleString()}
           </span>
           <span className="text-sm font-bold text-gray-500">/ mo</span>
         </div>
@@ -336,7 +336,7 @@ const Plans: React.FC = () => {
                 Total Recurring Yield
               </p>
               <h3 className="text-3xl font-black dark:text-white tracking-tighter">
-                Ôé╣{(totalRevenue / 100000).toFixed(2)}L{" "}
+                ₹{(totalRevenue / 100000).toFixed(2)}L{" "}
                 <span className="text-xs font-bold text-gray-500">/ mo</span>
               </h3>
             </div>

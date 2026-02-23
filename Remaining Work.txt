@@ -4,9 +4,11 @@ Platform Page
 - Fix Tenant Page Design -> Done
 
 Tenant Page
-- Dashboard Page
-- Help & Support Page -> Done
-- User Management Page -> Done
+- Dashboard Page -> Done
+- Staff Page -> Done
+- Roles Page -> Done
+- Billing Page -> Done
+- Helpdesk Page -> Done
 - My Subscriptions Page
 
 From the commit

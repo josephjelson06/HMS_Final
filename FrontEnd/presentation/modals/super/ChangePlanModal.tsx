@@ -137,7 +137,7 @@ const ChangePlanModal: React.FC<ChangePlanModalProps> = ({
                     {p.desc}
                   </p>
                   <p className="text-lg font-black dark:text-white">
-                    Ôé╣{p.price.toLocaleString()}
+                    ₹{p.price.toLocaleString()}
                   </p>
                 </button>
               );
@@ -164,8 +164,8 @@ const ChangePlanModal: React.FC<ChangePlanModalProps> = ({
                   className={`text-xl font-black ${priceDiff > 0 ? "text-accent" : "text-emerald-500"}`}
                 >
                   {priceDiff > 0
-                    ? `+ Ôé╣${priceDiff.toLocaleString()}`
-                    : `- Ôé╣${Math.abs(priceDiff).toLocaleString()}`}
+                    ? `+ ₹${priceDiff.toLocaleString()}`
+                    : `- ₹${Math.abs(priceDiff).toLocaleString()}`}
                 </p>
               </div>
               <p className="text-[9px] font-medium text-gray-500 max-w-[200px] text-right italic">

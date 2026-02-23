@@ -34,7 +34,7 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({
   onClose,
   onCreateHotel,
 }) => {
-  const { plans: apiPlans, loading: plansLoading } = usePlans();
+  const { plans: apiPlans, loading: plansLoading, fetchPlans } = usePlans();
   const { createUser, fetchRoles, roles } = useUsers(); // Use user hook for owner creation
 
   const [step, setStep] = useState(1);
@@ -69,8 +69,9 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       fetchRoles();
+      fetchPlans();
     }
-  }, [isOpen, fetchRoles]);
+  }, [isOpen, fetchRoles, fetchPlans]);
 
   useEffect(() => {
     if (activePlans.length > 0 && !formData.plan) {
@@ -346,7 +347,7 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({
                   <div className="flex justify-between items-center">
                     <h4 className="font-bold dark:text-white">{p.name} Plan</h4>
                     <span className="text-sm font-bold text-accent">
-                      Ôé╣{p.price.toLocaleString()}/mo
+                      ₹{p.price.toLocaleString()}/mo
                     </span>
                   </div>
                   <div className="flex gap-4 mt-2">

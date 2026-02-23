@@ -158,13 +158,13 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
         <div className="p-6 rounded-[2.5rem] bg-black/20 border border-white/5 space-y-3">
           <div className="flex justify-between items-center text-xs font-medium text-gray-500">
             <span>Pro-rated Fee ({months} Mo)</span>
-            <span className="font-mono">Ôé╣{subtotal.toLocaleString()}</span>
+            <span className="font-mono">₹{subtotal.toLocaleString()}</span>
           </div>
           {discountAmount > 0 && (
             <div className="flex justify-between items-center text-xs font-medium text-emerald-500">
               <span>Bulk Discount Applied</span>
               <span className="font-mono">
-                - Ôé╣{discountAmount.toLocaleString()}
+                - ₹{discountAmount.toLocaleString()}
               </span>
             </div>
           )}
@@ -173,7 +173,7 @@ const ExtendSubscriptionModal: React.FC<ExtendSubscriptionModalProps> = ({
               Amount to Settle
             </span>
             <span className="text-3xl font-black text-accent tracking-tighter">
-              Ôé╣{total.toLocaleString()}
+              ₹{total.toLocaleString()}
             </span>
           </div>
         </div>

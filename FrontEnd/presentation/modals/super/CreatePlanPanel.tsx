@@ -58,6 +58,7 @@ const CreatePlanPanel: React.FC<CreatePlanPanelProps> = ({
     onSave({
       name: planName,
       price: monthlyPrice,
+      period_months: 1, // Defaulting to 1 month for UI
       max_rooms: maxRooms,
       max_users: maxUsers,
       max_roles: maxRoles,
@@ -153,7 +154,7 @@ const CreatePlanPanel: React.FC<CreatePlanPanelProps> = ({
                   <label className={labelClass}>Monthly Price (INR) *</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                      Ôé╣
+                      ₹
                     </span>
                     <input
                       type="number"

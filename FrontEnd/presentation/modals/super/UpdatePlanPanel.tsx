@@ -78,6 +78,7 @@ const UpdatePlanPanel: React.FC<UpdatePlanPanelProps> = ({
       ...plan,
       name: planName,
       price: monthlyPrice,
+      period_months: plan.period_months || 1, // Defaulting to 1 month if missing
       max_rooms: maxRooms,
       max_users: maxUsers,
       max_roles: maxRoles,
@@ -154,7 +155,7 @@ const UpdatePlanPanel: React.FC<UpdatePlanPanelProps> = ({
                   <label className={labelClass}>Monthly Price (INR) *</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                      Ôé╣
+                      ₹
                     </span>
                     <input
                       type="number"
