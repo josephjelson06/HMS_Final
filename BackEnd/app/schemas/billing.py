@@ -20,6 +20,7 @@ class PlanUpdate(BaseModel):
     max_users: int | None = None
     max_roles: int | None = None
     max_rooms: int | None = None
+    is_archived: bool | None = None
 
 
 class PlanRead(ORMBase):
@@ -30,6 +31,7 @@ class PlanRead(ORMBase):
     max_users: int | None
     max_roles: int | None
     max_rooms: int | None
+    is_archived: bool = False
 
 
 class SubscriptionRead(ORMBase):

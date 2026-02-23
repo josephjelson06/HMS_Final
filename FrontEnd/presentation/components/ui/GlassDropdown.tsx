@@ -1,28 +1,37 @@
-import React, { useState, useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
-
+import React, { useState, useRef, useEffect } from "react";
+import ReactDOM from "react-dom";
 
 export interface DropdownItem {
   icon?: React.ElementType;
   label: string;
   onClick?: () => void;
-  variant?: 'default' | 'danger' | 'warning' | 'primary' | 'highlight' | 'selected';
+  variant?:
+    | "default"
+    | "danger"
+    | "warning"
+    | "primary"
+    | "highlight"
+    | "selected";
   hasSeparatorAfter?: boolean;
 }
 
 interface GlassDropdownProps {
   trigger: React.ReactNode;
   items: DropdownItem[];
-  align?: 'left' | 'right';
+  align?: "left" | "right";
   className?: string;
 }
 
-const GlassDropdown: React.FC<GlassDropdownProps> = ({ trigger, items, align = 'right', className = '' }) => {
+const GlassDropdown: React.FC<GlassDropdownProps> = ({
+  trigger,
+  items,
+  align = "right",
+  className = "",
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
 
   const updateCoords = () => {
     if (triggerRef.current) {
@@ -30,7 +39,7 @@ const GlassDropdown: React.FC<GlassDropdownProps> = ({ trigger, items, align = '
       setCoords({
         top: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX,
-        width: rect.width
+        width: rect.width,
       });
     }
   };
@@ -38,8 +47,10 @@ const GlassDropdown: React.FC<GlassDropdownProps> = ({ trigger, items, align = '
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-        triggerRef.current && !triggerRef.current.contains(event.target as Node)
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -47,30 +58,30 @@ const GlassDropdown: React.FC<GlassDropdownProps> = ({ trigger, items, align = '
 
     if (isOpen) {
       updateCoords();
-      document.addEventListener('mousedown', handleClickOutside);
-      window.addEventListener('resize', () => setIsOpen(false));
-      window.addEventListener('scroll', () => setIsOpen(false), true);
+      document.addEventListener("mousedown", handleClickOutside);
+      window.addEventListener("resize", () => setIsOpen(false));
+      window.addEventListener("scroll", () => setIsOpen(false), true);
     }
-    
+
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('resize', () => setIsOpen(false));
-      window.removeEventListener('scroll', () => setIsOpen(false), true);
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("resize", () => setIsOpen(false));
+      window.removeEventListener("scroll", () => setIsOpen(false), true);
     };
   }, [isOpen]);
 
   const toggle = () => setIsOpen(!isOpen);
 
-  const getItemStyles = (variant: DropdownItem['variant'] = 'default') => {
+  const getItemStyles = (variant: DropdownItem["variant"] = "default") => {
     switch (variant) {
-      case 'primary': 
+      case "primary":
         return "text-accent-strong hover:bg-accent-muted";
-      case 'selected':
-      case 'highlight': 
+      case "selected":
+      case "highlight":
         return "bg-accent-strong text-white shadow-[0_10px_20px_-5px] shadow-accent-strong/40";
-      case 'danger':
+      case "danger":
         return "text-red-500 hover:bg-red-500/10";
-      case 'warning':
+      case "warning":
         return "text-amber-500 hover:bg-amber-500/10";
       default:
         return "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white";
@@ -78,15 +89,16 @@ const GlassDropdown: React.FC<GlassDropdownProps> = ({ trigger, items, align = '
   };
 
   const menuElement = isOpen ? (
-    <div 
+    <div
       ref={dropdownRef}
-      style={{ 
-        position: 'absolute',
+      style={{
+        position: "absolute",
         top: `${coords.top + 8}px`,
-        left: align === 'right' 
-          ? `${coords.left + coords.width - 240}px` 
-          : `${coords.left}px`,
-        width: '240px'
+        left:
+          align === "right"
+            ? `${coords.left + coords.width - 240}px`
+            : `${coords.left}px`,
+        width: "240px",
       }}
       className={`
         z-[9999] transform transition-all duration-300 origin-top
@@ -94,16 +106,16 @@ const GlassDropdown: React.FC<GlassDropdownProps> = ({ trigger, items, align = '
         rounded-[1.25rem]
         backdrop-blur-3xl
         border
-        ${'bg-white/90 dark:bg-black/80 border-black/5 dark:border-white/10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.12)] dark:shadow-[0_30px_70px_-15px_rgba(0,0,0,0.9)]'
-        }
+        ${"bg-white/90 dark:bg-black/80 border-black/5 dark:border-white/10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.12)] dark:shadow-[0_30px_70px_-15px_rgba(0,0,0,0.9)]"}
       `}
     >
       <div className="p-1.5 overflow-hidden rounded-[1.25rem]">
         {items.map((item, index) => {
-           const Icon = item.icon;
-           const isSpecial = item.variant === 'selected' || item.variant === 'highlight';
-           
-           return (
+          const Icon = item.icon;
+          const isSpecial =
+            item.variant === "selected" || item.variant === "highlight";
+
+          return (
             <div key={index}>
               <button
                 onClick={() => {
@@ -115,10 +127,20 @@ const GlassDropdown: React.FC<GlassDropdownProps> = ({ trigger, items, align = '
                   ${getItemStyles(item.variant)}
                 `}
               >
-                {Icon && <Icon size={14} strokeWidth={3} className={isSpecial ? 'text-white' : 'opacity-70 group-hover:opacity-100'} />}
+                {Icon && (
+                  <Icon
+                    size={14}
+                    strokeWidth={3}
+                    className={
+                      isSpecial
+                        ? "text-white"
+                        : "opacity-70 group-hover:opacity-100"
+                    }
+                  />
+                )}
                 {item.label}
               </button>
-              
+
               {item.hasSeparatorAfter && (
                 <div className={`my-1 h-px mx-2 bg-black/5 dark:bg-white/5`} />
               )}
@@ -130,8 +152,17 @@ const GlassDropdown: React.FC<GlassDropdownProps> = ({ trigger, items, align = '
   ) : null;
 
   return (
-    <div className={`relative inline-block text-left ${className}`} ref={triggerRef}>
-      <div onClick={toggle} className="cursor-pointer">
+    <div
+      className={`relative inline-block text-left ${className}`}
+      ref={triggerRef}
+    >
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          toggle();
+        }}
+        className="cursor-pointer"
+      >
         {trigger}
       </div>
       {ReactDOM.createPortal(menuElement, document.body)}

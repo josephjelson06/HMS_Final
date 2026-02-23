@@ -489,7 +489,6 @@ const UsersManagement: React.FC = () => {
                     <GlassDropdown
                       trigger={
                         <button
-                          onClick={(e) => e.stopPropagation()}
                           className={`p-4 rounded-2xl bg-black/5 dark:bg-white/5 text-gray-500 transition-all shadow-sm ${!isInactive ? "hover:text-white hover:bg-accent-strong" : ""}`}
                         >
                           <MoreVertical size={20} />

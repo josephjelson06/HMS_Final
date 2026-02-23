@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, ForeignKey, TIMESTAMP, Float
+from sqlalchemy import String, ForeignKey, TIMESTAMP, Float, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -21,6 +21,10 @@ class Plan(Base):
     max_users: Mapped[int | None]
     max_roles: Mapped[int | None]
     max_rooms: Mapped[int | None]
+
+    is_archived: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false"
+    )
 
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.utcnow)
 

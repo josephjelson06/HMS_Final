@@ -67,7 +67,7 @@ const mapToViewModel = (plan: PlanData): PlanViewModel => {
           ? "Priority 24/7"
           : "Standard",
     subscribers: 0, // Not available in current API
-    isArchived: false, // Not available
+    isArchived: plan.is_archived ?? false,
     kiosks: 0, // Not available
     rooms: plan.max_rooms || 0,
   };
@@ -222,26 +222,37 @@ const PlanCard: React.FC<{
         </div>
 
         <div className="flex gap-2">
+          {!plan.isArchived && (
+            <button
+              onClick={() => onEdit(plan)}
+              className="flex-1 py-4 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <Edit3 size={14} /> Update Catalog
+            </button>
+          )}
           <button
-            onClick={() => onEdit(plan)}
-            className="flex-1 py-4 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
-          >
-            <Edit3 size={14} /> Update Catalog
-          </button>
-          <button
-            //    onClick={() => onArchive(plan.id)}
-            className={`px-4 py-4 rounded-xl bg-black/5 dark:bg-white/5 transition-all border border-white/5 text-gray-500 cursor-not-allowed`}
-            title="Archiving not yet supported"
+            onClick={() => onArchive(plan.id)}
+            disabled={plan.isArchived}
+            className={`px-4 py-4 rounded-xl transition-all border shadow-sm flex items-center justify-center ${
+              plan.isArchived
+                ? "bg-black/5 dark:bg-white/5 border-white/5 text-gray-500 cursor-not-allowed hidden"
+                : "bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500 hover:text-white"
+            }`}
+            title={
+              plan.isArchived ? "Plan is already archived" : "Archive Plan"
+            }
           >
             <Archive size={16} />
           </button>
-          <button
-            onClick={() => onDelete(plan.id)}
-            className="px-4 py-4 rounded-xl bg-red-500/10 text-red-500 transition-all border border-red-500/20 hover:bg-red-500 hover:text-white"
-            title="Delete Plan"
-          >
-            <Trash2 size={16} />
-          </button>
+          {!plan.isArchived && (
+            <button
+              onClick={() => onDelete(plan.id)}
+              className="px-4 py-4 rounded-xl bg-red-500/10 text-red-500 transition-all border border-red-500/20 hover:bg-red-500 hover:text-white"
+              title="Delete Plan"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
         </div>
       </div>
     </GlassCard>
@@ -273,8 +284,11 @@ const Plans: React.FC = () => {
   }, [hookPlans]);
 
   const handleArchivePlan = async (id: string) => {
-    // Feature not supported in backend yet
-    alert("Archiving is not yet supported in the backend.");
+    try {
+      await updatePlan(id, { is_archived: true } as any);
+    } catch (error) {
+      console.error("Failed to archive plan", error);
+    }
   };
 
   const handleEditPlan = (plan: PlanData) => {

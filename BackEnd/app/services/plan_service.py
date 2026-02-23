@@ -26,7 +26,7 @@ class PlanService:
 
     def update(self, plan_id: UUID, plan_in: PlanUpdate) -> Optional[Plan]:
         db_obj = self.get_by_id(plan_id)
-        if not db_obj:
+        if not db_obj or db_obj.is_archived:
             return None
 
         update_data = plan_in.model_dump(exclude_unset=True)
@@ -40,7 +40,7 @@ class PlanService:
 
     def delete(self, plan_id: UUID) -> bool:
         db_obj = self.get_by_id(plan_id)
-        if not db_obj:
+        if not db_obj or db_obj.is_archived:
             return False
 
         self.db.delete(db_obj)

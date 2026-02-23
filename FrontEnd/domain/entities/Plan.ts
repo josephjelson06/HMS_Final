@@ -8,4 +8,5 @@ export interface PlanData {
   max_users?: number;
   max_roles?: number;
   max_rooms?: number;
+  is_archived?: boolean;
 }
