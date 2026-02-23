@@ -49,6 +49,8 @@ export function useTenants() {
       }
   }
 
+  const getTenant = useCallback((id: string) => repositories.tenants.getById(id), []);
+
   return {
     tenants,
     loading,
@@ -57,6 +59,6 @@ export function useTenants() {
     createTenant,
     updateTenant,
     deleteTenant,
-    getTenant: repositories.tenants.getById.bind(repositories.tenants)
+    getTenant
   };
 }

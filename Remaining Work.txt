@@ -1,11 +1,11 @@
 Platform Page
-- Dashboard Page
-- Tenant Details Page -> Glitching -> will do last
+- Dashboard Page -> Done
+- Tenant Details Page -> Done (Glitch fixed)
 
 Tenant Page
 - Dashboard Page
-- Help & Support Page
-- User Management Page
+- Help & Support Page -> Done
+- User Management Page -> Done
 - My Subscriptions Page
 
 From the commit
