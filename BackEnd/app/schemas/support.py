@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import datetime
 from pydantic import BaseModel
 from app.schemas.base import ORMBase
 
@@ -17,6 +18,7 @@ class SupportTicketRead(ORMBase):
     category: str | None
     priority: str | None
     status: str | None
+    created_at: datetime | None = None
 
 
 class SupportMessageCreate(BaseModel):
@@ -29,7 +31,7 @@ class SupportMessageRead(ORMBase):
     ticket_id: UUID
     sender_id: UUID | None
     message: str
-    created_at: str | None  # Datetime serialized
+    created_at: datetime | None = None
     is_internal: bool
 
 

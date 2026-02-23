@@ -22,7 +22,7 @@ router = APIRouter(tags=["Support"])
 
 
 @router.get(
-    "/api/hotels/{hotel_id}/support/tickets", response_model=List[SupportTicketRead]
+    "/api/hotels/{hotel_id}/support/tickets", response_model=List[SupportTicketDetail]
 )
 def get_tickets(
     hotel_id: UUID,
@@ -44,7 +44,7 @@ def create_ticket(
     return service.create(hotel_id, payload)
 
 
-@router.get("/api/platform/support/tickets", response_model=List[SupportTicketRead])
+@router.get("/api/platform/support/tickets", response_model=List[SupportTicketDetail])
 def get_all_tickets(
     db: Session = Depends(get_db),
     _=Depends(require_permission("platform:support:read")),

@@ -238,6 +238,9 @@ const AddHotelUserModal: React.FC<AddHotelUserModalProps> = ({
                 mono
                 className="pl-12"
                 value={formData.employee_id}
+                onChange={(e) =>
+                  setFormData({ ...formData, employee_id: e.target.value })
+                }
                 disabled={!!staffMember}
                 readOnly={!!staffMember}
               />

@@ -45,7 +45,6 @@ class SupportService:
 
         msg = SupportMessage(
             ticket_id=ticket_id,
-            request_id=sender_id,  # Wait, usage? sender_id
             sender_id=sender_id,
             message=payload,
             is_internal=is_internal,

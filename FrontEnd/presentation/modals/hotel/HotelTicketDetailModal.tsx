@@ -40,12 +40,14 @@ const HotelTicketDetailModal: React.FC<HotelTicketDetailModalProps> = ({
     ticket?.messages || [],
   );
 
-  if (!ticket) return null;
-
   // Sync state if ticket prop updates
   React.useEffect(() => {
-    setLocalMessages(ticket?.messages || []);
+    if (ticket) {
+      setLocalMessages(ticket.messages || []);
+    }
   }, [ticket]);
+
+  if (!ticket) return null;
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
