@@ -7,7 +7,11 @@ import AppShell from "@/presentation/components/layout/AppShell";
 import ImpersonationModal from "@/presentation/components/ui/ImpersonationModal";
 import { useAuth } from "@/application/hooks/useAuth";
 
-import { deleteCookie, getCookie, setCookie } from "@/infrastructure/browser/cookies";
+import {
+  deleteCookie,
+  getCookie,
+  setCookie,
+} from "@/infrastructure/browser/cookies";
 import {
   legacyRouteToPath,
   pathnameToLegacyRoute,
@@ -20,7 +24,11 @@ const ROLE_COOKIE = "hms_role";
 const IMPERSONATING_COOKIE = "hms_impersonating";
 const IMPERSONATED_HOTEL_COOKIE = "hms_impersonated_hotel";
 
-export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
+export default function AuthenticatedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -33,11 +41,16 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
 
   // Impersonation state
   const [isImpersonating, setIsImpersonating] = useState(false);
-  const [impersonatedHotel, setImpersonatedHotel] = useState<string | null>(null);
+  const [impersonatedHotel, setImpersonatedHotel] = useState<string | null>(
+    null,
+  );
   const [isImpModalOpen, setIsImpModalOpen] = useState(false);
 
   const viewMode: ViewMode = pathname.startsWith("/hotel") ? "hotel" : "super";
-  const currentRoute = useMemo(() => pathnameToLegacyRoute(pathname), [pathname]);
+  const currentRoute = useMemo(
+    () => pathnameToLegacyRoute(pathname),
+    [pathname],
+  );
 
   useEffect(() => {
     // Close mobile menu on route change.
@@ -50,8 +63,12 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
     const isAuthed = getCookie(AUTH_COOKIE) === "1";
     const role = getCookie(ROLE_COOKIE) as ViewMode;
 
-    if (!isAuthed) {
-      router.replace(`/login?from=${encodeURIComponent(pathname)}`);
+    if (!isAuthed || !authUser) {
+      deleteCookie(AUTH_COOKIE);
+      deleteCookie(ROLE_COOKIE);
+      deleteCookie(IMPERSONATING_COOKIE);
+      deleteCookie(IMPERSONATED_HOTEL_COOKIE);
+      window.location.href = `/login?from=${encodeURIComponent(pathname)}`;
       return;
     }
 
@@ -70,7 +87,8 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
     }
 
     if (authUser?.isOrphan) {
-      const profilePath = role === "hotel" ? "/hotel/profile" : "/super/profile";
+      const profilePath =
+        role === "hotel" ? "/hotel/profile" : "/super/profile";
       if (pathname !== profilePath) {
         router.replace(profilePath);
         return;
@@ -98,8 +116,14 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
     setIsImpModalOpen(false);
     if (!impersonatedHotel) return;
 
-    setCookie(IMPERSONATING_COOKIE, "1", { maxAgeSeconds: 60 * 60 * 8, sameSite: "lax" });
-    setCookie(IMPERSONATED_HOTEL_COOKIE, impersonatedHotel, { maxAgeSeconds: 60 * 60 * 8, sameSite: "lax" });
+    setCookie(IMPERSONATING_COOKIE, "1", {
+      maxAgeSeconds: 60 * 60 * 8,
+      sameSite: "lax",
+    });
+    setCookie(IMPERSONATED_HOTEL_COOKIE, impersonatedHotel, {
+      maxAgeSeconds: 60 * 60 * 8,
+      sameSite: "lax",
+    });
     setIsImpersonating(true);
 
     router.push("/hotel/dashboard");
@@ -122,7 +146,9 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
 
   if (!ready) {
     // Keep this visually neutral to avoid any layout flash.
-    return <div className="h-screen w-screen bg-theme-light dark:bg-theme-dark" />;
+    return (
+      <div className="h-screen w-screen bg-theme-light dark:bg-theme-dark" />
+    );
   }
 
   return (
@@ -157,4 +183,3 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
     </>
   );
 }
-
