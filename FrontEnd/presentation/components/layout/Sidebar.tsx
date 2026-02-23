@@ -166,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 ) : (
                   <>
                     <SidebarSection title="Operations" collapsed={isCollapsed}>
-                      {hasPerm("tenant:dashboard:read") && (
+                      {hasPerm("hotel:dashboard:read") && (
                         <SidebarItem
                           icon={LayoutDashboard}
                           label="Dashboard"
@@ -178,7 +178,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </SidebarSection>
 
                     <SidebarSection title="Management" collapsed={isCollapsed}>
-                      {hasPerm("tenant:users:read") && (
+                      {hasPerm("hotel:users:read") && (
                         <SidebarItem
                           icon={Users}
                           label="Users & Roles"

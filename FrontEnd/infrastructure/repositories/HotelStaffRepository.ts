@@ -34,7 +34,7 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
   // --- Staff (Tenant Users) ---
 
   async getAllStaff(hotelId: string): Promise<User[]> {
-      const response = await this.client.get<ApiUserDTO[]>(`api/tenants/${hotelId}/users/`);
+      const response = await this.client.get<ApiUserDTO[]>(`api/hotels/${hotelId}/users/`);
       return response.map(this.mapUserToEntity);
   }
 
@@ -48,7 +48,7 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
           is_active: data.status === 'Active'
       };
 
-      const response = await this.client.post<ApiUserDTO>(`api/tenants/${hotelId}/users/`, payload);
+      const response = await this.client.post<ApiUserDTO>(`api/hotels/${hotelId}/users/`, payload);
       return this.mapUserToEntity(response);
   }
 
@@ -60,18 +60,18 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
       if (data.mobile) payload.mobile = data.mobile;
       if (data.status) payload.is_active = data.status === 'Active';
 
-      const response = await this.client.patch<ApiUserDTO>(`api/tenants/${hotelId}/users/${id}`, payload);
+      const response = await this.client.patch<ApiUserDTO>(`api/hotels/${hotelId}/users/${id}`, payload);
       return this.mapUserToEntity(response);
   }
 
   async deleteStaff(id: string, hotelId: string): Promise<void> {
-      await this.client.delete(`api/tenants/${hotelId}/users/${id}`);
+      await this.client.delete(`api/hotels/${hotelId}/users/${id}`);
   }
 
   // --- Roles (Tenant Roles) ---
 
   async getAllRoles(hotelId: string): Promise<Role[]> {
-      const response = await this.client.get<any[]>(`api/tenants/${hotelId}/roles/`);
+      const response = await this.client.get<any[]>(`api/hotels/${hotelId}/roles/`);
       return response.map(this.mapRoleToEntity);
   }
 
@@ -82,7 +82,7 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
            color: data.color,
            permissions: data.permissions 
        };
-       const response = await this.client.post<any>(`api/tenants/${hotelId}/roles/`, payload);
+       const response = await this.client.post<any>(`api/hotels/${hotelId}/roles/`, payload);
        return this.mapRoleToEntity(response);
   }
 
@@ -93,12 +93,12 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
             payload.permissions = data.permissions;
         }
         
-        const response = await this.client.patch<any>(`api/tenants/${hotelId}/roles/${id}`, payload);
+        const response = await this.client.patch<any>(`api/hotels/${hotelId}/roles/${id}`, payload);
         return this.mapRoleToEntity(response);
   }
 
   async deleteRole(id: string, hotelId: string): Promise<void> {
-       await this.client.delete(`api/tenants/${hotelId}/roles/${id}`);
+       await this.client.delete(`api/hotels/${hotelId}/roles/${id}`);
   }
 
   // --- Mappers ---
