@@ -541,6 +541,7 @@ const UsersManagement: React.FC = () => {
       <AddUserModal
         isOpen={isAddUserOpen}
         onClose={() => setIsAddUserOpen(false)}
+        roles={roles}
       />
       {userToEdit && (
         <EditUserModal

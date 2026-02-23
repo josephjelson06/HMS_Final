@@ -33,6 +33,16 @@ def create_platform_role(
     return service.create(name)
 
 
+@router.get("/api/platform/roles/{role_id}/permissions", response_model=List[str])
+def get_platform_role_permissions(
+    role_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("platform:roles:read")),
+):
+    service = PlatformRoleService(db)
+    return service.get_permissions(role_id)
+
+
 @router.put("/api/platform/roles/{role_id}/permissions")
 def update_platform_role_permissions(
     role_id: UUID,

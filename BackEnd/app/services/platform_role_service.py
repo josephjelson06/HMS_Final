@@ -25,6 +25,18 @@ class PlatformRoleService:
         self.db.refresh(role)
         return role
 
+    def get_permissions(self, role_id: UUID) -> List[str]:
+        result = (
+            self.db.query(Permission.key)
+            .join(
+                platform_role_permissions,
+                Permission.id == platform_role_permissions.c.permission_id,
+            )
+            .filter(platform_role_permissions.c.role_id == role_id)
+            .all()
+        )
+        return [row[0] for row in result]
+
     def update_permissions(self, role_id: UUID, permission_keys: List[str]):
         # Clear existing
         self.db.execute(

@@ -17,15 +17,22 @@ import GlassInput from "../../components/ui/GlassInput";
 import Button from "../../components/ui/Button";
 import { useUsers } from "@/application/hooks/useUsers";
 
+import type { Role } from "@/domain/entities/User";
+
 interface AddUserModalProps {
   isOpen: boolean;
   onClose: () => void;
+  roles: Role[];
 }
 
 const selectClass = `w-full px-4 py-3 rounded-xl outline-none transition-all duration-200 text-sm font-medium border bg-gray-50 dark:bg-black/20 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-accent/50 focus:ring-4 focus:ring-accent/10 appearance-none cursor-pointer`;
 
-const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
-  const { createUser, roles } = useUsers();
+const AddUserModal: React.FC<AddUserModalProps> = ({
+  isOpen,
+  onClose,
+  roles,
+}) => {
+  const { createUser } = useUsers();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
