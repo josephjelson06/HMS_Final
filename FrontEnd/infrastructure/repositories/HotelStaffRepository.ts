@@ -101,6 +101,29 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
        await this.client.delete(`api/hotels/${hotelId}/roles/${id}`);
   }
 
+  // --- Permissions ---
+
+  async getAvailablePermissions(): Promise<{ id: string; key: string; description: string }[]> {
+    const data = await this.client.get<any[]>('api/permissions/');
+    return data
+      .filter((item) => item.key.startsWith('hotel:') || item.key.startsWith('tenant:'))
+      .map((item) => ({
+        id: item.id,
+        key: item.key,
+        description: item.description ?? '',
+      }));
+  }
+
+  async getRolePermissions(hotelId: string, roleId: string): Promise<{ permissions: string[] }> {
+    const roles = await this.getAllRoles(hotelId);
+    const role = roles.find(r => r.id === roleId || r.name === roleId);
+    return { permissions: role?.permissions || [] };
+  }
+
+  async setRolePermissions(hotelId: string, roleId: string, permissions: string[]): Promise<void> {
+    await this.client.put(`api/hotels/${hotelId}/roles/${roleId}/permissions`, permissions);
+  }
+
   // --- Mappers ---
 
   private mapUserToEntity(dto: ApiUserDTO): User {

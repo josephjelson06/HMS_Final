@@ -30,7 +30,7 @@ import { useAuth } from "@/application/hooks/useAuth";
 
 const HotelHelp: React.FC = () => {
   const { user } = useAuth();
-  const tenantId = user?.tenant_id;
+  const tenantId = user?.tenantId;
 
   const {
     tickets: allTickets,

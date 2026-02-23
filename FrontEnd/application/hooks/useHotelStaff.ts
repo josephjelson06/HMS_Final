@@ -78,6 +78,9 @@ export function useHotelStaff(hotelId: string) {
       deleteStaff,
       createRole,
       updateRole,
-      deleteRole
+      deleteRole,
+      getAvailablePermissions: repositories.hotelStaff.getAvailablePermissions.bind(repositories.hotelStaff),
+      getRolePermissions: (roleId: string) => repositories.hotelStaff.getRolePermissions(hotelId, roleId),
+      setRolePermissions: (roleId: string, permissions: string[]) => repositories.hotelStaff.setRolePermissions(hotelId, roleId, permissions)
   };
 }
