@@ -48,11 +48,37 @@ export function useSupport() {
     return await repositories.support.getTicketById(ticketId);
   }, []);
 
+  const fetchTenantTickets = useCallback(async (tenantId: string) => {
+    setLoading(true);
+    try {
+      const data = await repositories.support.getTenantTickets(tenantId);
+      setTickets(data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch tenant tickets');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const createTicket = useCallback(async (tenantId: string, data: Partial<SupportTicket>) => {
+    try {
+      const newTicket = await repositories.support.createTicket(tenantId, data);
+      setTickets(prev => [newTicket, ...prev]);
+      return newTicket;
+    } catch (err: any) {
+      setError(err.message || 'Failed to create ticket');
+      throw err;
+    }
+  }, []);
+
   return {
     tickets,
     loading,
     error,
     fetchTickets,
+    fetchTenantTickets,
+    createTicket,
     resolveTicket,
     addMessage,
     fetchTicketDetails,
