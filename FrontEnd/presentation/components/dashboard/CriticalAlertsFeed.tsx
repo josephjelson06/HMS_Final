@@ -25,7 +25,7 @@ const AlertItem = ({ type, message, time, onAction }: any) => {
           <p className="text-sm font-bold text-gray-900 dark:text-gray-100 pr-4 leading-snug">
             {message}
           </p>
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">
+          <div className="flex items-center gap-1.5 text-[11px] md:text-xs font-bold text-gray-500 uppercase whitespace-nowrap">
             <Clock size={12} />
             {time}
           </div>
@@ -34,7 +34,7 @@ const AlertItem = ({ type, message, time, onAction }: any) => {
 
       <button
         onClick={onAction}
-        className="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-accent-strong transition-colors flex items-center gap-1"
+        className="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 text-[11px] font-bold uppercase tracking-wider text-gray-500 group-hover:text-accent-strong transition-colors flex items-center gap-1"
       >
         View
         <ChevronRight size={12} />
@@ -60,12 +60,12 @@ const CriticalAlertsFeed: React.FC = () => {
             <h3 className="font-black text-slate-900 dark:text-white uppercase tracking-tighter">
               Critical Alerts
             </h3>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
+            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-0.5">
               Live Incident Feed
             </p>
           </div>
         </div>
-        <span className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-[9px] font-bold uppercase tracking-widest animate-pulse shadow-lg shadow-red-500/20">
+        <span className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-[11px] font-bold uppercase tracking-wider animate-pulse shadow-lg shadow-red-500/20">
           3 Unresolved
         </span>
       </div>
