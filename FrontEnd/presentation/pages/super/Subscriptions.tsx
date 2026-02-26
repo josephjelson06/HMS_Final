@@ -53,7 +53,7 @@ const Subscriptions: React.FC = () => {
 
       return {
         ...sub,
-        hotel: tenant ? tenant.name : "Unknown Tenant",
+        hotel: tenant ? tenant.name : "Unknown Hotel",
         plan: plan ? plan.name : "Unknown Plan",
         renewalDate: sub.endDate || "N/A",
         startDate: sub.startDate || "N/A",

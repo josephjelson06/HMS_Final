@@ -211,7 +211,7 @@ const PlanCard: React.FC<{
             <Users size={18} className="text-gray-500" />
             <div>
               <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">
-                Active Tenants
+                Active Hotels
               </p>
               <p className="text-lg font-black dark:text-white tracking-tighter">
                 {plan.subscribers}
@@ -366,7 +366,7 @@ const Plans: React.FC = () => {
                 Active Subscriptions
               </p>
               <h3 className="text-3xl font-black dark:text-white tracking-tighter">
-                {activeTenants} Tenants
+                {activeTenants} Hotels
               </h3>
             </div>
             <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-500">

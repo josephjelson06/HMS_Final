@@ -145,7 +145,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
             {!isCollapsed && (
               <span className="text-[20px] font-black text-[#1e293b] dark:text-white tracking-tight whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-300">
-                {isHotelMode ? "HMS Tenant" : "ATC Admin"}
+                {isHotelMode ? "HMS Hotel" : "ATC Admin"}
               </span>
             )}
           </div>
@@ -235,7 +235,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       />
                       <SidebarItem
                         icon={Building2}
-                        label="Tenants"
+                        label="Hotels"
                         active={
                           currentRoute === "tenants" ||
                           currentRoute === "tenant-details"

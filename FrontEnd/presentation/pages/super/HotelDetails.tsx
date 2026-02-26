@@ -119,10 +119,10 @@ export default function HotelDetails({
         </button>
         <GlassCard className="p-8 text-center">
           <h2 className="text-xl font-black dark:text-white tracking-tight">
-            {error ? "Error loading" : "Tenant not found"}
+            {error ? "Error loading" : "Hotel not found"}
           </h2>
           <p className="mt-2 text-sm text-gray-500">
-            {error || `No tenant exists for ID: ${hotelId}`}
+            {error || `No hotel exists for ID: ${hotelId}`}
           </p>
         </GlassCard>
       </div>
@@ -130,7 +130,7 @@ export default function HotelDetails({
   }
 
   if (loading) {
-    return <div className="p-8 text-gray-500">Loading tenant details...</div>;
+    return <div className="p-8 text-gray-500">Loading hotel details...</div>;
   }
 
   return (
@@ -217,7 +217,7 @@ export default function HotelDetails({
             footer: "Operational status",
           },
           {
-            label: "Tenant ID",
+            label: "Hotel ID",
             value: tenant?.id?.split("-")?.[0] || "Unknown",
             color: "text-accent",
             footer: "Unique identity block",
@@ -276,7 +276,7 @@ export default function HotelDetails({
             >
               <div className="p-8 border-b border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/[0.02]">
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">
-                  Tenant Profile
+                  Hotel Profile
                 </h3>
               </div>
               <div className="p-8 space-y-4 text-sm flex-1">
@@ -321,7 +321,7 @@ export default function HotelDetails({
                     badge: "Orange",
                   },
                   { l: "Billing Cycle", v: `Active` },
-                  { l: "Tenant ID", v: tenant?.id || "-" },
+                  { l: "Hotel ID", v: tenant?.id || "-" },
                   { l: "Owner ID", v: tenant?.ownerId || "-", mono: true },
                 ].map((it, i) => (
                   <div
@@ -358,7 +358,7 @@ export default function HotelDetails({
                 Architecture Node
               </h3>
               <p className="text-xs text-gray-400 max-w-xs mx-auto">
-                This tenant is provisioned onto standard infrastructure
+                This hotel is provisioned onto standard infrastructure
                 processing lanes.
               </p>
             </div>
@@ -430,8 +430,7 @@ export default function HotelDetails({
           <div>
             <h3 className="text-lg font-bold text-red-500 mb-1">Danger Zone</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Irreversible actions for this tenant account. Proceed with
-              caution.
+              Irreversible actions for this hotel account. Proceed with caution.
             </p>
           </div>
           <div className="flex gap-4">
@@ -439,7 +438,7 @@ export default function HotelDetails({
               onClick={() => {
                 const isSuspended = hotelStatus === "Suspended";
                 openConfirm({
-                  title: isSuspended ? "Activate Tenant" : "Suspend Tenant",
+                  title: isSuspended ? "Activate Hotel" : "Suspend Hotel",
                   message: isSuspended
                     ? `Are you sure you want to activate ${hotelName}? This will restore access to all services.`
                     : `Are you sure you want to suspend ${hotelName}? This will immediately suspend the account and restrict all involved services.`,
@@ -458,14 +457,12 @@ export default function HotelDetails({
               }}
               className="px-5 py-2.5 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors text-sm font-bold"
             >
-              {hotelStatus === "Suspended"
-                ? "Activate Tenant"
-                : "Suspend Tenant"}
+              {hotelStatus === "Suspended" ? "Activate Hotel" : "Suspend Hotel"}
             </button>
             <button
               onClick={() => {
                 openConfirm({
-                  title: "Delete Tenant",
+                  title: "Delete Hotel",
                   message: `Are you sure you want to permanently delete ${hotelName}? This action cannot be undone and will remove all associated data including users and invoices.`,
                   variant: "danger",
                   confirmLabel: "Delete Forever",
@@ -479,7 +476,7 @@ export default function HotelDetails({
               }}
               className="px-5 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-colors text-sm font-bold shadow-lg shadow-red-500/20"
             >
-              Delete Tenant
+              Delete Hotel
             </button>
           </div>
         </div>
