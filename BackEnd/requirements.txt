@@ -11,3 +11,4 @@ passlib[bcrypt]
 bcrypt==4.0.1
 PyJWT
 alembic>=1.13.0
+python-multipart>=0.0.9
