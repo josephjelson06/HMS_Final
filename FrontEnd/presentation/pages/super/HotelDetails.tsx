@@ -42,11 +42,12 @@ export default function HotelDetails({
 }: HotelDetailsProps) {
   const { isDarkMode } = useTheme();
   const [activeTab, setActiveTab] = useState("Overview");
-  const { getTenant, updateTenant, deleteTenant } = useTenants();
+  const { getTenant, updateTenant, deleteTenant, uploadImages } = useTenants();
 
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
@@ -80,6 +81,25 @@ export default function HotelDetails({
 
   const closeConfirm = () => {
     setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0 || !tenant) return;
+
+    const files = Array.from(e.target.files).slice(0, 3);
+    const formData = new FormData();
+    files.forEach((file) => formData.append("images", file));
+
+    setUploadingImages(true);
+    try {
+      const updatedTenant = await uploadImages(tenant.id, formData);
+      setTenant(updatedTenant);
+    } catch (err) {
+      console.error("Failed to upload images:", err);
+      alert("Failed to upload images");
+    } finally {
+      setUploadingImages(false);
+    }
   };
 
   const isMissingRequestedHotel =
@@ -351,19 +371,38 @@ export default function HotelDetails({
               </div>
             </GlassCard>
 
-            {tenant?.imageUrls && tenant.imageUrls.length > 0 && (
-              <GlassCard
-                noPadding
-                clipContent
-                className="border-white/5 dark:border-white/10 flex flex-col lg:col-span-2"
-              >
-                <div className="p-8 border-b border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/[0.02]">
-                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                    <ImageIcon size={14} /> Property Photos
-                  </h3>
+            <GlassCard
+              noPadding
+              clipContent
+              className="border-white/5 dark:border-white/10 flex flex-col lg:col-span-2"
+            >
+              <div className="p-8 border-b border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/[0.02] flex items-center justify-between">
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                  <ImageIcon size={14} /> Property Photos
+                </h3>
+                <div>
+                  <input
+                    type="file"
+                    id="hotel-detail-image-upload"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                    disabled={uploadingImages}
+                  />
+                  <label
+                    htmlFor="hotel-detail-image-upload"
+                    className={`cursor-pointer px-4 py-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${uploadingImages ? "opacity-50 pointer-events-none" : ""}`}
+                  >
+                    {uploadingImages
+                      ? "Uploading..."
+                      : "Upload / Replace Photos"}
+                  </label>
                 </div>
-                <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {tenant.imageUrls.map((url, idx) => (
+              </div>
+              <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {tenant?.imageUrls && tenant.imageUrls.length > 0 ? (
+                  tenant.imageUrls.map((url, idx) => (
                     <div
                       key={idx}
                       className="relative aspect-video rounded-xl overflow-hidden group border border-white/5 shadow-lg"
@@ -374,10 +413,23 @@ export default function HotelDetails({
                         className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
-                  ))}
-                </div>
-              </GlassCard>
-            )}
+                  ))
+                ) : (
+                  <div className="col-span-full py-12 text-center text-gray-500 border-2 border-dashed border-gray-300 dark:border-white/10 rounded-xl">
+                    <ImageIcon
+                      className="mx-auto mb-3 text-gray-400"
+                      size={32}
+                    />
+                    <p className="text-sm font-bold dark:text-gray-300">
+                      No photos uploaded yet
+                    </p>
+                    <p className="text-xs mt-1">
+                      Click the button above to upload up to 3 photos
+                    </p>
+                  </div>
+                )}
+              </div>
+            </GlassCard>
           </div>
         )}
 
