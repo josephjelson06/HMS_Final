@@ -57,16 +57,20 @@ class HttpClient {
     if (!headers['Authorization']) {
       const cookieToken = getCookie('access_token');
       if (cookieToken) {
-        // Cookie value already includes "Bearer " prefix
         headers['Authorization'] = cookieToken;
       }
+    }
+
+    // Let the browser automatically set the correct Content-Type with boundary for FormData
+    if (body instanceof FormData) {
+      delete headers['Content-Type'];
     }
 
     console.log(`[HttpClient] Requesting: ${method} ${url}`);
     const res = await fetch(url, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
       credentials: 'include',
       cache: 'no-store',
     });

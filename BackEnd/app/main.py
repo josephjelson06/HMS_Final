@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 from app.routers import (
     auth_simple,
     tenants,
@@ -17,6 +19,10 @@ app = FastAPI(
     description="Backend API for Hotel Management System",
     version="2.0.0",
 )
+
+# Ensure uploads directory exists
+os.makedirs("uploads/tenants", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Configure CORS to allow requests from the frontend
 origins = [

@@ -6,4 +6,5 @@ export interface ITenantRepository {
   create(data: Omit<Tenant, 'id'>): Promise<Tenant>;
   update(id: string, data: Partial<Tenant>): Promise<Tenant>;
   delete(id: string): Promise<void>;
+  uploadImages(id: string, formData: FormData): Promise<Tenant>;
 }

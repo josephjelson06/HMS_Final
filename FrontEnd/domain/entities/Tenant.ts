@@ -10,4 +10,5 @@ export interface Tenant {
   gstin?: string;
   pan?: string;
   status?: TenantStatus | string;
+  imageUrls?: string[];
 }

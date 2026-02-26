@@ -86,6 +86,7 @@ const Tenants: React.FC = () => {
     deleteTenant,
     createTenant,
     fetchTenants,
+    uploadImages,
   } = useTenants();
   const { plans: apiPlans, fetchPlans } = usePlans();
   const { users: apiUsers, fetchUsers } = useUsers(); // Fetch users to map owner details
@@ -493,6 +494,7 @@ const Tenants: React.FC = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onCreateHotel={createTenant}
+        onUploadImages={uploadImages}
       />
 
       <ConfirmationModal

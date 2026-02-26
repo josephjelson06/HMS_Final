@@ -14,6 +14,7 @@ import {
   ArrowUpRight,
   Server,
   Download,
+  Image as ImageIcon,
 } from "lucide-react";
 import GlassCard from "../../components/ui/GlassCard";
 import ConfirmationModal from "../../components/ui/ConfirmationModal";
@@ -147,9 +148,17 @@ export default function HotelDetails({
       </button>
 
       {/* UNIFIED CONTAINER: Header Info Section */}
-      <GlassCard noPadding clipContent className="relative">
+      <GlassCard noPadding clipContent className="relative overflow-hidden">
         <div
-          className={`absolute top-0 right-0 w-96 h-96 bg-accent/5 dark:bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none ${hotelStatus === "Suspended" ? "grayscale opacity-10" : ""}`}
+          className="absolute inset-0 z-0 opacity-20 bg-cover bg-center transition-all bg-no-repeat"
+          style={{
+            backgroundImage: `url('${tenant?.imageUrls && tenant.imageUrls.length > 0 ? `http://localhost:8080${tenant.imageUrls[0]}` : "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&auto=format&fit=crop&q=60"}')`,
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent dark:from-black dark:via-black/90 dark:to-transparent z-[1]" />
+
+        <div
+          className={`absolute top-0 right-0 w-96 h-96 bg-accent/5 dark:bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none z-[2] ${hotelStatus === "Suspended" ? "grayscale opacity-10" : ""}`}
         ></div>
         <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6 p-8 relative z-10">
           <div className="flex items-start gap-5">
@@ -341,6 +350,34 @@ export default function HotelDetails({
                 ))}
               </div>
             </GlassCard>
+
+            {tenant?.imageUrls && tenant.imageUrls.length > 0 && (
+              <GlassCard
+                noPadding
+                clipContent
+                className="border-white/5 dark:border-white/10 flex flex-col lg:col-span-2"
+              >
+                <div className="p-8 border-b border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/[0.02]">
+                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <ImageIcon size={14} /> Property Photos
+                  </h3>
+                </div>
+                <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {tenant.imageUrls.map((url, idx) => (
+                    <div
+                      key={idx}
+                      className="relative aspect-video rounded-xl overflow-hidden group border border-white/5 shadow-lg"
+                    >
+                      <img
+                        src={`http://localhost:8080${url}`}
+                        alt={`Property Photo ${idx + 1}`}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </GlassCard>
+            )}
           </div>
         )}
 

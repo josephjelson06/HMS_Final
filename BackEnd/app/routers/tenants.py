@@ -1,6 +1,6 @@
 from uuid import UUID
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -71,3 +71,17 @@ def delete_tenant(
     if not success:
         raise HTTPException(status_code=404, detail="Tenant not found")
     return {"message": "Tenant deleted"}
+
+
+@router.post("/{tenant_id}/images", response_model=TenantRead)
+def upload_tenant_images(
+    tenant_id: UUID,
+    images: List[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("platform:tenants:write")),
+):
+    service = TenantService(db)
+    tenant = service.upload_images(tenant_id, images)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return tenant

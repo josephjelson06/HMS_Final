@@ -7,6 +7,9 @@ export interface ApiTenantDTO {
   gstin?: string | null;
   pan?: string | null;
   status?: string | null;
+  image_url_1?: string | null;
+  image_url_2?: string | null;
+  image_url_3?: string | null;
 }
 
 export interface ApiPlanDTO {
@@ -31,7 +34,7 @@ export interface ApiRoleDTO {
   description?: string | null;
   status?: string | null;
   color?: string | null;
-  permissions?: string[]; 
+  permissions?: string[];
 }
 
 export interface ApiUserDTO {

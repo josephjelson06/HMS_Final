@@ -11,6 +11,8 @@ import {
   CheckCircle2,
   Trash2,
   AlertTriangle,
+  ImagePlus,
+  X,
 } from "lucide-react";
 import ModalShell from "../../components/ui/ModalShell";
 import GlassInput from "../../components/ui/GlassInput";
@@ -27,12 +29,14 @@ interface AddHotelModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateHotel: (data: any) => Promise<any>; // Returns the created tenant
+  onUploadImages?: (tenantId: string, formData: FormData) => Promise<any>;
 }
 
 const AddHotelModal: React.FC<AddHotelModalProps> = ({
   isOpen,
   onClose,
   onCreateHotel,
+  onUploadImages,
 }) => {
   const { plans: apiPlans, loading: plansLoading, fetchPlans } = usePlans();
   const { createUser, fetchRoles, roles } = useUsers(); // Use user hook for owner creation
@@ -40,6 +44,8 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({
   const [step, setStep] = useState(1);
   const totalSteps = 5;
   const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -92,6 +98,28 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({
     setKiosks(newKiosks);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      const combined = [...images, ...newFiles].slice(0, 3);
+      setImages(combined);
+
+      const previews = combined.map((file) => URL.createObjectURL(file));
+      setImagePreviews(previews);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
+
+    const newPreviews = [...imagePreviews];
+    URL.revokeObjectURL(newPreviews[index]);
+    newPreviews.splice(index, 1);
+    setImagePreviews(newPreviews);
+  };
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -112,6 +140,8 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({
       });
       setKiosks([]);
       setCurrentKiosk({ serialNumber: "", location: "" });
+      setImages([]);
+      setImagePreviews([]);
     }
   }, [isOpen]);
 
@@ -157,10 +187,15 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({
             tenantId: newTenant.id,
             isAdmin: true,
           });
-          // Note: We might want to update the tenant with ownerId here if the backend doesn't do it automatically
-          // But for now let's assume the user creation linked to tenant is enough for them to log in.
-          // Updating tenant ownerId would require another callback props or importing useTenants here which might loop.
-          // Let's rely on the user being created.
+        }
+
+        // 3. Upload Images if any
+        if (images.length > 0 && onUploadImages) {
+          const uploadData = new FormData();
+          images.forEach((img) => {
+            uploadData.append("images", img);
+          });
+          await onUploadImages(newTenant.id, uploadData);
         }
       }
 
@@ -373,16 +408,58 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({
         {step === 4 && (
           <div className="space-y-6">
             <div className="flex items-center gap-2 mb-2">
-              <Monitor size={16} className="text-accent" />
+              <ImagePlus size={16} className="text-accent" />
               <span className="text-xs font-bold uppercase dark:text-white">
-                Kiosk Assignment
+                Hotel Photos
               </span>
             </div>
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 border border-dashed border-white/10 text-center text-xs text-gray-500">
-                Kiosk assignment is handled in the Kiosks module after
-                onboarding.
-              </div>
+              <p className="text-xs text-gray-500">
+                Upload up to 3 photos showcasing your hotel property. These will
+                be displayed on the property details page.
+              </p>
+
+              {images.length < 3 && (
+                <div className="relative border-2 border-dashed border-gray-300 dark:border-white/10 rounded-xl p-8 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-center cursor-pointer">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <ImagePlus className="mx-auto mb-2 text-gray-400" size={32} />
+                  <p className="text-sm font-bold dark:text-white">
+                    Click or drag images to upload
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Select up to {3 - images.length} more images (JPG, PNG)
+                  </p>
+                </div>
+              )}
+
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-3 gap-4 mt-4">
+                  {imagePreviews.map((src, idx) => (
+                    <div
+                      key={idx}
+                      className="relative aspect-video rounded-xl overflow-hidden group"
+                    >
+                      <img
+                        src={src}
+                        alt={`Preview ${idx + 1}`}
+                        className="object-cover w-full h-full"
+                      />
+                      <button
+                        onClick={() => removeImage(idx)}
+                        className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-xl"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

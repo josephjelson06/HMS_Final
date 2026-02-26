@@ -16,6 +16,7 @@ export class ApiTenantRepository implements ITenantRepository {
       gstin: data.gstin ?? undefined,
       pan: data.pan ?? undefined,
       status: data.status ?? undefined,
+      imageUrls: [data.image_url_1, data.image_url_2, data.image_url_3].filter(Boolean) as string[],
     };
   }
 
@@ -59,5 +60,10 @@ export class ApiTenantRepository implements ITenantRepository {
 
   async delete(id: string): Promise<void> {
     return httpClient.delete(`${this.baseUrl}${id}`);
+  }
+
+  async uploadImages(id: string, formData: FormData): Promise<Tenant> {
+    const result = await httpClient.post<ApiTenantDTO>(`${this.baseUrl}${id}/images`, formData);
+    return this.mapToEntity(result);
   }
 }

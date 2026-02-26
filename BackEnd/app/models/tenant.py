@@ -26,6 +26,10 @@ class Tenant(Base):
     gstin: Mapped[str | None] = mapped_column(String)
     pan: Mapped[str | None] = mapped_column(String)
 
+    image_url_1: Mapped[str | None] = mapped_column(String)
+    image_url_2: Mapped[str | None] = mapped_column(String)
+    image_url_3: Mapped[str | None] = mapped_column(String)
+
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.utcnow)
     updated_at: Mapped[datetime | None] = mapped_column(TIMESTAMP)
 
