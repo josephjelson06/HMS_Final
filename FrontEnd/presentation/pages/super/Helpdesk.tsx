@@ -19,8 +19,7 @@ import { useSupport } from "@/application/hooks/useSupport";
 import type { SupportTicket } from "@/domain/entities/Support";
 
 const Helpdesk: React.FC = () => {
-  const { tickets, loading, error, fetchTickets, resolveTicket, addMessage } =
-    useSupport();
+  const { tickets, loading, error, fetchTickets, resolveTicket } = useSupport();
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(
     null,
   );
@@ -193,7 +192,6 @@ const Helpdesk: React.FC = () => {
           ticket={selectedTicket}
           onClose={() => setSelectedTicket(null)}
           onResolve={handleResolve}
-          onAddMessage={addMessage}
         />
       )}
     </div>

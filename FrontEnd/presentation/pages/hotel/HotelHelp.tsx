@@ -36,7 +36,6 @@ const HotelHelp: React.FC = () => {
     tickets: allTickets,
     fetchTenantTickets,
     createTicket,
-    addMessage,
     loading,
   } = useSupport();
   const [search, setSearch] = useState("");
@@ -127,15 +126,7 @@ const HotelHelp: React.FC = () => {
     if (resolved.length > 0) {
       const avgMs =
         resolved.reduce((acc, t) => {
-          // Fallback: If no messages, use created vs current
-          const lastActivity =
-            t.messages?.length > 0
-              ? t.messages[t.messages.length - 1].createdAt
-              : t.createdAt;
-          return (
-            acc +
-            (new Date(lastActivity).getTime() - new Date(t.createdAt).getTime())
-          );
+          return acc + (new Date().getTime() - new Date(t.createdAt).getTime());
         }, 0) / resolved.length;
       const hours = Math.floor(avgMs / 3600000);
       const mins = Math.floor((avgMs % 3600000) / 60000);
@@ -285,7 +276,6 @@ const HotelHelp: React.FC = () => {
         isOpen={!!selectedTicket}
         ticket={selectedTicket}
         onClose={() => setSelectedTicket(null)}
-        onAddMessage={addMessage}
       />
     </div>
   );

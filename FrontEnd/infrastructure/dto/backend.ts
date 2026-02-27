@@ -1,6 +1,7 @@
 export interface ApiTenantDTO {
   id: string;
   hotel_name: string;
+  slug?: string | null;
   address?: string | null;
   plan_id?: string | null;
   owner_user_id?: string | null;
@@ -10,6 +11,8 @@ export interface ApiTenantDTO {
   image_url_1?: string | null;
   image_url_2?: string | null;
   image_url_3?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface ApiPlanDTO {
@@ -20,6 +23,7 @@ export interface ApiPlanDTO {
   max_users?: number;
   max_roles?: number;
   max_rooms?: number;
+  is_archived?: boolean;
 }
 
 export interface ApiPermissionDTO {
@@ -43,7 +47,7 @@ export interface ApiUserDTO {
   name?: string | null;
   phone?: string | null;
   mobile?: string | null;
-  role?: ApiRoleDTO | null; // Nested object now
+  role?: ApiRoleDTO | null;
   tenant_id?: string | null;
   status?: string | null;
   last_login?: string | null;
@@ -61,16 +65,6 @@ export interface ApiSubscriptionDTO {
   status: string;
 }
 
-// Support DTOs
-export interface ApiMessageDTO {
-  id: string;
-  ticket_id: string;
-  sender_id?: string | null;
-  message: string;
-  created_at?: string | null;
-  is_internal: boolean;
-}
-
 export interface ApiTicketDTO {
   id: string;
   tenant_id: string;
@@ -80,5 +74,4 @@ export interface ApiTicketDTO {
   priority?: string | null;
   status?: string | null;
   created_at?: string | null;
-  messages?: ApiMessageDTO[];
 }

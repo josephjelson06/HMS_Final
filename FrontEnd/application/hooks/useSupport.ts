@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { repositories } from '@/infrastructure/config/container';
-import { SupportTicket, SupportMessage } from '@/domain/entities/Support';
+import { SupportTicket } from '@/domain/entities/Support';
 
 export function useSupport() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -33,16 +33,6 @@ export function useSupport() {
     }
   }, []);
 
-  const addMessage = useCallback(async (ticketId: string, message: string, isInternal: boolean) => {
-    try {
-      const newMsg = await repositories.support.addMessage(ticketId, message, isInternal);
-      // We might want to refresh the ticket or update local state
-      // For now, refresher logic is handled by UI re-fetching or optimistic updates
-      return newMsg;
-    } catch (err: any) {
-      throw err;
-    }
-  }, []);
 
   const fetchTicketDetails = useCallback(async (ticketId: string) => {
     return await repositories.support.getTicketById(ticketId);
@@ -80,7 +70,6 @@ export function useSupport() {
     fetchTenantTickets,
     createTicket,
     resolveTicket,
-    addMessage,
     fetchTicketDetails,
   };
 }

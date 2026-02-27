@@ -1,21 +1,16 @@
-export interface SupportMessage {
-  id: string;
-  ticketId: string;
-  senderId?: string;
-  message: string;
-  createdAt: Date;
-  isInternal: boolean;
-  isMe?: boolean; // UI helper
-}
+// SupportTicket domain entity
+// Note: SupportMessage was removed — messaging not implemented in current scope.
+
+export type SupportPriority = 'low' | 'medium' | 'high';
+export type SupportStatus = 'open' | 'in_progress' | 'closed';
 
 export interface SupportTicket {
   id: string;
   tenantId: string;
   title: string;
-  description: string;
-  category: string;
-  priority: string;
-  status: string; // 'open', 'closed', 'resolved'
-  createdAt: Date;
-  messages: SupportMessage[];
+  description?: string;
+  category?: string;
+  priority: SupportPriority | string;
+  status: SupportStatus | string;
+  createdAt: string;
 }

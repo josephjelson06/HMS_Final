@@ -10,6 +10,7 @@ export class ApiTenantRepository implements ITenantRepository {
     return {
       id: String(data.id),
       name: data.hotel_name,
+      slug: data.slug ?? '',
       address: data.address ?? undefined,
       planId: data.plan_id ?? undefined,
       ownerId: data.owner_user_id ?? undefined,
@@ -17,12 +18,15 @@ export class ApiTenantRepository implements ITenantRepository {
       pan: data.pan ?? undefined,
       status: data.status ?? undefined,
       imageUrls: [data.image_url_1, data.image_url_2, data.image_url_3].filter(Boolean) as string[],
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
     };
   }
 
   private toPayload(data: Partial<Tenant>): Record<string, unknown> {
     return {
       hotel_name: data.name,
+      slug: data.slug,
       address: data.address,
       plan_id: data.planId,
       owner_user_id: data.ownerId,
