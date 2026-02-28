@@ -17,6 +17,8 @@ export function pathnameToLegacyRoute(pathname: string): string {
       case "subscriptions": return "subscriptions";
       case "users": return "users-mgmt";
       // Dead routes removed: kiosks, invoices, reports, audit-logs, settings
+      case "reports":
+        return "reports";
       case "helpdesk": return "helpdesk";
       case "profile": return "profile";
       default: return "dashboard";
@@ -33,7 +35,11 @@ export function pathnameToLegacyRoute(pathname: string): string {
       case "profile": return "hotel-profile";
       case "rooms": return "rooms";
       case "guests": return "guests";
-      default: return "hotel-dashboard";
+      case "reports":
+        return "reports";
+      default:
+        console.warn(`Unmapped hotel route ID: ${section}`);
+        return "hotel-dashboard";
     }
   }
 
@@ -49,6 +55,8 @@ export function legacyRouteToPath(route: string, viewMode: ViewMode): string {
       case "plans": return "/super/plans";
       case "subscriptions": return "/super/subscriptions";
       case "users-mgmt": return "/super/users";
+      case "reports":
+        return "/super/reports";
       case "helpdesk": return "/super/helpdesk";
       case "profile": return "/super/profile";
       default: return "/super/dashboard";
@@ -61,6 +69,7 @@ export function legacyRouteToPath(route: string, viewMode: ViewMode): string {
     case "user-mgmt": return "/hotel/users";
     case "role-mgmt": return "/hotel/roles";
     case "billing": return "/hotel/billing";
+    case "reports": return "/hotel/reports";
     case "help": return "/hotel/help";
     case "hotel-profile": return "/hotel/profile";
     case "rooms": return "/hotel/rooms";

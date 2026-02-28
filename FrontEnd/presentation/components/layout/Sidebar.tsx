@@ -215,6 +215,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                           collapsed={isCollapsed}
                         />
                       )}
+
+                      <SidebarItem
+                        icon={FileText}
+                        label="Reports"
+                        active={currentRoute === "reports"}
+                        onClick={() => onNavigate("reports")}
+                        collapsed={isCollapsed}
+                      />
                     </SidebarSection>
 
                     <SidebarSection title="Management" collapsed={isCollapsed}>
@@ -281,6 +289,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                           currentRoute === "tenant-details"
                         }
                         onClick={() => onNavigate("tenants")}
+                        collapsed={isCollapsed}
+                      />
+                      <SidebarItem
+                        icon={FileText}
+                        label="Reports"
+                        active={currentRoute === "reports"}
+                        onClick={() => onNavigate("reports")}
                         collapsed={isCollapsed}
                       />
                     </SidebarSection>
