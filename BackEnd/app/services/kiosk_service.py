@@ -2,8 +2,6 @@
 Kiosk Service
 =============
 Business logic for the slug-scoped kiosk public API.
-Each method resolves the tenant by slug first, then scopes
-all queries to that tenant_id.
 """
 
 from uuid import UUID
@@ -12,7 +10,7 @@ from fastapi import HTTPException, status
 
 from app.models.tenant import Tenant
 from app.models.room import RoomType
-from app.models.booking import Guest, Booking
+from app.models.booking import Booking
 from app.schemas.kiosk import KioskBookingCreate
 
 
@@ -51,11 +49,8 @@ class KioskService:
         tenant = _get_tenant_by_slug(slug, self.db)
         return (
             self.db.query(RoomType)
-            .filter(
-                RoomType.tenant_id == tenant.id,
-                RoomType.is_active,
-            )
-            .order_by(RoomType.display_order, RoomType.name)
+            .filter(RoomType.tenant_id == tenant.id)
+            .order_by(RoomType.name)
             .all()
         )
 
@@ -70,7 +65,6 @@ class KioskService:
             .filter(
                 RoomType.id == payload.room_type_id,
                 RoomType.tenant_id == tenant.id,
-                RoomType.is_active,
             )
             .first()
         )
@@ -90,45 +84,31 @@ class KioskService:
             if existing:
                 return existing
 
-        # Validate occupancy
-        total_guests = payload.adults + payload.children
-        if total_guests > room_type.max_occupancy:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Total guests ({total_guests}) exceeds max occupancy "
-                f"({room_type.max_occupancy}) for this room type",
-            )
-        if payload.adults > room_type.max_adults:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Adults ({payload.adults}) exceeds max adults "
-                f"({room_type.max_adults}) for this room type",
-            )
-
         # Calculate nights + price
         nights = (payload.check_out_date - payload.check_in_date).days
-        total_price = room_type.base_price * nights
+        if nights < 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="check_out_date must be after check_in_date",
+            )
+        total_price = room_type.price * nights
 
-        # Create or find guest
-        guest = self._upsert_guest(tenant.id, payload)
-
-        # Create booking (no session_id or device_id — slug-only flow)
+        # Create booking (single table, no guest relations anymore)
         booking = Booking(
             tenant_id=tenant.id,
-            guest_id=guest.id,
             room_type_id=room_type.id,
-            status="confirmed",
-            adults=payload.adults,
-            children=payload.children,
+            guest_name=payload.guest_name,
             check_in_date=payload.check_in_date,
             check_out_date=payload.check_out_date,
+            adults=payload.adults,
+            children=payload.children,
             nights=nights,
             total_price=total_price,
-            currency=room_type.currency,
-            guest_name=payload.guest_name,
-            special_requests=payload.special_requests,
+            status="CONFIRMED",
             idempotency_key=payload.idempotency_key,
+            payment_ref=payload.payment_ref,
         )
+
         self.db.add(booking)
         self.db.commit()
         self.db.refresh(booking)
@@ -150,49 +130,3 @@ class KioskService:
                 detail="Booking not found",
             )
         return booking
-
-    # ── Internal helpers ──────────────────────────────────────────────
-
-    def _upsert_guest(self, tenant_id: UUID, payload: KioskBookingCreate) -> Guest:
-        """
-        Re-use an existing guest record if phone or email matches within this tenant.
-        Otherwise create a new guest.
-        """
-        guest = None
-
-        # Try to find by phone first (most reliable for walk-in guests)
-        if payload.guest_phone:
-            guest = (
-                self.db.query(Guest)
-                .filter(
-                    Guest.tenant_id == tenant_id,
-                    Guest.phone == payload.guest_phone,
-                )
-                .first()
-            )
-
-        # Fallback to email
-        if not guest and payload.guest_email:
-            guest = (
-                self.db.query(Guest)
-                .filter(
-                    Guest.tenant_id == tenant_id,
-                    Guest.email == payload.guest_email,
-                )
-                .first()
-            )
-
-        if not guest:
-            guest = Guest(
-                tenant_id=tenant_id,
-                full_name=payload.guest_name,
-                email=payload.guest_email,
-                phone=payload.guest_phone,
-                id_type=payload.id_type,
-                id_number=payload.id_number,
-                nationality=payload.nationality,
-            )
-            self.db.add(guest)
-            self.db.flush()  # get guest.id before committing
-
-        return guest

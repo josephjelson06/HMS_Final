@@ -40,7 +40,6 @@ class Tenant(Base):
     tickets = relationship("SupportTicket", back_populates="tenant")
     config = relationship("TenantConfig", back_populates="tenant", uselist=False)
     room_types = relationship("RoomType", back_populates="tenant")
-    kiosk_devices = relationship("KioskDevice", back_populates="tenant")
     owner = relationship("TenantUser", foreign_keys=[owner_user_id])
 
 

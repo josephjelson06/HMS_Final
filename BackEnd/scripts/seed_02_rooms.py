@@ -5,8 +5,6 @@ Run AFTER seed_01_hotel.py
 
 Creates room types for the demo hotel (Grand Bay Hotel).
 The kiosk module reads these to present booking options to guests.
-
-Room types are the catalog of what the hotel offers.
 """
 
 import logging
@@ -29,26 +27,13 @@ ROOM_TYPES = [
     {
         "name": "Standard Room",
         "code": "STD",
-        "description": "A comfortable standard room with all essentials. Perfect for solo travellers or couples.",
-        "base_price": Decimal("2500.00"),
-        "currency": "INR",
-        "max_adults": 2,
-        "max_children": 1,
-        "max_occupancy": 3,
+        "price": Decimal("2500.00"),
         "amenities": ["WiFi", "AC", "TV", "Hot Water", "Room Service"],
-        "images": [],
-        "is_active": True,
-        "display_order": 1,
     },
     {
         "name": "Deluxe Room",
         "code": "DLX",
-        "description": "Upgraded furnishings with a sea-facing view and premium amenities.",
-        "base_price": Decimal("4500.00"),
-        "currency": "INR",
-        "max_adults": 2,
-        "max_children": 2,
-        "max_occupancy": 4,
+        "price": Decimal("4500.00"),
         "amenities": [
             "WiFi",
             "AC",
@@ -58,19 +43,11 @@ ROOM_TYPES = [
             "Room Service",
             "Safe",
         ],
-        "images": [],
-        "is_active": True,
-        "display_order": 2,
     },
     {
         "name": "Suite",
         "code": "SUITE",
-        "description": "Luxury suite with separate living area, kitchenette, and panoramic views.",
-        "base_price": Decimal("9000.00"),
-        "currency": "INR",
-        "max_adults": 3,
-        "max_children": 2,
-        "max_occupancy": 5,
+        "price": Decimal("9000.00"),
         "amenities": [
             "WiFi",
             "AC",
@@ -83,19 +60,11 @@ ROOM_TYPES = [
             "Kitchenette",
             "Butler Service",
         ],
-        "images": [],
-        "is_active": True,
-        "display_order": 3,
     },
     {
         "name": "Family Room",
         "code": "FAM",
-        "description": "Spacious room designed for families with extra beds and child-friendly amenities.",
-        "base_price": Decimal("6000.00"),
-        "currency": "INR",
-        "max_adults": 2,
-        "max_children": 3,
-        "max_occupancy": 6,
+        "price": Decimal("6000.00"),
         "amenities": [
             "WiFi",
             "AC",
@@ -105,9 +74,6 @@ ROOM_TYPES = [
             "Extra Beds",
             "Kids Kit",
         ],
-        "images": [],
-        "is_active": True,
-        "display_order": 4,
     },
 ]
 
@@ -141,7 +107,7 @@ def run():
             db.add(RoomType(tenant_id=tenant.id, **rt_data))
             created += 1
             logger.info(
-                f"  ✓ Created: {rt_data['name']} ({rt_data['code']}) — ₹{rt_data['base_price']}/night"
+                f"  ✓ Created: {rt_data['name']} ({rt_data['code']}) — ₹{rt_data['price']}/night"
             )
 
         db.commit()

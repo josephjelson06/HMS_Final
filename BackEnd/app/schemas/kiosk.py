@@ -2,7 +2,6 @@
 Kiosk API Schemas
 =================
 Pydantic models for the slug-scoped kiosk public API.
-No auth required — the slug is the tenant identifier.
 """
 
 from uuid import UUID
@@ -38,15 +37,8 @@ class KioskRoomTypeRead(ORMBase):
     id: UUID
     name: str
     code: str
-    description: Optional[str] = None
-    base_price: Decimal
-    currency: str
-    max_adults: int
-    max_children: int
-    max_occupancy: int
+    price: Decimal
     amenities: List[str] = []
-    images: List[str] = []
-    display_order: int
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -57,11 +49,6 @@ class KioskRoomTypeRead(ORMBase):
 class KioskBookingCreate(BaseModel):
     # Guest identity
     guest_name: str
-    guest_email: Optional[str] = None
-    guest_phone: Optional[str] = None
-    id_type: Optional[str] = None  # passport | aadhar | driving_license
-    id_number: Optional[str] = None
-    nationality: Optional[str] = None
 
     # Room selection
     room_type_id: UUID
@@ -69,12 +56,11 @@ class KioskBookingCreate(BaseModel):
     # Stay details
     check_in_date: date
     check_out_date: date
-    adults: int = 1
-    children: int = 0
+    adults: int
+    children: Optional[int] = 0
 
-    # Optional
-    special_requests: Optional[str] = None
-    idempotency_key: Optional[str] = None  # prevent duplicate submissions
+    idempotency_key: Optional[str] = None
+    payment_ref: Optional[str] = None
 
     @field_validator("check_out_date")
     @classmethod
@@ -95,16 +81,15 @@ class KioskBookingRead(ORMBase):
     id: UUID
     tenant_id: UUID
     room_type_id: UUID
-    guest_id: Optional[UUID] = None
-    guest_name: Optional[str] = None
+    guest_name: str
     status: str
     adults: int
-    children: int
+    children: Optional[int] = None
     check_in_date: date
     check_out_date: date
     nights: int
     total_price: Optional[Decimal] = None
-    currency: str
-    special_requests: Optional[str] = None
-    confirmed_at: Optional[datetime] = None
+    idempotency_key: Optional[str] = None
+    payment_ref: Optional[str] = None
     created_at: datetime
+    updated_at: Optional[datetime] = None
