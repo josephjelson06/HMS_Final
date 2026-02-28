@@ -63,6 +63,7 @@ class OnboardingService:
         # 6. Create initial subscription
         sub = Subscription(
             tenant_id=tenant.id,
+            plan_id=default_plan.id,
             start_date=datetime.datetime.utcnow(),
             end_date=datetime.datetime.utcnow() + datetime.timedelta(days=30),
             status="active",

@@ -5,21 +5,21 @@ import type { ApiSubscriptionDTO } from '../dto/backend';
 
 export class ApiSubscriptionRepository implements ISubscriptionRepository {
   private getBaseUrl(hotelId?: string) {
-     // NOTE: Backend endpoint might be /api/subscriptions (all) OR /api/hotels/{id}/subscription
-     // Assuming we want to fetch mostly by logic that knows the context
-     // But interface says `getAll`. 
-     // Let's assume /api/subscriptions returns ALL for platform admin
-     return 'api/subscriptions/';
+    // NOTE: Backend endpoint might be /api/subscriptions (all) OR /api/hotels/{id}/subscription
+    // Assuming we want to fetch mostly by logic that knows the context
+    // But interface says `getAll`. 
+    // Let's assume /api/subscriptions returns ALL for platform admin
+    return 'api/subscriptions/';
   }
 
   private mapToEntity(data: ApiSubscriptionDTO): Subscription {
     return {
       id: String(data.id),
-      tenantId: data.tenant_id,
-      planId: data.plan_id,
+      tenantId: data.tenant_id ? String(data.tenant_id) : '',
+      planId: data.plan_id ? String(data.plan_id) : undefined,
       startDate: data.start_date ?? undefined,
       endDate: data.end_date ?? undefined,
-      status: data.status,
+      status: data.status ? (data.status.charAt(0).toUpperCase() + data.status.slice(1).toLowerCase()) : 'Active',
     };
   }
 
@@ -31,10 +31,10 @@ export class ApiSubscriptionRepository implements ISubscriptionRepository {
   async getById(id: string): Promise<Subscription | null> {
     // If we have an endpoint for single sub by ID
     try {
-        const result = await httpClient.get<ApiSubscriptionDTO>(`api/subscriptions/${id}`);
-        return this.mapToEntity(result);
+      const result = await httpClient.get<ApiSubscriptionDTO>(`api/subscriptions/${id}`);
+      return this.mapToEntity(result);
     } catch {
-        return null;
+      return null;
     }
   }
 

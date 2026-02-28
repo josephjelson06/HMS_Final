@@ -4,11 +4,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 import os
 import shutil
+import datetime
 from fastapi import UploadFile
 
 from app.models.tenant import Tenant
 from app.models.room import RoomType
 from app.models.booking import Booking
+from app.models.billing import Subscription, Plan
 from app.schemas.tenant import TenantCreate
 
 
@@ -52,6 +54,26 @@ class TenantService:
         )
         tenant = Tenant(**data, slug=slug)
         self.db.add(tenant)
+        self.db.flush()  # Get tenant.id
+
+        # Automatically create initial subscription
+        # Use provided plan_id or fetch default
+        plan_id = data.get("plan_id")
+        if not plan_id:
+            default_plan = self.db.query(Plan).first()
+            if default_plan:
+                plan_id = default_plan.id
+
+        if plan_id:
+            sub = Subscription(
+                tenant_id=tenant.id,
+                plan_id=plan_id,
+                start_date=datetime.datetime.utcnow(),
+                end_date=datetime.datetime.utcnow() + datetime.timedelta(days=30),
+                status="active",
+            )
+            self.db.add(sub)
+
         self.db.commit()
         self.db.refresh(tenant)
         return tenant
