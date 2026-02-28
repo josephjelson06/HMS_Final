@@ -14,4 +14,7 @@ export interface Tenant {
   imageUrls?: string[];  // image_url_1/2/3 mapped to array
   createdAt?: string;
   updatedAt?: string;
+  ownerName?: string;
+  ownerEmail?: string;
+  ownerPhone?: string;
 }

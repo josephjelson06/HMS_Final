@@ -30,9 +30,13 @@ export class ApiTenantRepository implements ITenantRepository {
       address: data.address,
       plan_id: data.planId,
       owner_user_id: data.ownerId,
+      owner_name: data.ownerName,
+      owner_email: data.ownerEmail,
+      owner_phone: data.ownerPhone,
       gstin: data.gstin,
       pan: data.pan,
     };
+
     if (data.status !== undefined) {
       payload.status = data.status === 'Active';
     }

@@ -1,15 +1,6 @@
-Platform Page
-- Dashboard Page -> Done
-- Tenant Details Page -> Done (Glitch fixed)
-- Fix Tenant Page Design -> Done
+Remaining Work (Updated on 28-02-2026 -> Saturday)
 
-Tenant Page
-- Dashboard Page -> Done
-- Staff Page -> Done
-- Roles Page -> Done
-- Billing Page -> Done
-- Helpdesk Page -> Done
-- My Subscriptions Page -> [Skipped for now]
+1. Requires Add Roles, Users and Signing in with those creds -> Both Hotel and Platforms
+2. Requires managing the Permission Matrix -> The Supend, Delete Methods -> Both
+3. CRUD for Plans, Hotels
 
-From the commit
-(f525365599805cbca499a125642d5237be4da2a3)

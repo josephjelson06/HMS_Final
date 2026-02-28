@@ -44,9 +44,16 @@ class TenantService:
         )
 
     def create(self, payload: TenantCreate) -> Tenant:
-        # Note: Full onboarding flow should use OnboardingService.
-        # This is a raw create method, mostly for admin or testing.
+        from app.models.tenant import TenantRole, TenantUser
+        from app.models.permissions import Permission
+        from app.models.mappings import tenant_role_permissions
+        from app.core.auth.security import get_password_hash
+
         data = payload.model_dump()
+        owner_name = data.pop("owner_name", None)
+        owner_email = data.pop("owner_email", None)
+        owner_phone = data.pop("owner_phone", None)
+
         slug = (
             data.get("hotel_name", "hotel").lower().replace(" ", "-")
             + "-"
@@ -57,7 +64,6 @@ class TenantService:
         self.db.flush()  # Get tenant.id
 
         # Automatically create initial subscription
-        # Use provided plan_id or fetch default
         plan_id = data.get("plan_id")
         if not plan_id:
             default_plan = self.db.query(Plan).first()
@@ -73,6 +79,42 @@ class TenantService:
                 status="active",
             )
             self.db.add(sub)
+
+        # Create General Manager Role
+        mgr_role = TenantRole(
+            tenant_id=tenant.id,
+            name="General Manager",
+            status=True,
+        )
+        self.db.add(mgr_role)
+        self.db.flush()
+
+        # Assign hotel permissions
+        hotel_perms = (
+            self.db.query(Permission).filter(Permission.key.like("hotel:%")).all()
+        )
+        for perm in hotel_perms:
+            self.db.execute(
+                tenant_role_permissions.insert().values(
+                    role_id=mgr_role.id, permission_id=perm.id
+                )
+            )
+
+        # Create GM User
+        if owner_email and owner_name:
+            mgr_user = TenantUser(
+                tenant_id=tenant.id,
+                email=owner_email,
+                name=owner_name,
+                phone=owner_phone,
+                password_hash=get_password_hash("manager123"),
+                role_id=mgr_role.id,
+            )
+            self.db.add(mgr_user)
+            self.db.flush()
+
+            # Link owner
+            tenant.owner_user_id = mgr_user.id
 
         self.db.commit()
         self.db.refresh(tenant)

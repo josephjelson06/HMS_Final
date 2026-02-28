@@ -44,7 +44,7 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
             email: data.email,
             role_id: data.role?.id || '',
             mobile: data.mobile,
-            password: 'Password123!',
+            password: 'prole123',
             is_active: data.status === 'Active'
         };
 

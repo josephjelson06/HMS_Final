@@ -10,6 +10,9 @@ class TenantCreate(BaseModel):
     hotel_name: str
     address: str | None = None
     plan_id: UUID | None = None
+    owner_name: str | None = None
+    owner_email: EmailStr | None = None
+    owner_phone: str | None = None
 
 
 class TenantRead(ORMBase):

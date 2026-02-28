@@ -160,7 +160,7 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({
         );
       }
 
-      // 1. Create Tenant
+      // 1. Create Tenant (Atomic operation includes GM Role & User)
       const newTenant = await onCreateHotel({
         name: formData.name,
         gstin: formData.gstin,
@@ -168,28 +168,13 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({
         address: formData.address,
         planId: selectedPlan.id,
         status: "Onboarding",
+        ownerName: formData.owner,
+        ownerEmail: formData.email,
+        ownerPhone: formData.mobile,
       });
 
       if (newTenant && newTenant.id) {
-        // 2. Create Owner User
-        // Find "Tenant Admin" role or similar fallback
-        const adminRole =
-          roles.find(
-            (r) => r.name === "Hotel Admin" || r.name === "Tenant Admin",
-          ) || roles[0];
-
-        if (adminRole) {
-          await createUser({
-            name: formData.owner,
-            email: formData.email,
-            mobile: formData.mobile,
-            role: adminRole,
-            tenantId: newTenant.id,
-            isAdmin: true,
-          });
-        }
-
-        // 3. Upload Images if any
+        // 2. Upload Images if any
         if (images.length > 0 && onUploadImages) {
           const uploadData = new FormData();
           images.forEach((img) => {
