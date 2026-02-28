@@ -100,7 +100,9 @@ const HelpdeskDetailModal: React.FC<HelpdeskDetailModalProps> = ({
                   Tenant
                 </label>
                 <span className="text-xs font-mono font-bold dark:text-white">
-                  {ticket.tenantId.slice(0, 12)}…
+                  {ticket.tenantId
+                    ? `${ticket.tenantId.slice(0, 12)}…`
+                    : "Platform"}
                 </span>
               </div>
             </div>

@@ -4,7 +4,7 @@ import { httpClient } from '../http/client';
 import type { ApiTenantDTO } from '../dto/backend';
 
 export class ApiTenantRepository implements ITenantRepository {
-  private baseUrl = 'api/tenants/';
+  private baseUrl = 'api/tenants';
 
   private mapToEntity(data: ApiTenantDTO): Tenant {
     return {
@@ -16,7 +16,7 @@ export class ApiTenantRepository implements ITenantRepository {
       ownerId: data.owner_user_id ?? undefined,
       gstin: data.gstin ?? undefined,
       pan: data.pan ?? undefined,
-      status: data.status ?? undefined,
+      status: data.status === undefined ? undefined : (data.status ? 'Active' : 'Suspended'),
       imageUrls: [data.image_url_1, data.image_url_2, data.image_url_3].filter(Boolean) as string[],
       createdAt: data.created_at,
       updatedAt: data.updated_at,
@@ -24,7 +24,7 @@ export class ApiTenantRepository implements ITenantRepository {
   }
 
   private toPayload(data: Partial<Tenant>): Record<string, unknown> {
-    return {
+    const payload: Record<string, unknown> = {
       hotel_name: data.name,
       slug: data.slug,
       address: data.address,
@@ -32,8 +32,11 @@ export class ApiTenantRepository implements ITenantRepository {
       owner_user_id: data.ownerId,
       gstin: data.gstin,
       pan: data.pan,
-      status: data.status,
     };
+    if (data.status !== undefined) {
+      payload.status = data.status === 'Active';
+    }
+    return payload;
   }
 
   async getAll(): Promise<Tenant[]> {
@@ -43,7 +46,7 @@ export class ApiTenantRepository implements ITenantRepository {
 
   async getById(id: string): Promise<Tenant | null> {
     try {
-      const result = await httpClient.get<ApiTenantDTO>(`${this.baseUrl}${id}`);
+      const result = await httpClient.get<ApiTenantDTO>(`${this.baseUrl}/${id}`);
       return this.mapToEntity(result);
     } catch (error) {
       return null;
@@ -58,16 +61,16 @@ export class ApiTenantRepository implements ITenantRepository {
 
   async update(id: string, data: Partial<Tenant>): Promise<Tenant> {
     const payload = this.toPayload(data);
-    const result = await httpClient.patch<ApiTenantDTO>(`${this.baseUrl}${id}`, payload);
+    const result = await httpClient.patch<ApiTenantDTO>(`${this.baseUrl}/${id}`, payload);
     return this.mapToEntity(result);
   }
 
   async delete(id: string): Promise<void> {
-    return httpClient.delete(`${this.baseUrl}${id}`);
+    return httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
   async uploadImages(id: string, formData: FormData): Promise<Tenant> {
-    const result = await httpClient.post<ApiTenantDTO>(`${this.baseUrl}${id}/images`, formData);
+    const result = await httpClient.post<ApiTenantDTO>(`${this.baseUrl}/${id}/images`, formData);
     return this.mapToEntity(result);
   }
 }

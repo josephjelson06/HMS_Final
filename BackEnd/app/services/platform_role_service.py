@@ -25,6 +25,16 @@ class PlatformRoleService:
         self.db.refresh(role)
         return role
 
+    def update(self, role_id: UUID, payload: dict) -> Optional[PlatformRole]:
+        role = self.get_by_id(role_id)
+        if not role:
+            return None
+        for k, v in payload.items():
+            setattr(role, k, v)
+        self.db.commit()
+        self.db.refresh(role)
+        return role
+
     def get_permissions(self, role_id: UUID) -> List[str]:
         result = (
             self.db.query(Permission.key)

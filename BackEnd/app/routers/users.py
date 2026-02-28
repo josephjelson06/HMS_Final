@@ -37,6 +37,20 @@ def create_platform_user(
     return service.create(payload)
 
 
+@router.patch("/api/platform/users/{user_id}", response_model=PlatformUserRead)
+def update_platform_user(
+    user_id: UUID,
+    payload: dict,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("platform:users:write")),
+):
+    service = PlatformUserService(db)
+    user = service.update(user_id, payload)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
 @router.delete("/api/platform/users/{user_id}")
 def delete_platform_user(
     user_id: UUID,

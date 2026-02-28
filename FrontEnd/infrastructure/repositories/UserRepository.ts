@@ -126,9 +126,11 @@ export class ApiUserRepository implements IUserRepository {
   }
 
   async getRolePermissions(roleId: string): Promise<{ role_id: string; role_name: string; permissions: string[] }> {
-    // Note: Backend might return this shape or just list of strings. Assuming standard shape.
-    // If backend endpoint is /roles/{id}/permissions
-    return await httpClient.get<any>(`${this.roleUrl}${roleId}/permissions`);
+    const data = await httpClient.get<any>(`${this.roleUrl}${roleId}/permissions`);
+    if (Array.isArray(data)) {
+      return { role_id: roleId, role_name: '', permissions: data };
+    }
+    return data;
   }
 
   async setRolePermissions(roleId: string, permissions: string[]): Promise<void> {

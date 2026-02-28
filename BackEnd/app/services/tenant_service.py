@@ -7,7 +7,7 @@ import shutil
 from fastapi import UploadFile
 
 from app.models.tenant import Tenant
-from app.schemas.tenant import TenantCreate, TenantRead
+from app.schemas.tenant import TenantCreate
 
 
 class TenantService:
@@ -31,7 +31,13 @@ class TenantService:
     def create(self, payload: TenantCreate) -> Tenant:
         # Note: Full onboarding flow should use OnboardingService.
         # This is a raw create method, mostly for admin or testing.
-        tenant = Tenant(**payload.model_dump())
+        data = payload.model_dump()
+        slug = (
+            data.get("hotel_name", "hotel").lower().replace(" ", "-")
+            + "-"
+            + str(os.urandom(4).hex())
+        )
+        tenant = Tenant(**data, slug=slug)
         self.db.add(tenant)
         self.db.commit()
         self.db.refresh(tenant)

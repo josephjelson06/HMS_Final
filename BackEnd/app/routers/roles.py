@@ -33,6 +33,20 @@ def create_platform_role(
     return service.create(name)
 
 
+@router.patch("/api/platform/roles/{role_id}", response_model=PlatformRoleRead)
+def update_platform_role(
+    role_id: UUID,
+    payload: dict,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("platform:roles:write")),
+):
+    service = PlatformRoleService(db)
+    role = service.update(role_id, payload)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    return role
+
+
 @router.get("/api/platform/roles/{role_id}/permissions", response_model=List[str])
 def get_platform_role_permissions(
     role_id: UUID,
@@ -46,7 +60,7 @@ def get_platform_role_permissions(
 @router.put("/api/platform/roles/{role_id}/permissions")
 def update_platform_role_permissions(
     role_id: UUID,
-    permissions: List[str] = Body(...),
+    permissions: List[str] = Body(..., embed=True),
     db: Session = Depends(get_db),
     _=Depends(require_permission("platform:roles:write")),
 ):
