@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas.tenant import TenantRead, TenantCreate
+from app.schemas.kiosk import KioskRoomTypeRead, KioskBookingRead
 from app.services.tenant_service import TenantService
 from app.modules.rbac import require_permission
 
@@ -34,6 +35,26 @@ def get_tenant(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
     return tenant
+
+
+@router.get("/{tenant_id}/rooms", response_model=List[KioskRoomTypeRead])
+def get_tenant_rooms(
+    tenant_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:rooms:read")),
+):
+    service = TenantService(db)
+    return service.get_rooms(tenant_id)
+
+
+@router.get("/{tenant_id}/bookings", response_model=List[KioskBookingRead])
+def get_tenant_bookings(
+    tenant_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:bookings:read")),
+):
+    service = TenantService(db)
+    return service.get_bookings(tenant_id)
 
 
 @router.post("", response_model=TenantRead)

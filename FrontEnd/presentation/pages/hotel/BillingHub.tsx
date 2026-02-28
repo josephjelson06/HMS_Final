@@ -3,6 +3,8 @@
 import React, { useEffect } from "react";
 import { useAuth } from "@/application/hooks/useAuth";
 import { useSubscriptions } from "@/application/hooks/useSubscriptions";
+import GlassCard from "../../components/ui/GlassCard";
+import PageHeader from "../../components/ui/PageHeader";
 
 export default function BillingHub() {
   const { user } = useAuth();
@@ -16,55 +18,60 @@ export default function BillingHub() {
     fetchSubscriptions();
   }, [fetchSubscriptions]);
 
-  if (loading) return <div className="p-8">Loading billing info...</div>;
+  if (loading)
+    return (
+      <div className="p-8 text-center text-[10px] font-bold uppercase tracking-widest text-gray-500 animate-pulse">
+        Loading billing info...
+      </div>
+    );
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Billing & Subscription</h1>
+    <div className="p-8 space-y-8 animate-in fade-in duration-500">
+      <PageHeader title="Billing & Subscription" />
 
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 className="text-lg font-medium mb-4 border-b pb-2">
+      <GlassCard className="mb-8">
+        <h2 className="text-[12px] font-black uppercase tracking-widest text-gray-400 mb-6 border-b border-white/5 pb-4">
           Current Subscription
         </h2>
         {mySub ? (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-8">
             <div>
-              <label className="block text-sm font-medium text-gray-500">
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">
                 Plan
               </label>
-              <div className="text-lg font-bold">
-                {mySub.planId || "Unknown Pllan"}
+              <div className="text-xl font-black dark:text-white tracking-tight">
+                {mySub.planId || "Unknown Plan"}
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-500">
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">
                 Status
               </label>
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
                   mySub.status === "Active"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
+                    ? "bg-green-500/10 text-emerald-500 border-green-500/20"
+                    : "bg-red-500/10 text-red-500 border-red-500/20"
                 }`}
               >
                 {mySub.status}
               </span>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-500">
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">
                 Start Date
               </label>
-              <div>
+              <div className="text-sm font-bold dark:text-gray-300">
                 {mySub.startDate
                   ? new Date(mySub.startDate).toLocaleDateString()
                   : "-"}
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-500">
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">
                 End Date
               </label>
-              <div>
+              <div className="text-sm font-bold dark:text-gray-300">
                 {mySub.endDate
                   ? new Date(mySub.endDate).toLocaleDateString()
                   : "Auto-renew/Indefinite"}
@@ -72,14 +79,18 @@ export default function BillingHub() {
             </div>
           </div>
         ) : (
-          <div className="text-gray-500">No active subscription found.</div>
+          <div className="text-sm font-bold text-gray-500 italic py-4">
+            No active subscription found.
+          </div>
         )}
-      </div>
+      </GlassCard>
 
       {/* Invoices section removed as per migration plan */}
-      <div className="bg-gray-50 border border-gray-200 rounded p-6 text-center text-gray-500">
-        Invoices and payment history features are currently disabled.
-      </div>
+      <GlassCard className="text-center py-10">
+        <p className="text-sm font-bold text-gray-500">
+          Invoices and payment history features are currently disabled.
+        </p>
+      </GlassCard>
     </div>
   );
 }

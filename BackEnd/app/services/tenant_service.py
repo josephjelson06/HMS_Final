@@ -7,6 +7,8 @@ import shutil
 from fastapi import UploadFile
 
 from app.models.tenant import Tenant
+from app.models.room import RoomType
+from app.models.booking import Booking
 from app.schemas.tenant import TenantCreate
 
 
@@ -27,6 +29,17 @@ class TenantService:
 
     def get_by_id(self, tenant_id: UUID) -> Optional[Tenant]:
         return self.db.query(Tenant).filter(Tenant.id == tenant_id).first()
+
+    def get_rooms(self, tenant_id: UUID) -> List[RoomType]:
+        return self.db.query(RoomType).filter(RoomType.tenant_id == tenant_id).all()
+
+    def get_bookings(self, tenant_id: UUID) -> List[Booking]:
+        return (
+            self.db.query(Booking)
+            .filter(Booking.tenant_id == tenant_id)
+            .order_by(Booking.created_at.desc())
+            .all()
+        )
 
     def create(self, payload: TenantCreate) -> Tenant:
         # Note: Full onboarding flow should use OnboardingService.

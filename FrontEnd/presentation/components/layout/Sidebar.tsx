@@ -15,6 +15,8 @@ import {
   X,
   ChevronDown,
   ChevronRight,
+  Bed,
+  CalendarCheck,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -192,6 +194,24 @@ const Sidebar: React.FC<SidebarProps> = ({
                           label="Dashboard"
                           active={currentRoute === "hotel-dashboard"}
                           onClick={() => onNavigate("hotel-dashboard")}
+                          collapsed={isCollapsed}
+                        />
+                      )}
+                      {hasPerm("hotel:rooms:read") && (
+                        <SidebarItem
+                          icon={Bed}
+                          label="Rooms"
+                          active={currentRoute === "rooms"}
+                          onClick={() => onNavigate("rooms")}
+                          collapsed={isCollapsed}
+                        />
+                      )}
+                      {hasPerm("hotel:bookings:read") && (
+                        <SidebarItem
+                          icon={CalendarCheck}
+                          label="Guests"
+                          active={currentRoute === "guests"}
+                          onClick={() => onNavigate("guests")}
                           collapsed={isCollapsed}
                         />
                       )}
