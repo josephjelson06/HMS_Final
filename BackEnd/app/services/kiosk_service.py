@@ -26,6 +26,11 @@ def _get_tenant_by_slug(slug: str, db: Session) -> Tenant:
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Hotel '{slug}' not found",
         )
+    if not tenant.status:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This hotel is currently suspended. Online bookings are disabled.",
+        )
     return tenant
 
 

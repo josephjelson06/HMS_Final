@@ -21,6 +21,7 @@ class TenantRead(ORMBase):
     address: str | None
     plan_id: UUID | None
     owner_user_id: UUID | None
+    status: bool
     image_url_1: str | None = None
     image_url_2: str | None = None
     image_url_3: str | None = None

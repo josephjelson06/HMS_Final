@@ -16,6 +16,7 @@ class TenantUserUpdate(BaseModel):
     phone: str | None = None
     name: str | None = None
     role_id: UUID | None = None
+    status: bool | None = None
 
 
 class TenantUserRead(ORMBase):
@@ -23,4 +24,5 @@ class TenantUserRead(ORMBase):
     email: EmailStr
     phone: str | None
     name: str | None
+    status: bool
     role: TenantRoleRead

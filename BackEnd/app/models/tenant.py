@@ -25,6 +25,7 @@ class Tenant(Base):
     image_url_1: Mapped[str | None] = mapped_column(Text)
     image_url_2: Mapped[str | None] = mapped_column(Text)
     image_url_3: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), default=datetime.utcnow
     )
@@ -96,6 +97,7 @@ class TenantUser(Base):
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str | None] = mapped_column(String(20))
     name: Mapped[str | None] = mapped_column(String(255))
+    status: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     role_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("tenant_roles.id"), nullable=False
