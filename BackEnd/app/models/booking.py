@@ -36,3 +36,4 @@ class Booking(Base):
     updated_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
 
     room_type = relationship("RoomType", back_populates="bookings")
+    tenant = relationship("Tenant", back_populates="bookings")

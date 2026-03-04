@@ -33,14 +33,33 @@ class Tenant(Base):
     )
 
     users = relationship(
-        "TenantUser", back_populates="tenant", foreign_keys="TenantUser.tenant_id"
+        "TenantUser",
+        back_populates="tenant",
+        foreign_keys="TenantUser.tenant_id",
+        cascade="all, delete-orphan",
     )
-    roles = relationship("TenantRole", back_populates="tenant")
-    subscriptions = relationship("Subscription", back_populates="tenant")
-    tickets = relationship("SupportTicket", back_populates="tenant")
-    config = relationship("TenantConfig", back_populates="tenant", uselist=False)
-    room_types = relationship("RoomType", back_populates="tenant")
-    owner = relationship("TenantUser", foreign_keys=[owner_user_id])
+    roles = relationship(
+        "TenantRole", back_populates="tenant", cascade="all, delete-orphan"
+    )
+    subscriptions = relationship(
+        "Subscription", back_populates="tenant", cascade="all, delete-orphan"
+    )
+    tickets = relationship(
+        "SupportTicket", back_populates="tenant", cascade="all, delete-orphan"
+    )
+    config = relationship(
+        "TenantConfig",
+        back_populates="tenant",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    room_types = relationship(
+        "RoomType", back_populates="tenant", cascade="all, delete-orphan"
+    )
+    bookings = relationship(
+        "Booking", back_populates="tenant", cascade="all, delete-orphan"
+    )
+    owner = relationship("TenantUser", foreign_keys=[owner_user_id], post_update=True)
 
 
 class TenantRole(Base):
