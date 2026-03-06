@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Plus,
   Edit3,
@@ -73,191 +73,216 @@ const mapToViewModel = (plan: PlanData): PlanViewModel => {
   };
 };
 
-const PlanCard: React.FC<{
-  plan: PlanViewModel;
-  onEdit: (plan: PlanData) => void;
-  onArchive: (id: string) => void;
-  onDelete: (id: string) => void;
-}> = ({ plan, onEdit, onArchive, onDelete }) => {
-  const { isDarkMode } = useTheme();
+const PlanCard = React.memo(
+  ({
+    plan,
+    onEdit,
+    onArchive,
+    onDelete,
+  }: {
+    plan: PlanViewModel;
+    onEdit: (plan: PlanData) => void;
+    onArchive: (id: string, currentStatus: boolean) => void;
+    onDelete: (id: string) => void;
+  }) => {
+    const { isDarkMode } = useTheme();
 
-  const themeStyles = {
-    blue: {
-      accent: "bg-accent-strong",
-      text: "text-accent-strong dark:text-blue-400",
-      bg: "bg-blue-500/5",
-      border: "border-accent/20",
-      shadow: "shadow-accent/10",
-    },
-    purple: {
-      accent: "bg-purple-600",
-      text: "text-purple-600 dark:text-purple-400",
-      bg: "bg-purple-500/5",
-      border: "border-purple-500/20",
-      shadow: "shadow-purple-500/10",
-    },
-    orange: {
-      accent: "bg-accent-strong",
-      text: "text-accent-strong dark:text-orange-400",
-      bg: "bg-accent/5",
-      border: "border-accent/20",
-      shadow: "shadow-accent/10",
-    },
-  };
+    const themeStyles = {
+      blue: {
+        accent: "bg-accent-strong",
+        text: "text-accent-strong dark:text-blue-400",
+        bg: "bg-blue-500/5",
+        border: "border-accent/20",
+        shadow: "shadow-accent/10",
+      },
+      purple: {
+        accent: "bg-purple-600",
+        text: "text-purple-600 dark:text-purple-400",
+        bg: "bg-purple-500/5",
+        border: "border-purple-500/20",
+        shadow: "shadow-purple-500/10",
+      },
+      orange: {
+        accent: "bg-accent-strong",
+        text: "text-accent-strong dark:text-orange-400",
+        bg: "bg-accent/5",
+        border: "border-accent/20",
+        shadow: "shadow-accent/10",
+      },
+    };
 
-  const style = themeStyles[plan.theme] ?? themeStyles.blue;
+    const archivedStyle = {
+      accent: "bg-gray-400",
+      text: "text-gray-500 dark:text-gray-400",
+      bg: "bg-gray-500/10",
+      border: "border-gray-500/30",
+      shadow: "shadow-none",
+    };
 
-  return (
-    <GlassCard
-      noPadding
-      clipContent
-      className={`flex flex-col h-full border-2 transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 ${style.border} ${style.shadow} ${plan.isArchived ? "opacity-50 grayscale" : ""}`}
-    >
-      {/* Plan Header */}
-      <div className={`p-8 border-b border-white/5 ${style.bg} relative`}>
-        {plan.isArchived && (
-          <div className="absolute top-0 left-0 w-full bg-red-500/80 text-white text-[8px] font-bold uppercase text-center py-1 tracking-widest z-10">
-            Archived / Legacy Offering
+    const style = plan.isArchived
+      ? archivedStyle
+      : (themeStyles[plan.theme] ?? themeStyles.blue);
+
+    return (
+      <GlassCard
+        noPadding
+        clipContent
+        className={`flex flex-col h-full border-2 transition-all duration-500 ${!plan.isArchived ? "hover:scale-[1.02] hover:-translate-y-2" : ""} ${style.border} ${style.shadow} ${plan.isArchived ? "grayscale bg-gray-500/5" : ""}`}
+      >
+        {/* Plan Header */}
+        <div className={`p-8 border-b border-white/5 ${style.bg} relative`}>
+          {plan.isArchived && (
+            <div className="absolute top-0 left-0 w-full bg-red-500/80 text-white text-[8px] font-bold uppercase text-center py-1 tracking-widest z-10">
+              Archived / Legacy Offering
+            </div>
+          )}
+          <div className="flex justify-between items-start mb-6">
+            <div
+              className={`w-14 h-14 rounded-2xl ${style.accent} text-white flex items-center justify-center shadow-xl`}
+            >
+              <Zap size={28} fill="currentColor" />
+            </div>
+            <div className="px-3 py-1 rounded-full bg-black/5 dark:bg-white/10 text-[9px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-300">
+              ID: {plan.id.substring(0, 6).toUpperCase()}
+            </div>
           </div>
-        )}
-        <div className="flex justify-between items-start mb-6">
-          <div
-            className={`w-14 h-14 rounded-2xl ${style.accent} text-white flex items-center justify-center shadow-xl`}
+          <h3
+            className={`text-3xl font-black tracking-tighter uppercase mb-2 ${plan.isArchived ? "text-gray-500" : "dark:text-white"}`}
           >
-            <Zap size={28} fill="currentColor" />
+            {plan.name}
+          </h3>
+          <div className="flex items-baseline gap-1">
+            <span
+              className={`text-4xl font-black tracking-tighter ${plan.isArchived ? "text-gray-500" : "dark:text-white"}`}
+            >
+              ₹{plan.price.toLocaleString()}
+            </span>
+            <span
+              className={`text-sm font-bold ${plan.isArchived ? "text-gray-600" : "text-gray-500"}`}
+            >
+              / mo
+            </span>
           </div>
-          <div className="px-3 py-1 rounded-full bg-black/5 dark:bg-white/10 text-[9px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-300">
-            ID: {plan.id.substring(0, 6).toUpperCase()}
-          </div>
+          <p className="text-[10px] font-bold text-gray-400 uppercase mt-2">
+            + 18% GST Applicable
+          </p>
         </div>
-        <h3 className="text-3xl font-black dark:text-white tracking-tighter uppercase mb-2">
-          {plan.name}
-        </h3>
-        <div className="flex items-baseline gap-1">
-          <span
-            className={`text-4xl font-black dark:text-white tracking-tighter`}
-          >
-            ₹{plan.price.toLocaleString()}
-          </span>
-          <span className="text-sm font-bold text-gray-500">/ mo</span>
-        </div>
-        <p className="text-[10px] font-bold text-gray-400 uppercase mt-2">
-          + 18% GST Applicable
-        </p>
-      </div>
 
-      {/* Limits Strip */}
-      <div className="px-8 py-5 border-b border-white/5 flex gap-8">
-        <div className="flex items-center gap-2">
-          <Layout size={16} className="text-gray-400" />
-          <div className="flex flex-col">
-            <span className="text-[11px] font-black dark:text-white leading-none">
-              {plan.rooms}
-            </span>
-            <span className="text-[8px] font-bold text-gray-500 uppercase">
-              Max Rooms
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Users size={16} className="text-gray-400" />
-          <div className="flex flex-col">
-            <span className="text-[11px] font-black dark:text-white leading-none">
-              {plan.max_users}
-            </span>
-            <span className="text-[8px] font-bold text-gray-500 uppercase">
-              Max Users
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <HelpCircle size={16} className="text-gray-400" />
-          <div className="flex flex-col">
-            <span className="text-[11px] font-black dark:text-white leading-none truncate max-w-[60px]">
-              {plan.support.split(" ")[0]}
-            </span>
-            <span className="text-[8px] font-bold text-gray-500 uppercase">
-              Support
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Features List */}
-      <div className="p-8 flex-1 space-y-4">
-        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
-          Entitlements (Visual Only):
-        </p>
-        <div className="space-y-4">
-          {plan.included.map((item, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <div
-                className={`mt-0.5 p-0.5 rounded-full ${style.accent} text-white`}
-              >
-                <Check size={10} strokeWidth={4} />
-              </div>
-              <span className="text-xs font-bold dark:text-gray-300 leading-tight">
-                {item}
+        {/* Limits Strip */}
+        <div className="px-8 py-5 border-b border-white/5 flex gap-8">
+          <div className="flex items-center gap-2">
+            <Layout size={16} className="text-gray-400" />
+            <div className="flex flex-col">
+              <span className="text-[11px] font-black dark:text-white leading-none">
+                {plan.rooms}
+              </span>
+              <span className="text-[8px] font-bold text-gray-500 uppercase">
+                Max Rooms
               </span>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Footer / Stats */}
-      <div className="p-8 pt-0 mt-auto">
-        <div className="p-4 rounded-2xl bg-black/5 dark:bg-white/[0.02] border border-white/5 flex justify-between items-center mb-6">
-          <div className="flex items-center gap-3">
-            <Users size={18} className="text-gray-500" />
-            <div>
-              <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">
-                Active Hotels
-              </p>
-              <p className="text-lg font-black dark:text-white tracking-tighter">
-                {plan.subscribers}
-              </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Users size={16} className="text-gray-400" />
+            <div className="flex flex-col">
+              <span className="text-[11px] font-black dark:text-white leading-none">
+                {plan.max_users}
+              </span>
+              <span className="text-[8px] font-bold text-gray-500 uppercase">
+                Max Users
+              </span>
             </div>
           </div>
-          <ChevronRight size={16} className="text-gray-600" />
+          <div className="flex items-center gap-2">
+            <HelpCircle size={16} className="text-gray-400" />
+            <div className="flex flex-col">
+              <span className="text-[11px] font-black dark:text-white leading-none truncate max-w-[60px]">
+                {plan.support.split(" ")[0]}
+              </span>
+              <span className="text-[8px] font-bold text-gray-500 uppercase">
+                Support
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div className="flex gap-2">
-          {!plan.isArchived && (
-            <button
-              onClick={() => onEdit(plan)}
-              className="flex-1 py-4 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
-            >
-              <Edit3 size={14} /> Update Catalog
-            </button>
-          )}
-          <button
-            onClick={() => onArchive(plan.id)}
-            disabled={plan.isArchived}
-            className={`px-4 py-4 rounded-xl transition-all border shadow-sm flex items-center justify-center ${
-              plan.isArchived
-                ? "bg-black/5 dark:bg-white/5 border-white/5 text-gray-500 cursor-not-allowed hidden"
-                : "bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500 hover:text-white"
-            }`}
-            title={
-              plan.isArchived ? "Plan is already archived" : "Archive Plan"
-            }
-          >
-            <Archive size={16} />
-          </button>
-          {!plan.isArchived && (
-            <button
-              onClick={() => onDelete(plan.id)}
-              className="px-4 py-4 rounded-xl bg-red-500/10 text-red-500 transition-all border border-red-500/20 hover:bg-red-500 hover:text-white"
-              title="Delete Plan"
-            >
-              <Trash2 size={16} />
-            </button>
-          )}
+        {/* Features List */}
+        <div className="p-8 flex-1 space-y-4">
+          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
+            Entitlements (Visual Only):
+          </p>
+          <div className="space-y-4">
+            {plan.included.map((item, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div
+                  className={`mt-0.5 p-0.5 rounded-full ${style.accent} text-white`}
+                >
+                  <Check size={10} strokeWidth={4} />
+                </div>
+                <span className="text-xs font-bold dark:text-gray-300 leading-tight">
+                  {item}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </GlassCard>
-  );
-};
+
+        {/* Footer / Stats */}
+        <div className="p-8 pt-0 mt-auto">
+          <div className="p-4 rounded-2xl bg-black/5 dark:bg-white/[0.02] border border-white/5 flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3">
+              <Users size={18} className="text-gray-500" />
+              <div>
+                <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">
+                  Active Hotels
+                </p>
+                <p className="text-lg font-black dark:text-white tracking-tighter">
+                  {plan.subscribers}
+                </p>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-gray-600" />
+          </div>
+
+          <div className="flex gap-2">
+            {!plan.isArchived && (
+              <button
+                onClick={() => onEdit(plan)}
+                className="flex-1 py-4 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
+                <Edit3 size={14} /> Update Catalog
+              </button>
+            )}
+            <button
+              onClick={() => onArchive(plan.id, plan.isArchived)}
+              className={`px-4 py-4 rounded-xl transition-all border shadow-sm flex items-center justify-center ${
+                plan.isArchived
+                  ? "bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500 hover:text-white"
+                  : "bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500 hover:text-white"
+              }`}
+              title={plan.isArchived ? "Unarchive Plan" : "Archive Plan"}
+            >
+              {plan.isArchived ? (
+                <ArchiveRestore size={16} />
+              ) : (
+                <Archive size={16} />
+              )}
+            </button>
+            {!plan.isArchived && (
+              <button
+                onClick={() => onDelete(plan.id)}
+                className="px-4 py-4 rounded-xl bg-red-500/10 text-red-500 transition-all border border-red-500/20 hover:bg-red-500 hover:text-white"
+                title="Delete Plan"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+          </div>
+        </div>
+      </GlassCard>
+    );
+  },
+);
+PlanCard.displayName = "PlanCard";
 
 const Plans: React.FC = () => {
   const {
@@ -274,6 +299,41 @@ const Plans: React.FC = () => {
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
 
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: "danger" | "warning" | "primary";
+    confirmLabel: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    variant: "primary",
+    confirmLabel: "OK",
+    onConfirm: undefined,
+    showCancel: true,
+  });
+
+  const openErrorModal = useCallback((title: string, message: string) => {
+    setModalConfig({
+      isOpen: true,
+      title,
+      message,
+      variant: "danger",
+      confirmLabel: "Understood",
+      onConfirm: () => setModalConfig((prev) => ({ ...prev, isOpen: false })),
+      showCancel: false,
+    });
+  }, []);
+
+  const closeConfirm = useCallback(() => {
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+    if (isConfirmDeleteOpen) setIsConfirmDeleteOpen(false);
+  }, [isConfirmDeleteOpen]);
+
   useEffect(() => {
     fetchPlans();
   }, [fetchPlans]);
@@ -283,40 +343,86 @@ const Plans: React.FC = () => {
     setPlans(hookPlans.map(mapToViewModel));
   }, [hookPlans]);
 
-  const handleArchivePlan = async (id: string) => {
-    try {
-      await updatePlan(id, { is_archived: true } as any);
-    } catch (error) {
-      console.error("Failed to archive plan", error);
-    }
-  };
+  const handleArchivePlan = useCallback(
+    async (id: string, currentStatus: boolean) => {
+      try {
+        await updatePlan(id, { is_archived: !currentStatus } as any);
+      } catch (error: any) {
+        openErrorModal(
+          "Action Failed",
+          error?.message || "Failed to toggle archive status",
+        );
+      }
+    },
+    [updatePlan, openErrorModal],
+  );
 
-  const handleEditPlan = (plan: PlanData) => {
+  const handleEditPlan = useCallback((plan: PlanData) => {
     setSelectedPlan(plan);
     setIsUpdatePanelOpen(true);
-  };
+  }, []);
 
-  const handleUpdatePlan = async (updatedPlan: PlanData) => {
-    const { id, ...data } = updatedPlan;
-    await updatePlan(id, data);
-  };
+  const handleUpdatePlan = useCallback(
+    async (updatedPlan: PlanData) => {
+      try {
+        const { id, ...data } = updatedPlan;
+        await updatePlan(id, data);
+      } catch (error: any) {
+        openErrorModal(
+          "Update Failed",
+          error?.message || "Failed to update plan",
+        );
+      }
+    },
+    [updatePlan, openErrorModal],
+  );
 
-  const handleCreatePlan = async (data: Omit<PlanData, "id">) => {
-    await createPlan(data);
-  };
+  const handleCreatePlan = useCallback(
+    async (data: Omit<PlanData, "id">) => {
+      try {
+        await createPlan(data);
+      } catch (error: any) {
+        openErrorModal(
+          "Creation Failed",
+          error?.message || "Failed to create plan",
+        );
+      }
+    },
+    [createPlan, openErrorModal],
+  );
 
-  const handleDeletePlan = async (id: string) => {
-    setPlanToDelete(id);
-    setIsConfirmDeleteOpen(true);
-  };
-
-  const confirmDeletePlan = async () => {
+  const confirmDeletePlan = useCallback(async () => {
     if (planToDelete) {
-      await deletePlan(planToDelete);
-      setIsConfirmDeleteOpen(false);
-      setPlanToDelete(null);
+      try {
+        await deletePlan(planToDelete);
+        setModalConfig((prev) => ({ ...prev, isOpen: false }));
+      } catch (error: any) {
+        openErrorModal(
+          "Deletion Restricted",
+          error?.message || "Failed to delete plan",
+        );
+      } finally {
+        setPlanToDelete(null);
+      }
     }
-  };
+  }, [planToDelete, deletePlan, openErrorModal]);
+
+  const handleDeletePlan = useCallback(
+    async (id: string) => {
+      setPlanToDelete(id);
+      setModalConfig({
+        isOpen: true,
+        title: "Delete Plan Offering",
+        message:
+          "Are you sure you want to delete this plan? This action cannot be undone and may affect active subscriptions.",
+        variant: "danger",
+        confirmLabel: "Delete Forever",
+        onConfirm: () => confirmDeletePlan(),
+        showCancel: true,
+      });
+    },
+    [confirmDeletePlan],
+  );
 
   const totalRevenue = plans.reduce(
     (acc, curr) => acc + curr.price * curr.subscribers,
@@ -419,13 +525,14 @@ const Plans: React.FC = () => {
       )}
 
       <ConfirmationModal
-        isOpen={isConfirmDeleteOpen}
-        onClose={() => setIsConfirmDeleteOpen(false)}
-        onConfirm={confirmDeletePlan}
-        title="Delete Plan Offering"
-        message="Are you sure you want to delete this plan? This action cannot be undone and may affect active subscriptions."
-        variant="danger"
-        confirmLabel="Delete Forever"
+        isOpen={modalConfig.isOpen}
+        onClose={closeConfirm}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        variant={modalConfig.variant}
+        confirmLabel={modalConfig.confirmLabel}
+        showCancel={modalConfig.showCancel}
       />
     </div>
   );

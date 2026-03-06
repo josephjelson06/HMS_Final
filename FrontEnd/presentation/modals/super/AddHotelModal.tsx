@@ -67,7 +67,7 @@ const AddHotelModal: React.FC<AddHotelModalProps> = ({
 
   // Filter active plans
   const activePlans = useMemo(
-    () => apiPlans.filter((p) => true), // Assuming all returned are active or filter by status if available
+    () => apiPlans.filter((p) => !p.is_archived),
     [apiPlans],
   );
   const hasNoActivePlans = !plansLoading && activePlans.length === 0;

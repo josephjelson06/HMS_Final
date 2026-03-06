@@ -1,6 +1,9 @@
 export interface ApiTenantDTO {
   id: string;
   hotel_name: string;
+  readable_id?: string | null;
+  plan_name?: string | null;
+  owner_name?: string | null;
   slug?: string | null;
   address?: string | null;
   plan_id?: string | null;
@@ -36,7 +39,7 @@ export interface ApiRoleDTO {
   id: string;
   name: string;
   description?: string | null;
-  status?: string | null;
+  status?: boolean | string | null;
   color?: string | null;
   permissions?: string[];
 }
@@ -44,6 +47,7 @@ export interface ApiRoleDTO {
 export interface ApiUserDTO {
   id: string;
   email: string;
+  readable_id?: string | null;
   name?: string | null;
   phone?: string | null;
   mobile?: string | null;

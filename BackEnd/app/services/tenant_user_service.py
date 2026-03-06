@@ -1,7 +1,7 @@
 from uuid import UUID
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
 from app.models.tenant import TenantUser
 from app.schemas.tenant_users import TenantUserCreate
@@ -12,6 +12,10 @@ from app.modules.limits import check_user_limit
 class TenantUserService:
     def __init__(self, db: Session):
         self.db = db
+
+    def _generate_readable_id(self) -> str:
+        count = self.db.query(TenantUser).count()
+        return f"USR-{count + 1:04d}"
 
     def get_all(
         self, tenant_id: UUID, skip: int = 0, limit: int = 100
@@ -50,6 +54,7 @@ class TenantUserService:
         password = data.pop("password")
         data["password_hash"] = get_password_hash(password)
         data["tenant_id"] = tenant_id
+        data["readable_id"] = self._generate_readable_id()
 
         user = TenantUser(**data)
         self.db.add(user)

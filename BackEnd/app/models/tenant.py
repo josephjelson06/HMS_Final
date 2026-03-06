@@ -20,6 +20,7 @@ class Tenant(Base):
         ForeignKey("tenant_users.id"), nullable=True
     )
     plan_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("plans.id"))
+    readable_id: Mapped[str | None] = mapped_column(String(20), unique=True)
     gstin: Mapped[str | None] = mapped_column(String(50))
     pan: Mapped[str | None] = mapped_column(String(20))
     image_url_1: Mapped[str | None] = mapped_column(Text)
@@ -102,6 +103,7 @@ class TenantUser(Base):
     role_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("tenant_roles.id"), nullable=False
     )
+    readable_id: Mapped[str | None] = mapped_column(String(20), unique=True)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), default=datetime.utcnow
     )

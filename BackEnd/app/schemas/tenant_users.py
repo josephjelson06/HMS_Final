@@ -24,5 +24,6 @@ class TenantUserRead(ORMBase):
     email: EmailStr
     phone: str | None
     name: str | None
+    readable_id: str | None
     status: bool
     role: TenantRoleRead

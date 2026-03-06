@@ -18,6 +18,29 @@ class TenantService:
     def __init__(self, db: Session):
         self.db = db
 
+    def _generate_readable_id(self) -> str:
+        count = self.db.query(Tenant).count()
+        return f"HTL-{count + 1:04d}"
+
+    def _populate_names(self, tenant: Tenant):
+        # This is a bit of a hack to satisfy the Pydantic schema if not using joins
+        if tenant.plan_id:
+            plan = self.db.query(Plan).filter(Plan.id == tenant.plan_id).first()
+            if plan:
+                tenant.plan_name = plan.name
+
+        if tenant.owner_user_id:
+            from app.models.tenant import TenantUser
+
+            owner = (
+                self.db.query(TenantUser)
+                .filter(TenantUser.id == tenant.owner_user_id)
+                .first()
+            )
+            if owner:
+                tenant.owner_name = owner.name
+        return tenant
+
     def get_all(
         self, skip: int = 0, limit: int = 100, q: Optional[str] = None
     ) -> List[Tenant]:
@@ -25,12 +48,22 @@ class TenantService:
         if q:
             term = f"%{q}%"
             query = query.filter(
-                or_(Tenant.hotel_name.ilike(term), Tenant.gstin.ilike(term))
+                or_(
+                    Tenant.hotel_name.ilike(term),
+                    Tenant.gstin.ilike(term),
+                    Tenant.readable_id.ilike(term),
+                )
             )
-        return query.offset(skip).limit(limit).all()
+        tenants = query.offset(skip).limit(limit).all()
+        for t in tenants:
+            self._populate_names(t)
+        return tenants
 
     def get_by_id(self, tenant_id: UUID) -> Optional[Tenant]:
-        return self.db.query(Tenant).filter(Tenant.id == tenant_id).first()
+        tenant = self.db.query(Tenant).filter(Tenant.id == tenant_id).first()
+        if tenant:
+            self._populate_names(tenant)
+        return tenant
 
     def get_rooms(self, tenant_id: UUID) -> List[RoomType]:
         return self.db.query(RoomType).filter(RoomType.tenant_id == tenant_id).all()
@@ -59,7 +92,9 @@ class TenantService:
             + "-"
             + str(os.urandom(4).hex())
         )
-        tenant = Tenant(**data, slug=slug)
+
+        readable_id = data.get("readable_id") or self._generate_readable_id()
+        tenant = Tenant(**data, slug=slug, readable_id=readable_id)
         self.db.add(tenant)
         self.db.flush()  # Get tenant.id
 

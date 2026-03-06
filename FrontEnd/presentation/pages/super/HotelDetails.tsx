@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import GlassCard from "../../components/ui/GlassCard";
 import ConfirmationModal from "../../components/ui/ConfirmationModal";
+import EditHotelModal from "../../modals/super/EditHotelModal";
 import { useTheme } from "../../hooks/useTheme";
 import { useTenants } from "@/application/hooks/useTenants";
 import type { Tenant } from "@/domain/entities/Tenant";
@@ -48,6 +49,7 @@ export default function HotelDetails({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
@@ -216,6 +218,12 @@ export default function HotelDetails({
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="px-5 py-2.5 rounded-xl text-sm font-bold border border-gray-200 dark:border-white/10 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-all flex items-center gap-2"
+            >
+              <Edit size={16} /> Edit Details
+            </button>
+            <button
               onClick={() => {
                 if (tenant?.id) {
                   onLoginAsAdmin(tenant.id);
@@ -234,7 +242,7 @@ export default function HotelDetails({
         {[
           {
             label: "Subscription",
-            value: hotelPlan,
+            value: tenant?.planName || hotelPlan,
             color: "text-accent",
             footer: "Active plan assigned",
           },
@@ -247,7 +255,8 @@ export default function HotelDetails({
           },
           {
             label: "Hotel ID",
-            value: tenant?.id?.split("-")?.[0] || "Unknown",
+            value:
+              tenant?.readableId || tenant?.id?.split("-")?.[0] || "Unknown",
             color: "text-accent",
             footer: "Unique identity block",
           },
@@ -312,7 +321,7 @@ export default function HotelDetails({
                 {[
                   { l: "Trade Name", v: hotelName },
                   { l: "GSTIN", v: hotelGstin, mono: true },
-                  { l: "PAN", v: hotelPan, mono: true },
+                  { l: "PAN", v: tenant?.pan || hotelPan, mono: true },
                   { l: "Registered Address", v: hotelAddress },
                   { l: "State Code", v: hotelStateCode },
                 ].map((it, i) => (
@@ -346,12 +355,14 @@ export default function HotelDetails({
                 {[
                   {
                     l: "Current Plan",
-                    v: `${hotelPlan} Plan`,
+                    v: tenant?.planName
+                      ? `${tenant.planName} Plan`
+                      : `${hotelPlan} Plan`,
                     badge: "Orange",
                   },
                   { l: "Billing Cycle", v: `Active` },
-                  { l: "Hotel ID", v: tenant?.id || "-" },
-                  { l: "Owner ID", v: tenant?.ownerId || "-", mono: true },
+                  { l: "Hotel ID", v: tenant?.readableId || tenant?.id || "-" },
+                  { l: "Owner", v: tenant?.ownerName || "-", mono: false },
                 ].map((it, i) => (
                   <div
                     key={i}
@@ -583,6 +594,35 @@ export default function HotelDetails({
         variant={modalConfig.variant}
         confirmLabel={modalConfig.confirmLabel}
       />
+
+      {tenant && (
+        <EditHotelModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          hotel={{
+            id: tenant.id,
+            readableId: tenant.readableId || "",
+            name: tenant.name,
+            address: tenant.address || "",
+            status: tenant.status || "Active",
+            plan: tenant.planId || "",
+            gstin: tenant.gstin || "",
+            pan: tenant.pan || "",
+            owner: tenant.ownerName || "",
+            mobile: tenant.ownerPhone || "",
+            email: tenant.ownerEmail || "",
+            kiosks: 0,
+            mrr: 0,
+            ownerId: tenant.ownerId,
+            imageUrls: tenant.imageUrls,
+          }}
+          onUpdateHotel={async (id, data) => {
+            const updated = await updateTenant(id, data);
+            setTenant(updated);
+            return updated;
+          }}
+        />
+      )}
     </div>
   );
 }

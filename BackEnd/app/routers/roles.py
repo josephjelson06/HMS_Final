@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas.platform import PlatformRoleRead
-from app.schemas.tenant_roles import TenantRoleRead, TenantRoleCreate
+from app.schemas.tenant_roles import TenantRoleRead, TenantRoleCreate, TenantRoleUpdate
 from app.services.platform_role_service import PlatformRoleService
 from app.services.tenant_role_service import TenantRoleService
 from app.modules.rbac import require_permission
@@ -26,11 +26,13 @@ def get_platform_roles(
 @router.post("/api/platform/roles", response_model=PlatformRoleRead)
 def create_platform_role(
     name: str = Body(..., embed=True),
+    description: str | None = Body(None, embed=True),
+    color: str | None = Body("blue", embed=True),
     db: Session = Depends(get_db),
     _=Depends(require_permission("platform:roles:write")),
 ):
     service = PlatformRoleService(db)
-    return service.create(name)
+    return service.create(name, description=description, color=color)
 
 
 @router.patch("/api/platform/roles/{role_id}", response_model=PlatformRoleRead)
@@ -45,6 +47,17 @@ def update_platform_role(
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
     return role
+
+
+@router.delete("/api/platform/roles/{role_id}", status_code=204)
+def delete_platform_role(
+    role_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("platform:roles:write")),
+):
+    service = PlatformRoleService(db)
+    service.delete(role_id)
+    return None
 
 
 @router.get("/api/platform/roles/{role_id}/permissions", response_model=List[str])
@@ -91,6 +104,30 @@ def create_tenant_role(
 ):
     service = TenantRoleService(db)
     return service.create(hotel_id, payload)
+
+
+@router.patch("/api/hotels/{hotel_id}/roles/{role_id}", response_model=TenantRoleRead)
+def update_tenant_role(
+    hotel_id: UUID,
+    role_id: UUID,
+    payload: TenantRoleUpdate,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:roles:write")),
+):
+    service = TenantRoleService(db)
+    return service.update(hotel_id, role_id, payload.model_dump(exclude_unset=True))
+
+
+@router.delete("/api/hotels/{hotel_id}/roles/{role_id}", status_code=204)
+def delete_tenant_role(
+    hotel_id: UUID,
+    role_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:roles:write")),
+):
+    service = TenantRoleService(db)
+    service.delete(hotel_id, role_id)
+    return None
 
 
 @router.put("/api/hotels/{hotel_id}/roles/{role_id}/permissions")

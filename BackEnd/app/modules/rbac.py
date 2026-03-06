@@ -8,8 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.core.auth.dependencies import get_current_user
 from app.database import get_db
-from app.models.platform import PlatformUser, PlatformRole
-from app.models.tenant import TenantUser, TenantRole
+from app.models.platform import PlatformUser
+from app.models.tenant import TenantUser
 
 
 SUPER_ADMIN_ROLE = "super admin"
@@ -20,10 +20,11 @@ def _normalized_role_name(role_name: str | None) -> str:
     return (role_name or "").strip().lower()
 
 
-def require_permission(permission: str):
-    """Permission + tenant-boundary authorization gate."""
-
-    required_scope = permission.split(":", 1)[0].lower() if ":" in permission else ""
+def require_permission(permission: str | list[str]):
+    """Permission + tenant-boundary authorization gate.
+    Supports either a single string or a list of permissions (OR logic).
+    """
+    perms_to_check = [permission] if isinstance(permission, str) else permission
 
     def dependency(
         hotel_id: UUID | None = None,
@@ -33,59 +34,57 @@ def require_permission(permission: str):
 
         # Determine user type and role
         is_platform = isinstance(current_user, PlatformUser)
-        user_type = "platform" if is_platform else "hotel"
 
         # Get role and permissions via relationship
         role = current_user.role
         if not role:
-            # Should technically not happen due to FK constraints, but safe guard
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="User has no role assigned",
             )
 
         # Gather permission keys
-        permissions = {p.key for p in role.permissions}
+        user_permissions = {p.key for p in role.permissions}
 
-        if required_scope == "platform" and not is_platform:
+        # Check if ANY of the required permissions are met
+        met = False
+        for p_key in perms_to_check:
+            required_scope = p_key.split(":", 1)[0].lower() if ":" in p_key else ""
+
+            # 1. Scope Check: platform scope strictly requires platform user
+            if required_scope == "platform" and not is_platform:
+                continue
+
+            # 2. Key Check
+            if (
+                p_key in user_permissions
+                or "*" in user_permissions
+                or "*:*:*" in user_permissions
+            ):
+                met = True
+                break
+
+        if not met:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Platform scope required",
+                detail=f"Missing required permission(s): {perms_to_check}",
             )
 
-        if required_scope == "hotel" and user_type not in {"hotel", "platform"}:
-            # Platform users generally can access hotel scope if they have permission?
-            # Usually platform users have platform scope permissions like "platform:hotels:read".
-            # If a platform user tries to access a hotel route, strict tenant check might block them unless logic allows.
-            # For now, following old logic: platform users are super admins usually.
-            pass
-
-        if (
-            permission
-            and permission not in permissions
-            and "*" not in permissions
-            and "*:*:*" not in permissions
-        ):
-            # Check for super admin implicit match?
-            # If role is super admin, maybe bypass?
-            # But "Super Admin" role usually has all permissions assigned in DB.
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Missing permission: {permission}",
+        # Tenant boundary check (only if hotel scope and hotel_id provided)
+        # Note: If multiple hotel permissions were provided, this check applies to the context,
+        # not the specific permission that matched.
+        if hotel_id is not None:
+            # If ANY of the requested perms were in 'hotel' scope, we must check tenant
+            has_hotel_req = any(
+                (p.split(":", 1)[0].lower() if ":" in p else "") == "hotel"
+                for p in perms_to_check
             )
-
-        # Tenant boundary check
-        # Platform users: can access any tenant if they have permission?
-        # Tenant users: must match tenant_id
-        if required_scope == "hotel" and hotel_id is not None:
-            if not is_platform:
-                # current_user is TenantUser
+            if has_hotel_req and not is_platform:
                 if current_user.tenant_id != hotel_id:
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN,
                         detail="Cross-tenant access denied",
                     )
-            # Platform users: allowed to access hotel_id if they have permission
 
         return current_user
 

@@ -1,10 +1,14 @@
-import type { IPlanRepository, PlanCreateInput, PlanUpdateInput } from '../../domain/contracts/IPlanRepository';
-import type { PlanData } from '../../domain/entities/Plan';
-import { httpClient } from '../http/client';
-import type { ApiPlanDTO } from '../dto/backend';
+import type {
+  IPlanRepository,
+  PlanCreateInput,
+  PlanUpdateInput,
+} from "../../domain/contracts/IPlanRepository";
+import type { PlanData } from "../../domain/entities/Plan";
+import { httpClient } from "../http/client";
+import type { ApiPlanDTO } from "../dto/backend";
 
 export class ApiPlanRepository implements IPlanRepository {
-  private readonly baseUrl = '/api/plans';
+  private readonly baseUrl = "/api/plans";
 
   async getAll(): Promise<PlanData[]> {
     const result = await httpClient.get<ApiPlanDTO[]>(this.baseUrl);
@@ -38,12 +42,17 @@ export class ApiPlanRepository implements IPlanRepository {
     const payload: any = {};
     if (data.name !== undefined) payload.name = data.name;
     if (data.price !== undefined) payload.price = data.price;
-    if (data.period_months !== undefined) payload.period_months = data.period_months;
+    if (data.period_months !== undefined)
+      payload.period_months = data.period_months;
     if (data.max_users !== undefined) payload.max_users = data.max_users;
     if (data.max_roles !== undefined) payload.max_roles = data.max_roles;
     if (data.max_rooms !== undefined) payload.max_rooms = data.max_rooms;
+    if (data.is_archived !== undefined) payload.is_archived = data.is_archived;
 
-    const result = await httpClient.patch<ApiPlanDTO>(`${this.baseUrl}/${id}`, payload);
+    const result = await httpClient.patch<ApiPlanDTO>(
+      `${this.baseUrl}/${id}`,
+      payload,
+    );
     return this.mapToEntity(result);
   }
 
@@ -60,6 +69,7 @@ export class ApiPlanRepository implements IPlanRepository {
       max_users: data.max_users ?? undefined,
       max_roles: data.max_roles ?? undefined,
       max_rooms: data.max_rooms ?? undefined,
+      is_archived: data.is_archived ?? false,
     };
   }
 }

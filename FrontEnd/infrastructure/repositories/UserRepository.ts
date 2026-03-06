@@ -1,20 +1,17 @@
-import type { IUserRepository } from '../../domain/contracts/IUserRepository';
-import type { User, Role } from '../../domain/entities/User';
-import { httpClient } from '../http/client';
-import type {
-  ApiPermissionDTO,
-  ApiRoleDTO,
-  ApiUserDTO,
-} from '../dto/backend';
+import type { IUserRepository } from "../../domain/contracts/IUserRepository";
+import type { User, Role } from "../../domain/entities/User";
+import { httpClient } from "../http/client";
+import type { ApiPermissionDTO, ApiRoleDTO, ApiUserDTO } from "../dto/backend";
 
 export class ApiUserRepository implements IUserRepository {
-  private baseUrl = 'api/platform/users/';
-  private roleUrl = 'api/platform/roles/';
+  private baseUrl = "api/platform/users/";
+  private roleUrl = "api/platform/roles/";
 
   private mapUser = (data: ApiUserDTO): User => ({
     id: String(data.id),
-    name: data.name ?? '',
-    email: data.email ?? '',
+    readableId: data.readable_id ?? undefined,
+    name: data.name ?? "",
+    email: data.email ?? "",
     phone: data.phone ?? data.mobile ?? undefined,
     mobile: data.mobile ?? data.phone ?? undefined,
     status: data.status ?? undefined,
@@ -22,7 +19,7 @@ export class ApiUserRepository implements IUserRepository {
     avatar: data.avatar ?? undefined,
     dateAdded: data.date_added ?? undefined,
     tenantId: data.tenant_id ? String(data.tenant_id) : undefined,
-    // employeeId not in DTO 
+    // employeeId not in DTO
     isAdmin: data.is_admin,
     role: data.role ? this.mapRole(data.role) : undefined,
   });
@@ -30,9 +27,9 @@ export class ApiUserRepository implements IUserRepository {
   private mapRole = (data: ApiRoleDTO): Role => ({
     id: String(data.id),
     name: data.name,
-    description: data.description ?? '',
-    status: data.status ?? undefined,
-    color: data.color ?? 'blue',
+    description: data.description ?? "",
+    status: data.status === false ? "Inactive" : "Active",
+    color: data.color ?? "blue",
     permissions: data.permissions ?? [],
     userCount: undefined, // Backend doesn't return count on generic DTO usually
   });
@@ -51,14 +48,14 @@ export class ApiUserRepository implements IUserRepository {
     }
   }
 
-  async create(data: Omit<User, 'id'>): Promise<User> {
+  async create(data: Omit<User, "id">): Promise<User> {
     const payload = {
       name: data.name,
       email: data.email,
       phone: data.phone ?? data.mobile,
       role_id: data.role?.id,
       tenant_id: data.tenantId, // Added tenant_id
-      password: 'password123',
+      password: "password123",
     };
     const result = await httpClient.post<ApiUserDTO>(this.baseUrl, payload);
     return this.mapUser(result);
@@ -75,7 +72,10 @@ export class ApiUserRepository implements IUserRepository {
       payload.phone = data.phone ?? data.mobile;
     }
 
-    const result = await httpClient.patch<ApiUserDTO>(`${this.baseUrl}${id}`, payload);
+    const result = await httpClient.patch<ApiUserDTO>(
+      `${this.baseUrl}${id}`,
+      payload,
+    );
     return this.mapUser(result);
   }
 
@@ -94,7 +94,7 @@ export class ApiUserRepository implements IUserRepository {
       name: data.name,
       description: data.description,
       color: data.color,
-      status: data.status
+      status: data.status === "Active",
     };
     const result = await httpClient.post<ApiRoleDTO>(this.roleUrl, payload);
     return this.mapRole(result);
@@ -105,9 +105,12 @@ export class ApiUserRepository implements IUserRepository {
     if (data.name !== undefined) payload.name = data.name;
     if (data.description !== undefined) payload.description = data.description;
     if (data.color !== undefined) payload.color = data.color;
-    if (data.status !== undefined) payload.status = data.status;
+    if (data.status !== undefined) payload.status = data.status === "Active";
 
-    const result = await httpClient.patch<ApiRoleDTO>(`${this.roleUrl}${id}`, payload);
+    const result = await httpClient.patch<ApiRoleDTO>(
+      `${this.roleUrl}${id}`,
+      payload,
+    );
     return this.mapRole(result);
   }
 
@@ -116,24 +119,35 @@ export class ApiUserRepository implements IUserRepository {
   }
 
   // Permissions
-  async getAvailablePermissions(): Promise<{ id: string; key: string; description: string }[]> {
-    const data = await httpClient.get<ApiPermissionDTO[]>('api/permissions/');
+  async getAvailablePermissions(): Promise<
+    { id: string; key: string; description: string }[]
+  > {
+    const data = await httpClient.get<ApiPermissionDTO[]>("api/permissions/");
     return data.map((item) => ({
       id: item.id,
       key: item.key,
-      description: item.description ?? '',
+      description: item.description ?? "",
     }));
   }
 
-  async getRolePermissions(roleId: string): Promise<{ role_id: string; role_name: string; permissions: string[] }> {
-    const data = await httpClient.get<any>(`${this.roleUrl}${roleId}/permissions`);
+  async getRolePermissions(
+    roleId: string,
+  ): Promise<{ role_id: string; role_name: string; permissions: string[] }> {
+    const data = await httpClient.get<any>(
+      `${this.roleUrl}${roleId}/permissions`,
+    );
     if (Array.isArray(data)) {
-      return { role_id: roleId, role_name: '', permissions: data };
+      return { role_id: roleId, role_name: "", permissions: data };
     }
     return data;
   }
 
-  async setRolePermissions(roleId: string, permissions: string[]): Promise<void> {
-    await httpClient.put(`${this.roleUrl}${roleId}/permissions`, { permissions });
+  async setRolePermissions(
+    roleId: string,
+    permissions: string[],
+  ): Promise<void> {
+    await httpClient.put(`${this.roleUrl}${roleId}/permissions`, {
+      permissions,
+    });
   }
 }

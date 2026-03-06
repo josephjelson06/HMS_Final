@@ -1,23 +1,33 @@
-import type { ITenantRepository } from '../../domain/contracts/ITenantRepository';
-import type { Tenant } from '../../domain/entities/Tenant';
-import { httpClient } from '../http/client';
-import type { ApiTenantDTO } from '../dto/backend';
+import type { ITenantRepository } from "../../domain/contracts/ITenantRepository";
+import type { Tenant } from "../../domain/entities/Tenant";
+import { httpClient } from "../http/client";
+import type { ApiTenantDTO } from "../dto/backend";
 
 export class ApiTenantRepository implements ITenantRepository {
-  private baseUrl = 'api/tenants';
+  private baseUrl = "api/tenants";
 
   private mapToEntity(data: ApiTenantDTO): Tenant {
     return {
       id: String(data.id),
+      readableId: data.readable_id ?? undefined,
       name: data.hotel_name,
-      slug: data.slug ?? '',
+      slug: data.slug ?? "",
       address: data.address ?? undefined,
       planId: data.plan_id ?? undefined,
+      planName: data.plan_name ?? undefined,
       ownerId: data.owner_user_id ?? undefined,
+      ownerName: data.owner_name ?? undefined,
       gstin: data.gstin ?? undefined,
       pan: data.pan ?? undefined,
-      status: data.status === undefined ? undefined : (data.status ? 'Active' : 'Suspended'),
-      imageUrls: [data.image_url_1, data.image_url_2, data.image_url_3].filter(Boolean) as string[],
+      status:
+        data.status === undefined
+          ? undefined
+          : data.status
+            ? "Active"
+            : "Suspended",
+      imageUrls: [data.image_url_1, data.image_url_2, data.image_url_3].filter(
+        Boolean,
+      ) as string[],
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     };
@@ -38,7 +48,7 @@ export class ApiTenantRepository implements ITenantRepository {
     };
 
     if (data.status !== undefined) {
-      payload.status = data.status === 'Active';
+      payload.status = data.status === "Active";
     }
     return payload;
   }
@@ -50,14 +60,16 @@ export class ApiTenantRepository implements ITenantRepository {
 
   async getById(id: string): Promise<Tenant | null> {
     try {
-      const result = await httpClient.get<ApiTenantDTO>(`${this.baseUrl}/${id}`);
+      const result = await httpClient.get<ApiTenantDTO>(
+        `${this.baseUrl}/${id}`,
+      );
       return this.mapToEntity(result);
     } catch (error) {
       return null;
     }
   }
 
-  async create(data: Omit<Tenant, 'id'>): Promise<Tenant> {
+  async create(data: Omit<Tenant, "id">): Promise<Tenant> {
     const payload = this.toPayload(data);
     const result = await httpClient.post<ApiTenantDTO>(this.baseUrl, payload);
     return this.mapToEntity(result);
@@ -65,7 +77,10 @@ export class ApiTenantRepository implements ITenantRepository {
 
   async update(id: string, data: Partial<Tenant>): Promise<Tenant> {
     const payload = this.toPayload(data);
-    const result = await httpClient.patch<ApiTenantDTO>(`${this.baseUrl}/${id}`, payload);
+    const result = await httpClient.patch<ApiTenantDTO>(
+      `${this.baseUrl}/${id}`,
+      payload,
+    );
     return this.mapToEntity(result);
   }
 
@@ -74,7 +89,10 @@ export class ApiTenantRepository implements ITenantRepository {
   }
 
   async uploadImages(id: string, formData: FormData): Promise<Tenant> {
-    const result = await httpClient.post<ApiTenantDTO>(`${this.baseUrl}/${id}/images`, formData);
+    const result = await httpClient.post<ApiTenantDTO>(
+      `${this.baseUrl}/${id}/images`,
+      formData,
+    );
     return this.mapToEntity(result);
   }
 }
