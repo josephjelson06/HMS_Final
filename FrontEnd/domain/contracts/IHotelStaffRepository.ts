@@ -11,7 +11,7 @@ export interface IHotelStaffRepository {
   updateRole(id: string, data: Partial<Role>, hotelId: string): Promise<Role>;
   deleteRole(id: string, hotelId: string): Promise<void>;
 
-  getAvailablePermissions(): Promise<{ id: string; key: string; description: string }[]>;
+  getAvailablePermissions(hotelId: string): Promise<{ id: string; key: string; description: string }[]>;
   getRolePermissions(hotelId: string, roleId: string): Promise<{ permissions: string[] }>;
   setRolePermissions(hotelId: string, roleId: string, permissions: string[]): Promise<void>;
 }

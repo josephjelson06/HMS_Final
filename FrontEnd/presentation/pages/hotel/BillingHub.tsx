@@ -22,20 +22,22 @@ import {
 
 export default function BillingHub() {
   const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const {
-    subscriptions,
+    tenantSubscription,
     loading: subLoading,
     fetchSubscriptions,
-  } = useSubscriptions();
+  } = useSubscriptions(tenantId);
   const { plans, loading: plansLoading, fetchPlans } = usePlans();
 
   useEffect(() => {
+    if (!tenantId) return;
     fetchSubscriptions();
     fetchPlans();
-  }, [fetchSubscriptions, fetchPlans]);
+  }, [tenantId, fetchSubscriptions, fetchPlans]);
 
   // Filter for THIS tenant's subscription
-  const mySub = subscriptions.find((s) => s.tenantId === user?.tenantId);
+  const mySub = tenantSubscription;
   const myPlan = plans.find((p) => p.id === mySub?.planId);
 
   const isLoading = subLoading || plansLoading;

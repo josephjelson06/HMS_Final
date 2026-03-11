@@ -35,6 +35,7 @@ export function pathnameToLegacyRoute(pathname: string): string {
       case "profile": return "hotel-profile";
       case "rooms": return "rooms";
       case "guests": return "guests";
+      case "faq": return "faq";
       case "reports":
         return "reports";
       default:
@@ -74,6 +75,7 @@ export function legacyRouteToPath(route: string, viewMode: ViewMode): string {
     case "hotel-profile": return "/hotel/profile";
     case "rooms": return "/hotel/rooms";
     case "guests": return "/hotel/guests";
+    case "faq": return "/hotel/faq";
     default: return "/hotel/dashboard";
   }
 }

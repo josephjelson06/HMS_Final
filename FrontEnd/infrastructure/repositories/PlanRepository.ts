@@ -6,19 +6,50 @@ import type {
 import type { PlanData } from "../../domain/entities/Plan";
 import { httpClient } from "../http/client";
 import type { ApiPlanDTO } from "../dto/backend";
+import {
+  deleteCacheKey,
+  getCachedFresh,
+  globalKey,
+  setCached,
+} from "../storage/idbClient";
+
+const PLAN_STORE = "plans";
+const PLANS_TTL_MS = 10 * 60 * 1000;
 
 export class ApiPlanRepository implements IPlanRepository {
   private readonly baseUrl = "/api/plans";
 
   async getAll(): Promise<PlanData[]> {
+    const key = globalKey("plans");
+    const cached = await getCachedFresh<PlanData[]>(PLAN_STORE, key, {
+      ttlMs: PLANS_TTL_MS,
+      deleteIfStale: true,
+    });
+    if (cached) {
+      return cached;
+    }
+
     const result = await httpClient.get<ApiPlanDTO[]>(this.baseUrl);
-    return result.map(this.mapToEntity);
+    const mapped = result.map(this.mapToEntity);
+    await setCached(PLAN_STORE, key, mapped);
+    return mapped;
   }
 
   async getById(id: string): Promise<PlanData | null> {
     try {
+      const key = globalKey("plans", id);
+      const cached = await getCachedFresh<PlanData>(PLAN_STORE, key, {
+        ttlMs: PLANS_TTL_MS,
+        deleteIfStale: true,
+      });
+      if (cached) {
+        return cached;
+      }
+
       const result = await httpClient.get<ApiPlanDTO>(`${this.baseUrl}/${id}`);
-      return this.mapToEntity(result);
+      const mapped = this.mapToEntity(result);
+      await setCached(PLAN_STORE, key, mapped);
+      return mapped;
     } catch (err) {
       return null;
     }
@@ -34,7 +65,9 @@ export class ApiPlanRepository implements IPlanRepository {
       max_rooms: data.max_rooms,
     };
     const result = await httpClient.post<ApiPlanDTO>(this.baseUrl, payload);
-    return this.mapToEntity(result);
+    const mapped = this.mapToEntity(result);
+    await this.invalidateCache(mapped.id);
+    return mapped;
   }
 
   async update(id: string, data: PlanUpdateInput): Promise<PlanData> {
@@ -53,11 +86,14 @@ export class ApiPlanRepository implements IPlanRepository {
       `${this.baseUrl}/${id}`,
       payload,
     );
-    return this.mapToEntity(result);
+    const mapped = this.mapToEntity(result);
+    await this.invalidateCache(id);
+    return mapped;
   }
 
   async delete(id: string): Promise<void> {
     await httpClient.delete(`${this.baseUrl}/${id}`);
+    await this.invalidateCache(id);
   }
 
   private mapToEntity(data: ApiPlanDTO): PlanData {
@@ -71,5 +107,13 @@ export class ApiPlanRepository implements IPlanRepository {
       max_rooms: data.max_rooms ?? undefined,
       is_archived: data.is_archived ?? false,
     };
+  }
+
+  private async invalidateCache(id?: string) {
+    const listKey = globalKey("plans");
+    await deleteCacheKey(PLAN_STORE, listKey);
+    if (id) {
+      await deleteCacheKey(PLAN_STORE, globalKey("plans", id));
+    }
   }
 }

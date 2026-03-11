@@ -34,3 +34,18 @@ class TenantRead(ORMBase):
     image_url_1: str | None = None
     image_url_2: str | None = None
     image_url_3: str | None = None
+
+
+class TenantConfigRead(ORMBase):
+    id: UUID
+    tenant_id: UUID
+    timezone: str
+    check_in_time: str
+    check_out_time: str
+    default_lang: str
+    available_lang: list[str]
+    welcome_message: str | None = None
+    logo_url: str | None = None
+    support_phone: str | None = None
+    support_email: str | None = None
+    extra: dict

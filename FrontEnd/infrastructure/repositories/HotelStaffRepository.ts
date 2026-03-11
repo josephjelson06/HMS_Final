@@ -2,6 +2,18 @@ import type { IHotelStaffRepository } from "../../domain/contracts/IHotelStaffRe
 import type { User, Role } from "../../domain/entities/User";
 import { httpClient } from "../http/client";
 import type { ApiUserDTO } from "../dto/backend";
+import {
+  deleteCacheKey,
+  getCached,
+  getCachedFresh,
+  setCached,
+  tenantKey,
+} from "../storage/idbClient";
+
+const ROLE_STORE = "roles";
+const PERMISSION_STORE = "permissions";
+const ROLES_TTL_MS = 5 * 60 * 1000;
+const PERMISSIONS_TTL_MS = 10 * 60 * 1000;
 
 // Helper types for payloads
 interface CreateStaffPayload {
@@ -83,10 +95,21 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
   // --- Roles (Tenant Roles) ---
 
   async getAllRoles(hotelId: string): Promise<Role[]> {
+    const key = tenantKey(hotelId, "roles");
+    const cached = await getCachedFresh<Role[]>(ROLE_STORE, key, {
+      ttlMs: ROLES_TTL_MS,
+      deleteIfStale: true,
+    });
+    if (cached) {
+      return cached;
+    }
+
     const response = await this.client.get<any[]>(
       `api/hotels/${hotelId}/roles/`,
     );
-    return response.map(this.mapRoleToEntity);
+    const mapped = response.map(this.mapRoleToEntity);
+    await setCached(ROLE_STORE, key, mapped);
+    return mapped;
   }
 
   async createRole(
@@ -103,7 +126,9 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
       `api/hotels/${hotelId}/roles/`,
       payload,
     );
-    return this.mapRoleToEntity(response);
+    const mapped = this.mapRoleToEntity(response);
+    await this.updateCachedRoles(hotelId, (items) => [...items, mapped]);
+    return mapped;
   }
 
   async updateRole(
@@ -126,29 +151,50 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
       `api/hotels/${hotelId}/roles/${id}`,
       payload,
     );
-    return this.mapRoleToEntity(response);
+    const mapped = this.mapRoleToEntity(response);
+    await this.updateCachedRoles(hotelId, (items) =>
+      items.map((item) => (item.id === id ? mapped : item)),
+    );
+    return mapped;
   }
 
   async deleteRole(id: string, hotelId: string): Promise<void> {
     await this.client.delete(`api/hotels/${hotelId}/roles/${id}`);
+    await this.updateCachedRoles(hotelId, (items) =>
+      items.filter((item) => item.id !== id),
+    );
   }
 
   // --- Permissions ---
 
-  async getAvailablePermissions(): Promise<
+  async getAvailablePermissions(hotelId: string): Promise<
     { id: string; key: string; description: string }[]
   > {
-    const data = await this.client.get<any[]>("api/permissions/");
-    return data
-      .filter(
+    const key = tenantKey(hotelId, "permissions");
+    const cached = await getCachedFresh<
+      { id: string; key: string; description: string }[]
+    >(PERMISSION_STORE, key, {
+      ttlMs: PERMISSIONS_TTL_MS,
+      deleteIfStale: true,
+    });
+    if (cached) {
+      return cached.filter(
         (item) =>
           item.key.startsWith("hotel:") || item.key.startsWith("tenant:"),
-      )
-      .map((item) => ({
-        id: item.id,
-        key: item.key,
-        description: item.description ?? "",
-      }));
+      );
+    }
+
+    const data = await this.client.get<any[]>("api/permissions/");
+    const mapped = data.map((item) => ({
+      id: item.id,
+      key: item.key,
+      description: item.description ?? "",
+    }));
+    await setCached(PERMISSION_STORE, key, mapped);
+    return mapped.filter(
+      (item) =>
+        item.key.startsWith("hotel:") || item.key.startsWith("tenant:"),
+    );
   }
 
   async getRolePermissions(
@@ -169,6 +215,7 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
       `api/hotels/${hotelId}/roles/${roleId}/permissions`,
       permissions,
     );
+    await this.invalidateRolesCache(hotelId, roleId);
   }
 
   // --- Mappers ---
@@ -213,5 +260,27 @@ export class ApiHotelStaffRepository implements IHotelStaffRepository {
       userCount: dto.users_count || 0,
       status: dto.status === false ? "Inactive" : "Active",
     };
+  }
+
+  private async invalidateRolesCache(hotelId: string, roleId?: string) {
+    await deleteCacheKey(ROLE_STORE, tenantKey(hotelId, "roles"));
+    await deleteCacheKey(PERMISSION_STORE, tenantKey(hotelId, "permissions"));
+    if (roleId) {
+      await deleteCacheKey(ROLE_STORE, tenantKey(hotelId, "roles", roleId));
+      await deleteCacheKey(
+        ROLE_STORE,
+        tenantKey(hotelId, "roles", `permissions:${roleId}`),
+      );
+    }
+  }
+
+  private async updateCachedRoles(
+    hotelId: string,
+    updater: (items: Role[]) => Role[],
+  ) {
+    const key = tenantKey(hotelId, "roles");
+    const cached = await getCached<Role[]>(ROLE_STORE, key);
+    if (!cached) return;
+    await setCached(ROLE_STORE, key, updater(cached));
   }
 }

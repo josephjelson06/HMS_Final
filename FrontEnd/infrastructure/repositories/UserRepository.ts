@@ -2,6 +2,18 @@ import type { IUserRepository } from "../../domain/contracts/IUserRepository";
 import type { User, Role } from "../../domain/entities/User";
 import { httpClient } from "../http/client";
 import type { ApiPermissionDTO, ApiRoleDTO, ApiUserDTO } from "../dto/backend";
+import {
+  deleteCacheKey,
+  getCached,
+  globalKey,
+  setCached,
+  setCachedIfChanged,
+} from "../storage/idbClient";
+
+const ROLE_STORE = "roles";
+const PERMISSION_STORE = "permissions";
+const USER_STORE = "users";
+const USER_LIST_KEY = globalKey("users");
 
 export class ApiUserRepository implements IUserRepository {
   private baseUrl = "api/platform/users/";
@@ -35,8 +47,13 @@ export class ApiUserRepository implements IUserRepository {
   });
 
   async getAll(): Promise<User[]> {
+    const cached = await getCached<User[]>(USER_STORE, USER_LIST_KEY);
+    if (cached) return cached;
+
     const data = await httpClient.get<ApiUserDTO[]>(this.baseUrl);
-    return data.map(this.mapUser);
+    const mapped = data.map(this.mapUser);
+    await setCached(USER_STORE, USER_LIST_KEY, mapped);
+    return mapped;
   }
 
   async getById(id: string): Promise<User | null> {
@@ -58,7 +75,10 @@ export class ApiUserRepository implements IUserRepository {
       password: "password123",
     };
     const result = await httpClient.post<ApiUserDTO>(this.baseUrl, payload);
-    return this.mapUser(result);
+    const mapped = this.mapUser(result);
+    const list = await getCached<User[]>(USER_STORE, USER_LIST_KEY);
+    if (list) await setCached(USER_STORE, USER_LIST_KEY, [...list, mapped]);
+    return mapped;
   }
 
   async update(id: string, data: Partial<User>): Promise<User> {
@@ -76,17 +96,43 @@ export class ApiUserRepository implements IUserRepository {
       `${this.baseUrl}${id}`,
       payload,
     );
-    return this.mapUser(result);
+    const mapped = this.mapUser(result);
+    const list = await getCached<User[]>(USER_STORE, USER_LIST_KEY);
+    if (list) {
+      await setCached(
+        USER_STORE,
+        USER_LIST_KEY,
+        list.map((item) => (item.id === id ? mapped : item)),
+      );
+    }
+    return mapped;
   }
 
   async delete(id: string): Promise<void> {
     await httpClient.delete(`${this.baseUrl}${id}`);
+    const list = await getCached<User[]>(USER_STORE, USER_LIST_KEY);
+    if (list) {
+      await setCached(
+        USER_STORE,
+        USER_LIST_KEY,
+        list.filter((item) => item.id !== id),
+      );
+    }
   }
 
   // Role Management
   async getRoles(): Promise<Role[]> {
+    const key = globalKey("roles");
+    const cached = await getCached<Role[]>(ROLE_STORE, key);
+    if (cached) {
+      void this.revalidateRoles(key);
+      return cached;
+    }
+
     const data = await httpClient.get<ApiRoleDTO[]>(this.roleUrl);
-    return data.map(this.mapRole);
+    const mapped = data.map(this.mapRole);
+    await setCached(ROLE_STORE, key, mapped);
+    return mapped;
   }
 
   async createRole(data: Role): Promise<Role> {
@@ -97,7 +143,9 @@ export class ApiUserRepository implements IUserRepository {
       status: data.status === "Active",
     };
     const result = await httpClient.post<ApiRoleDTO>(this.roleUrl, payload);
-    return this.mapRole(result);
+    const mapped = this.mapRole(result);
+    await this.updateCachedRoles((items) => [...items, mapped]);
+    return mapped;
   }
 
   async updateRole(id: string, data: Partial<Role>): Promise<Role> {
@@ -111,35 +159,61 @@ export class ApiUserRepository implements IUserRepository {
       `${this.roleUrl}${id}`,
       payload,
     );
-    return this.mapRole(result);
+    const mapped = this.mapRole(result);
+    await this.updateCachedRoles((items) =>
+      items.map((item) => (item.id === id ? mapped : item)),
+    );
+    return mapped;
   }
 
   async deleteRole(id: string): Promise<void> {
     await httpClient.delete(`${this.roleUrl}${id}`);
+    await this.updateCachedRoles((items) => items.filter((item) => item.id !== id));
   }
 
   // Permissions
   async getAvailablePermissions(): Promise<
     { id: string; key: string; description: string }[]
   > {
+    const key = globalKey("permissions");
+    const cached = await getCached<
+      { id: string; key: string; description: string }[]
+    >(PERMISSION_STORE, key);
+    if (cached) {
+      void this.revalidatePermissions(key);
+      return cached;
+    }
+
     const data = await httpClient.get<ApiPermissionDTO[]>("api/permissions/");
-    return data.map((item) => ({
+    const mapped = data.map((item) => ({
       id: item.id,
       key: item.key,
       description: item.description ?? "",
     }));
+    await setCached(PERMISSION_STORE, key, mapped);
+    return mapped;
   }
 
   async getRolePermissions(
     roleId: string,
   ): Promise<{ role_id: string; role_name: string; permissions: string[] }> {
+    const key = globalKey("roles", `permissions:${roleId}`);
+    const cached = await getCached<
+      { role_id: string; role_name: string; permissions: string[] }
+    >(ROLE_STORE, key);
+    if (cached) {
+      void this.revalidateRolePermissions(roleId, key);
+      return cached;
+    }
+
     const data = await httpClient.get<any>(
       `${this.roleUrl}${roleId}/permissions`,
     );
-    if (Array.isArray(data)) {
-      return { role_id: roleId, role_name: "", permissions: data };
-    }
-    return data;
+    const mapped = Array.isArray(data)
+      ? { role_id: roleId, role_name: "", permissions: data }
+      : data;
+    await setCached(ROLE_STORE, key, mapped);
+    return mapped;
   }
 
   async setRolePermissions(
@@ -149,5 +223,64 @@ export class ApiUserRepository implements IUserRepository {
     await httpClient.put(`${this.roleUrl}${roleId}/permissions`, {
       permissions,
     });
+    await this.invalidateRolesCache(roleId);
+  }
+
+  private async revalidateRoles(key: string) {
+    try {
+      const data = await httpClient.get<ApiRoleDTO[]>(this.roleUrl);
+      const mapped = data.map(this.mapRole);
+      await setCachedIfChanged(ROLE_STORE, key, mapped);
+    } catch {
+      // Ignore background refresh failures
+    }
+  }
+
+  private async revalidatePermissions(key: string) {
+    try {
+      const data = await httpClient.get<ApiPermissionDTO[]>("api/permissions/");
+      const mapped = data.map((item) => ({
+        id: item.id,
+        key: item.key,
+        description: item.description ?? "",
+      }));
+      await setCachedIfChanged(PERMISSION_STORE, key, mapped);
+    } catch {
+      // Ignore background refresh failures
+    }
+  }
+
+  private async revalidateRolePermissions(roleId: string, key: string) {
+    try {
+      const data = await httpClient.get<any>(
+        `${this.roleUrl}${roleId}/permissions`,
+      );
+      const mapped = Array.isArray(data)
+        ? { role_id: roleId, role_name: "", permissions: data }
+        : data;
+      await setCachedIfChanged(ROLE_STORE, key, mapped);
+    } catch {
+      // Ignore background refresh failures
+    }
+  }
+
+  private async invalidateRolesCache(roleId?: string) {
+    await deleteCacheKey(ROLE_STORE, globalKey("roles"));
+    if (roleId) {
+      await deleteCacheKey(ROLE_STORE, globalKey("roles", roleId));
+      await deleteCacheKey(
+        ROLE_STORE,
+        globalKey("roles", `permissions:${roleId}`),
+      );
+    }
+  }
+
+  private async updateCachedRoles(
+    updater: (items: Role[]) => Role[],
+  ) {
+    const key = globalKey("roles");
+    const cached = await getCached<Role[]>(ROLE_STORE, key);
+    if (!cached) return;
+    await setCached(ROLE_STORE, key, updater(cached));
   }
 }

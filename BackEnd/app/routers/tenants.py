@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.tenant import TenantRead, TenantCreate
+from app.schemas.tenant import TenantRead, TenantCreate, TenantConfigRead
 from app.schemas.kiosk import KioskRoomTypeRead, KioskBookingRead
 from app.services.tenant_service import TenantService
 from app.modules.rbac import require_permission
@@ -55,6 +55,19 @@ def get_tenant_bookings(
 ):
     service = TenantService(db)
     return service.get_bookings(tenant_id)
+
+
+@router.get("/{tenant_id}/config", response_model=TenantConfigRead)
+def get_tenant_config(
+    tenant_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:config:read")),
+):
+    service = TenantService(db)
+    config = service.get_config(tenant_id)
+    if not config:
+        raise HTTPException(status_code=404, detail="Tenant config not found")
+    return config
 
 
 @router.post("", response_model=TenantRead)

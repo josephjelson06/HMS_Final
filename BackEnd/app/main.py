@@ -13,6 +13,7 @@ from app.routers import (
     support,
     onboarding,
     kiosk,
+    faqs,
 )
 
 app = FastAPI(
@@ -59,6 +60,7 @@ app.include_router(auth_simple.router)
 app.include_router(support.router)
 app.include_router(onboarding.router)
 app.include_router(kiosk.router)
+app.include_router(faqs.router)
 
 
 @app.get("/")

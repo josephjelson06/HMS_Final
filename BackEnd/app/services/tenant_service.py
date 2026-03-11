@@ -7,7 +7,7 @@ import shutil
 import datetime
 from fastapi import UploadFile
 
-from app.models.tenant import Tenant
+from app.models.tenant import Tenant, TenantConfig
 from app.models.room import RoomType
 from app.models.booking import Booking
 from app.models.billing import Subscription, Plan
@@ -64,6 +64,13 @@ class TenantService:
         if tenant:
             self._populate_names(tenant)
         return tenant
+
+    def get_config(self, tenant_id: UUID) -> Optional[TenantConfig]:
+        return (
+            self.db.query(TenantConfig)
+            .filter(TenantConfig.tenant_id == tenant_id)
+            .first()
+        )
 
     def get_rooms(self, tenant_id: UUID) -> List[RoomType]:
         return self.db.query(RoomType).filter(RoomType.tenant_id == tenant_id).all()

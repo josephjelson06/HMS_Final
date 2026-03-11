@@ -245,6 +245,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onClick={() => onNavigate("billing")}
                         collapsed={isCollapsed}
                       />
+                      {hasPerm("hotel:config:read") && (
+                        <SidebarItem
+                          icon={FileText}
+                          label="FAQs"
+                          active={currentRoute === "faq"}
+                          onClick={() => onNavigate("faq")}
+                          collapsed={isCollapsed}
+                        />
+                      )}
                     </SidebarSection>
 
                     <SidebarSection title="Support" collapsed={isCollapsed}>

@@ -6,3 +6,4 @@ from .billing import Plan, Subscription
 from .support import SupportTicket
 from .room import RoomType
 from .booking import Booking
+from .faq import FAQ

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from sqlalchemy import String, ForeignKey, Boolean, Text, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
 
 from app.db.base import Base
 
@@ -61,6 +61,7 @@ class Tenant(Base):
     bookings = relationship(
         "Booking", back_populates="tenant", cascade="all, delete-orphan"
     )
+    faqs = relationship("FAQ", back_populates="tenant", cascade="all, delete-orphan")
     owner = relationship("TenantUser", foreign_keys=[owner_user_id], post_update=True)
 
 
@@ -134,6 +135,12 @@ class TenantConfig(Base):
         String(10), nullable=False, default="11:00"
     )
     default_lang: Mapped[str] = mapped_column(String(10), nullable=False, default="en")
+    available_lang: Mapped[list[str]] = mapped_column(
+        ARRAY(String()),
+        nullable=False,
+        default=lambda: ["hindi", "english", "marathi"],
+        server_default='{"hindi","english","marathi"}',
+    )
     welcome_message: Mapped[str | None] = mapped_column(Text)
     logo_url: Mapped[str | None] = mapped_column(Text)
     support_phone: Mapped[str | None] = mapped_column(String(20))

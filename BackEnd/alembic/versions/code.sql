@@ -1,355 +1,630 @@
--- ============================================================
--- KIOSK + PLATFORM UNIFIED SCHEMA
--- PostgreSQL 15+
--- ============================================================
+--
+-- PostgreSQL database dump
+--
 
--- Enable UUID generation
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+\restrict AatJqaLXwPp8snisYACSzduPe6pGfNPJZWRPn0GqR7TudKxuvyNqWkSMnacM9AK
 
--- ============================================================
--- SECTION 1: PLATFORM LAYER
--- Writer: Platform Module (FastAPI)
--- ============================================================
+-- Dumped from database version 16.12 (6d3029c)
+-- Dumped by pg_dump version 16.13
 
-CREATE TABLE platform_roles (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name        VARCHAR(100) UNIQUE NOT NULL,
-    status      BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA public;
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: alembic_version; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.alembic_version (
+    version_num character varying(32) NOT NULL
 );
 
-CREATE TABLE platform_users (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email           VARCHAR(255) UNIQUE NOT NULL,
-    phone           VARCHAR(20),
-    name            VARCHAR(255),
-    password_hash   TEXT NOT NULL,
-    role_id         UUID NOT NULL REFERENCES platform_roles(id),
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+
+--
+-- Name: bookings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.bookings (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    room_type_id uuid NOT NULL,
+    guest_name character varying(255) NOT NULL,
+    check_in_date date NOT NULL,
+    check_out_date date NOT NULL,
+    adults integer NOT NULL,
+    children integer,
+    nights integer NOT NULL,
+    total_price numeric,
+    status character varying(20) NOT NULL,
+    idempotency_key character varying(190),
+    payment_ref character varying(120),
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
+    checked_in_at timestamp with time zone,
+    checkin_status character varying(40)
 );
 
--- ============================================================
--- SECTION 2: BILLING LAYER
--- Writer: Platform Module (FastAPI)
--- ============================================================
 
-CREATE TABLE plans (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name            VARCHAR(100) NOT NULL,
-    price           DECIMAL(10, 2) NOT NULL DEFAULT 0.0,
-    period_months   INT,
-    max_users       INT,
-    max_roles       INT,
-    max_rooms       INT,
-    is_archived     BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+--
+-- Name: faqs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.faqs (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    question character varying(500) NOT NULL,
+    answer text NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
--- ============================================================
--- SECTION 3: TENANT CORE
--- Writer: Platform + Tenant Modules (FastAPI)
--- ============================================================
 
--- tenants created first WITHOUT owner_user_id FK
--- (circular dependency with tenant_users resolved via ALTER below)
-CREATE TABLE tenants (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    hotel_name      VARCHAR(255) NOT NULL,
-    slug            VARCHAR(100) UNIQUE NOT NULL,
-    address         TEXT,
-    owner_user_id   UUID,
-    plan_id         UUID REFERENCES plans(id),
-    gstin           VARCHAR(50),
-    pan             VARCHAR(20),
-    image_url_1     TEXT,
-    image_url_2     TEXT,
-    image_url_3     TEXT,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+--
+-- Name: permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.permissions (
+    id uuid NOT NULL,
+    key character varying NOT NULL,
+    description text
 );
 
-CREATE TABLE tenant_roles (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id   UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    name        VARCHAR(100) NOT NULL,
-    status      BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-    UNIQUE (tenant_id, name)
+--
+-- Name: plans; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.plans (
+    id uuid NOT NULL,
+    name character varying NOT NULL,
+    period_months integer,
+    max_users integer,
+    max_roles integer,
+    max_rooms integer,
+    created_at timestamp with time zone NOT NULL,
+    price double precision DEFAULT '0'::double precision NOT NULL,
+    is_archived boolean DEFAULT false NOT NULL
 );
 
-CREATE TABLE tenant_users (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id       UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    email           VARCHAR(255) NOT NULL,
-    phone           VARCHAR(20),
-    name            VARCHAR(255),
-    password_hash   TEXT NOT NULL,
-    role_id         UUID NOT NULL REFERENCES tenant_roles(id),
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-    UNIQUE (tenant_id, email)
+--
+-- Name: platform_role_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.platform_role_permissions (
+    role_id uuid NOT NULL,
+    permission_id uuid NOT NULL
 );
 
--- Resolve circular dependency: tenants.owner_user_id -> tenant_users.id
-ALTER TABLE tenants
-    ADD CONSTRAINT fk_tenants_owner
-    FOREIGN KEY (owner_user_id) REFERENCES tenant_users(id);
 
--- ============================================================
--- SECTION 4: SUBSCRIPTIONS
--- Writer: Platform Module (FastAPI)
--- ============================================================
+--
+-- Name: platform_roles; Type: TABLE; Schema: public; Owner: -
+--
 
-CREATE TABLE subscriptions (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id   UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    plan_id     UUID NOT NULL REFERENCES plans(id),
-    start_date  DATE NOT NULL,
-    end_date    DATE,
-    status      VARCHAR(20) NOT NULL DEFAULT 'active'
-                CHECK (status IN ('active', 'expired', 'cancelled'))
+CREATE TABLE public.platform_roles (
+    id uuid NOT NULL,
+    name character varying NOT NULL,
+    status boolean NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    description text,
+    color character varying
 );
 
--- Only one active subscription per tenant
-CREATE UNIQUE INDEX idx_subscriptions_one_active
-    ON subscriptions (tenant_id)
-    WHERE status = 'active';
 
--- ============================================================
--- SECTION 5: PERMISSIONS / RBAC
--- Writer: Platform Module (FastAPI)
--- ============================================================
+--
+-- Name: platform_users; Type: TABLE; Schema: public; Owner: -
+--
 
-CREATE TABLE permissions (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    key         VARCHAR(100) UNIQUE NOT NULL,
-    description TEXT
+CREATE TABLE public.platform_users (
+    id uuid NOT NULL,
+    email character varying NOT NULL,
+    phone character varying,
+    name character varying,
+    password_hash text NOT NULL,
+    role_id uuid NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    readable_id character varying(20)
 );
 
-CREATE TABLE platform_role_permissions (
-    role_id         UUID NOT NULL REFERENCES platform_roles(id) ON DELETE CASCADE,
-    permission_id   UUID NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
 
-    PRIMARY KEY (role_id, permission_id)
+--
+-- Name: room_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.room_types (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    name character varying(255) NOT NULL,
+    code character varying(60) NOT NULL,
+    price numeric NOT NULL,
+    amenities character varying[] DEFAULT '{}'::character varying[] NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone
 );
 
-CREATE TABLE tenant_role_permissions (
-    role_id         UUID NOT NULL REFERENCES tenant_roles(id) ON DELETE CASCADE,
-    permission_id   UUID NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
 
-    PRIMARY KEY (role_id, permission_id)
+--
+-- Name: subscriptions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.subscriptions (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    start_date timestamp without time zone NOT NULL,
+    end_date timestamp without time zone,
+    status character varying NOT NULL,
+    plan_id uuid NOT NULL
 );
 
--- ============================================================
--- SECTION 6: SUPPORT
--- Writer: Platform Module (FastAPI)
--- ============================================================
 
-CREATE TABLE support_tickets (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id   UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    title       VARCHAR(500) NOT NULL,
-    description TEXT,
-    category    VARCHAR(50),
-    priority    VARCHAR(20) NOT NULL DEFAULT 'medium'
-                CHECK (priority IN ('low', 'medium', 'high')),
-    status      VARCHAR(20) NOT NULL DEFAULT 'open'
-                CHECK (status IN ('open', 'in_progress', 'closed')),
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+--
+-- Name: support_tickets; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.support_tickets (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    title character varying NOT NULL,
+    description text,
+    category character varying,
+    priority character varying NOT NULL,
+    status character varying NOT NULL,
+    created_at timestamp with time zone NOT NULL
 );
 
--- ============================================================
--- SECTION 7: HOTEL OPERATIONS
--- Writer: Tenant Module (FastAPI) | Reader: Kiosk Module
--- ============================================================
 
-CREATE TABLE tenant_configs (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id       UUID UNIQUE NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    timezone        VARCHAR(50) NOT NULL DEFAULT 'Asia/Kolkata',
-    check_in_time   VARCHAR(10) NOT NULL DEFAULT '14:00',
-    check_out_time  VARCHAR(10) NOT NULL DEFAULT '11:00',
-    default_lang    VARCHAR(10) NOT NULL DEFAULT 'en',
-    welcome_message TEXT,
-    logo_url        TEXT,
-    support_phone   VARCHAR(20),
-    support_email   VARCHAR(255),
-    extra           JSONB NOT NULL DEFAULT '{}',
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+--
+-- Name: tenant_configs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tenant_configs (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    timezone character varying(50) NOT NULL,
+    check_in_time character varying(10) NOT NULL,
+    check_out_time character varying(10) NOT NULL,
+    default_lang character varying(10) NOT NULL,
+    available_lang text[] DEFAULT ARRAY['hindi'::text, 'english'::text, 'marathi'::text] NOT NULL,
+    welcome_message text,
+    logo_url text,
+    support_phone character varying(20),
+    support_email character varying(255),
+    extra jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
 );
 
-CREATE TABLE room_types (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id       UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    name            VARCHAR(255) NOT NULL,
-    code            VARCHAR(50) NOT NULL,
-    description     TEXT,
-    base_price      DECIMAL(10, 2) NOT NULL,
-    currency        VARCHAR(3) NOT NULL DEFAULT 'INR',
-    max_adults      INT NOT NULL DEFAULT 4,
-    max_children    INT NOT NULL DEFAULT 3,
-    max_occupancy   INT NOT NULL DEFAULT 6,
-    amenities       JSONB NOT NULL DEFAULT '[]',
-    images          JSONB NOT NULL DEFAULT '[]',
-    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
-    display_order   INT NOT NULL DEFAULT 0,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-    UNIQUE (tenant_id, code)
+--
+-- Name: tenant_role_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tenant_role_permissions (
+    role_id uuid NOT NULL,
+    permission_id uuid NOT NULL
 );
 
--- ============================================================
--- SECTION 8: KIOSK RUNTIME
--- Writer: Kiosk Module (Express/Node)
--- ============================================================
 
-CREATE TABLE kiosk_devices (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id       UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    device_code     VARCHAR(50) NOT NULL,
-    name            VARCHAR(255),
-    location        VARCHAR(255),
-    status          VARCHAR(20) NOT NULL DEFAULT 'online'
-                    CHECK (status IN ('online', 'offline', 'maintenance')),
-    last_heartbeat  TIMESTAMPTZ,
-    config          JSONB NOT NULL DEFAULT '{}',
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+--
+-- Name: tenant_roles; Type: TABLE; Schema: public; Owner: -
+--
 
-    UNIQUE (tenant_id, device_code)
+CREATE TABLE public.tenant_roles (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    name character varying NOT NULL,
+    status boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL
 );
 
-CREATE TABLE kiosk_sessions (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id       UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    device_id       UUID REFERENCES kiosk_devices(id),
-    session_token   VARCHAR(255) UNIQUE NOT NULL,
-    language        VARCHAR(10) NOT NULL DEFAULT 'en',
-    started_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    ended_at        TIMESTAMPTZ,
-    final_state     VARCHAR(50)
-                    CHECK (final_state IN ('COMPLETE', 'IDLE', 'ERROR') OR final_state IS NULL),
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+
+--
+-- Name: tenant_users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tenant_users (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    email character varying NOT NULL,
+    phone character varying,
+    name character varying,
+    password_hash text NOT NULL,
+    role_id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    status boolean DEFAULT true NOT NULL,
+    readable_id character varying(20)
 );
 
--- ============================================================
--- SECTION 9: GUEST SERVICES
--- Writer: Kiosk Module (Express/Node)
--- ============================================================
 
-CREATE TABLE guests (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id   UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    full_name   VARCHAR(255) NOT NULL,
-    email       VARCHAR(255),
-    phone       VARCHAR(50),
-    id_type     VARCHAR(50)
-                CHECK (id_type IN ('passport', 'aadhar', 'driving_license') OR id_type IS NULL),
-    id_number   VARCHAR(100),
-    nationality VARCHAR(100),
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+--
+-- Name: tenants; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tenants (
+    id uuid NOT NULL,
+    hotel_name character varying NOT NULL,
+    address text,
+    owner_user_id uuid,
+    plan_id uuid,
+    gstin character varying,
+    pan character varying,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    image_url_1 text,
+    image_url_2 text,
+    image_url_3 text,
+    slug character varying(100) NOT NULL,
+    status boolean DEFAULT true NOT NULL,
+    readable_id character varying(20)
 );
 
-CREATE TABLE bookings (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id       UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    session_id      UUID REFERENCES kiosk_sessions(id),
-    device_id       UUID REFERENCES kiosk_devices(id),
-    guest_id        UUID REFERENCES guests(id),
-    room_type_id    UUID NOT NULL REFERENCES room_types(id),
-    status          VARCHAR(20) NOT NULL DEFAULT 'draft'
-                    CHECK (status IN ('draft', 'confirmed', 'cancelled')),
-    adults          INT NOT NULL DEFAULT 1,
-    children        INT NOT NULL DEFAULT 0,
-    check_in_date   DATE NOT NULL,
-    check_out_date  DATE NOT NULL,
-    nights          INT NOT NULL DEFAULT 1,
-    total_price     DECIMAL(10, 2),
-    currency        VARCHAR(3) NOT NULL DEFAULT 'INR',
-    guest_name      VARCHAR(255),
-    special_requests TEXT,
-    idempotency_key VARCHAR(255) UNIQUE,
-    confirmed_at    TIMESTAMPTZ,
-    cancelled_at    TIMESTAMPTZ,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-    CONSTRAINT chk_checkout_after_checkin
-        CHECK (check_out_date > check_in_date),
+--
+-- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: -
+--
 
-    CONSTRAINT chk_positive_guests
-        CHECK (adults >= 1 AND children >= 0),
+ALTER TABLE ONLY public.alembic_version
+    ADD CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num);
 
-    CONSTRAINT chk_positive_nights
-        CHECK (nights >= 1)
-);
 
--- ============================================================
--- SECTION 10: INDEXES
--- ============================================================
+--
+-- Name: bookings bookings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
 
--- Auth lookups
-CREATE INDEX idx_platform_users_email       ON platform_users(email);
-CREATE INDEX idx_tenant_users_email         ON tenant_users(email);
+ALTER TABLE ONLY public.bookings
+    ADD CONSTRAINT bookings_pkey PRIMARY KEY (id);
 
--- Tenant isolation
-CREATE INDEX idx_tenant_users_tenant        ON tenant_users(tenant_id);
-CREATE INDEX idx_tenant_roles_tenant        ON tenant_roles(tenant_id);
-CREATE INDEX idx_subscriptions_tenant       ON subscriptions(tenant_id);
-CREATE INDEX idx_support_tickets_tenant     ON support_tickets(tenant_id);
-CREATE INDEX idx_tenant_configs_tenant      ON tenant_configs(tenant_id);
-CREATE INDEX idx_room_types_tenant          ON room_types(tenant_id);
-CREATE INDEX idx_kiosk_devices_tenant       ON kiosk_devices(tenant_id);
-CREATE INDEX idx_kiosk_sessions_tenant      ON kiosk_sessions(tenant_id);
-CREATE INDEX idx_guests_tenant              ON guests(tenant_id);
-CREATE INDEX idx_bookings_tenant            ON bookings(tenant_id);
 
--- RBAC joins
-CREATE INDEX idx_platform_role_perms_role   ON platform_role_permissions(role_id);
-CREATE INDEX idx_tenant_role_perms_role     ON tenant_role_permissions(role_id);
+--
+-- Name: faqs faqs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
 
--- Kiosk query patterns
-CREATE INDEX idx_tenants_slug               ON tenants(slug);
-CREATE INDEX idx_room_types_active          ON room_types(tenant_id, is_active);
-CREATE INDEX idx_bookings_status            ON bookings(tenant_id, status);
-CREATE INDEX idx_bookings_checkin_date      ON bookings(tenant_id, check_in_date);
-CREATE INDEX idx_kiosk_sessions_token       ON kiosk_sessions(session_token);
-CREATE INDEX idx_kiosk_devices_code         ON kiosk_devices(tenant_id, device_code);
+ALTER TABLE ONLY public.faqs
+    ADD CONSTRAINT faqs_pkey PRIMARY KEY (id);
 
--- ============================================================
--- SECTION 11: ONBOARDING FLOW
--- Execute in this order to handle circular dependency
--- ============================================================
 
--- STEP 1: Create tenant
--- INSERT INTO tenants (hotel_name, slug, plan_id)
--- VALUES ('Grand Hotel', 'grand-hotel', '<plan_uuid>')
--- RETURNING id;
+--
+-- Name: permissions permissions_key_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
 
--- STEP 2: Create "Owner" role for that tenant
--- INSERT INTO tenant_roles (tenant_id, name)
--- VALUES ('<tenant_uuid>', 'Owner')
--- RETURNING id;
+ALTER TABLE ONLY public.permissions
+    ADD CONSTRAINT permissions_key_key UNIQUE (key);
 
--- STEP 3: Assign permissions to the Owner role
--- INSERT INTO tenant_role_permissions (role_id, permission_id)
--- SELECT '<role_uuid>', id FROM permissions
--- WHERE key LIKE 'tenant:%';
 
--- STEP 4: Create the owner user
--- INSERT INTO tenant_users (tenant_id, email, name, password_hash, role_id)
--- VALUES ('<tenant_uuid>', 'owner@grandhotel.com', 'John Doe', '<hash>', '<role_uuid>')
--- RETURNING id;
+--
+-- Name: permissions permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
 
--- STEP 5: Link owner back to tenant
--- UPDATE tenants SET owner_user_id = '<user_uuid>'
--- WHERE id = '<tenant_uuid>';
+ALTER TABLE ONLY public.permissions
+    ADD CONSTRAINT permissions_pkey PRIMARY KEY (id);
 
--- STEP 6: Create tenant config
--- INSERT INTO tenant_configs (tenant_id)
--- VALUES ('<tenant_uuid>');
+
+--
+-- Name: plans plans_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.plans
+    ADD CONSTRAINT plans_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: platform_role_permissions platform_role_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.platform_role_permissions
+    ADD CONSTRAINT platform_role_permissions_pkey PRIMARY KEY (role_id, permission_id);
+
+
+--
+-- Name: platform_roles platform_roles_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.platform_roles
+    ADD CONSTRAINT platform_roles_name_key UNIQUE (name);
+
+
+--
+-- Name: platform_roles platform_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.platform_roles
+    ADD CONSTRAINT platform_roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: platform_users platform_users_email_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.platform_users
+    ADD CONSTRAINT platform_users_email_key UNIQUE (email);
+
+
+--
+-- Name: platform_users platform_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.platform_users
+    ADD CONSTRAINT platform_users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: platform_users platform_users_readable_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.platform_users
+    ADD CONSTRAINT platform_users_readable_id_key UNIQUE (readable_id);
+
+
+--
+-- Name: room_types room_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.room_types
+    ADD CONSTRAINT room_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: subscriptions subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscriptions
+    ADD CONSTRAINT subscriptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: support_tickets support_tickets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.support_tickets
+    ADD CONSTRAINT support_tickets_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tenant_configs tenant_configs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_configs
+    ADD CONSTRAINT tenant_configs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tenant_configs tenant_configs_tenant_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_configs
+    ADD CONSTRAINT tenant_configs_tenant_id_key UNIQUE (tenant_id);
+
+
+--
+-- Name: tenant_role_permissions tenant_role_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_role_permissions
+    ADD CONSTRAINT tenant_role_permissions_pkey PRIMARY KEY (role_id, permission_id);
+
+
+--
+-- Name: tenant_roles tenant_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_roles
+    ADD CONSTRAINT tenant_roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tenant_users tenant_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_users
+    ADD CONSTRAINT tenant_users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tenant_users tenant_users_readable_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_users
+    ADD CONSTRAINT tenant_users_readable_id_key UNIQUE (readable_id);
+
+
+--
+-- Name: tenants tenants_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenants
+    ADD CONSTRAINT tenants_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tenants tenants_readable_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenants
+    ADD CONSTRAINT tenants_readable_id_key UNIQUE (readable_id);
+
+
+--
+-- Name: tenants tenants_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenants
+    ADD CONSTRAINT tenants_slug_key UNIQUE (slug);
+
+
+--
+-- Name: ix_faqs_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_faqs_tenant_id ON public.faqs USING btree (tenant_id);
+
+
+--
+-- Name: bookings bookings_room_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bookings
+    ADD CONSTRAINT bookings_room_type_id_fkey FOREIGN KEY (room_type_id) REFERENCES public.room_types(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: bookings bookings_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bookings
+    ADD CONSTRAINT bookings_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE CASCADE;
+
+
+--
+-- Name: faqs faqs_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.faqs
+    ADD CONSTRAINT faqs_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tenants fk_tenants_owner_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenants
+    ADD CONSTRAINT fk_tenants_owner_user_id FOREIGN KEY (owner_user_id) REFERENCES public.tenant_users(id);
+
+
+--
+-- Name: platform_role_permissions platform_role_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.platform_role_permissions
+    ADD CONSTRAINT platform_role_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES public.permissions(id);
+
+
+--
+-- Name: platform_role_permissions platform_role_permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.platform_role_permissions
+    ADD CONSTRAINT platform_role_permissions_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.platform_roles(id);
+
+
+--
+-- Name: platform_users platform_users_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.platform_users
+    ADD CONSTRAINT platform_users_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.platform_roles(id);
+
+
+--
+-- Name: room_types room_types_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.room_types
+    ADD CONSTRAINT room_types_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE CASCADE;
+
+
+--
+-- Name: subscriptions subscriptions_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscriptions
+    ADD CONSTRAINT subscriptions_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES public.plans(id);
+
+
+--
+-- Name: subscriptions subscriptions_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscriptions
+    ADD CONSTRAINT subscriptions_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE CASCADE;
+
+
+--
+-- Name: support_tickets support_tickets_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.support_tickets
+    ADD CONSTRAINT support_tickets_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tenant_configs tenant_configs_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_configs
+    ADD CONSTRAINT tenant_configs_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tenant_role_permissions tenant_role_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_role_permissions
+    ADD CONSTRAINT tenant_role_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES public.permissions(id);
+
+
+--
+-- Name: tenant_role_permissions tenant_role_permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_role_permissions
+    ADD CONSTRAINT tenant_role_permissions_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.tenant_roles(id);
+
+
+--
+-- Name: tenant_roles tenant_roles_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_roles
+    ADD CONSTRAINT tenant_roles_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tenant_users tenant_users_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_users
+    ADD CONSTRAINT tenant_users_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.tenant_roles(id);
+
+
+--
+-- Name: tenant_users tenant_users_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenant_users
+    ADD CONSTRAINT tenant_users_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tenants tenants_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tenants
+    ADD CONSTRAINT tenants_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES public.plans(id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict AatJqaLXwPp8snisYACSzduPe6pGfNPJZWRPn0GqR7TudKxuvyNqWkSMnacM9AK
+
