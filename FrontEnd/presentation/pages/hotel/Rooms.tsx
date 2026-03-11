@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, CheckCircle2, Users, Edit3, Trash2 } from "lucide-react";
+import { Plus, CheckCircle2, Users, Edit3, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/application/hooks/useAuth";
 import { useRooms } from "@/application/hooks/useRooms";
 import GlassCard from "../../components/ui/GlassCard";
@@ -14,7 +14,7 @@ import ConfirmationModal from "../../components/ui/ConfirmationModal";
 const Rooms: React.FC = () => {
   const { user } = useAuth();
   const tenantId = user?.tenantId;
-  const { rooms, fetchRooms, loading } = useRooms();
+  const { rooms, fetchRooms, createRoomType, updateRoomType, deleteRoomType, deleteRoomImage, loading } = useRooms();
 
   useEffect(() => {
     if (tenantId) {
@@ -34,10 +34,32 @@ const Rooms: React.FC = () => {
     typeId: "",
     displayName: "",
   });
+  const [imageIndices, setImageIndices] = useState<Record<string, number>>({});
 
   const handleSaveRoomType = async (typeData: any) => {
-    // This will hook into actual save logic later
-    console.log("Saving room type", typeData);
+    if (!tenantId) {
+      throw new Error("Tenant context missing. Please login again.");
+    }
+
+    const formData = new FormData();
+    formData.append("name", typeData.name);
+    formData.append("code", typeData.code);
+    formData.append("price", String(typeData.rate));
+
+    (typeData.amenities || []).forEach((amenity: string) => {
+      formData.append("amenities", amenity);
+    });
+
+    (typeData.images || []).forEach((file: File) => {
+      formData.append("images", file);
+    });
+
+    if (typeData.id && editingType?.id) {
+      await updateRoomType(tenantId, typeData.id, formData);
+    } else {
+      await createRoomType(tenantId, formData);
+    }
+    await fetchRooms(tenantId);
     setIsManageTypeModalOpen(false);
   };
 
@@ -50,9 +72,41 @@ const Rooms: React.FC = () => {
   };
 
   const executeDeleteRoomType = async () => {
-    // This will hook into actual delete logic later
-    console.log("Deleting room type", confirmDelete.typeId);
-    setConfirmDelete((prev) => ({ ...prev, isOpen: false }));
+    if (!tenantId || !confirmDelete.typeId) {
+      setConfirmDelete((prev) => ({ ...prev, isOpen: false }));
+      return;
+    }
+
+    try {
+      await deleteRoomType(tenantId, confirmDelete.typeId);
+      await fetchRooms(tenantId);
+      setConfirmDelete((prev) => ({ ...prev, isOpen: false }));
+    } catch (error: any) {
+      window.alert(error?.message || "Failed to delete room category.");
+    }
+  };
+
+  const handleDeleteExistingImage = async (imageUrl: string) => {
+    if (!tenantId || !editingType?.id) {
+      throw new Error("Room context missing. Please reopen and try again.");
+    }
+    const updatedRoom = await deleteRoomImage(tenantId, editingType.id, imageUrl);
+    setEditingType(updatedRoom);
+    await fetchRooms(tenantId);
+  };
+
+  const slideRoomImage = (roomId: string, total: number, direction: "next" | "prev") => {
+    if (total < 2) {
+      return;
+    }
+    setImageIndices((prev) => {
+      const current = prev[roomId] ?? 0;
+      const nextIndex =
+        direction === "next"
+          ? (current + 1) % total
+          : (current - 1 + total) % total;
+      return { ...prev, [roomId]: nextIndex };
+    });
   };
 
   return (
@@ -98,6 +152,38 @@ const Rooms: React.FC = () => {
                 className="p-6 rounded-[2.5rem] bg-black/5 dark:bg-white/[0.02] border border-white/5 flex flex-col justify-between group hover:border-blue-500/30 transition-all min-h-[250px]"
               >
                 <div className="space-y-4">
+                  {rt.imageUrls && rt.imageUrls.length > 0 && (
+                    <div className="relative">
+                      <img
+                        src={rt.imageUrls[imageIndices[rt.id] ?? 0]}
+                        alt={`${rt.name} preview`}
+                        className="w-full h-24 object-cover rounded-2xl border border-white/10"
+                      />
+                      {rt.imageUrls.length > 1 && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => slideRoomImage(rt.id, rt.imageUrls.length, "prev")}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/75 transition-all"
+                            aria-label="Previous image"
+                          >
+                            <ChevronLeft size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => slideRoomImage(rt.id, rt.imageUrls.length, "next")}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/75 transition-all"
+                            aria-label="Next image"
+                          >
+                            <ChevronRight size={14} />
+                          </button>
+                          <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-black/60 text-white text-[9px] font-bold">
+                            {(imageIndices[rt.id] ?? 0) + 1}/{rt.imageUrls.length}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="text-lg font-black dark:text-white uppercase leading-tight mb-1">
@@ -184,6 +270,7 @@ const Rooms: React.FC = () => {
         isOpen={isManageTypeModalOpen}
         onClose={() => setIsManageTypeModalOpen(false)}
         onSave={handleSaveRoomType}
+        onDeleteExistingImage={handleDeleteExistingImage}
         initialData={editingType}
       />
 

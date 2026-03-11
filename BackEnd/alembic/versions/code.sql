@@ -157,6 +157,7 @@ CREATE TABLE public.room_types (
     code character varying(60) NOT NULL,
     price numeric NOT NULL,
     amenities character varying[] DEFAULT '{}'::character varying[] NOT NULL,
+    image_urls character varying[] DEFAULT '{}'::character varying[] NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone
 );

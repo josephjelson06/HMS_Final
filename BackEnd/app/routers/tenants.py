@@ -1,6 +1,7 @@
 from uuid import UUID
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from decimal import Decimal
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -45,6 +46,80 @@ def get_tenant_rooms(
 ):
     service = TenantService(db)
     return service.get_rooms(tenant_id)
+
+
+@router.post("/{tenant_id}/rooms", response_model=KioskRoomTypeRead)
+def create_tenant_room(
+    tenant_id: UUID,
+    name: str = Form(...),
+    code: str = Form(...),
+    price: Decimal = Form(...),
+    amenities: List[str] | None = Form(None),
+    images: List[UploadFile] | None = File(None),
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:rooms:write")),
+):
+    service = TenantService(db)
+    return service.create_room(
+        tenant_id=tenant_id,
+        name=name,
+        code=code,
+        price=price,
+        amenities=amenities or [],
+        images=images or [],
+    )
+
+
+@router.put("/{tenant_id}/rooms/{room_type_id}", response_model=KioskRoomTypeRead)
+def update_tenant_room(
+    tenant_id: UUID,
+    room_type_id: UUID,
+    name: str = Form(...),
+    code: str = Form(...),
+    price: Decimal = Form(...),
+    amenities: List[str] | None = Form(None),
+    images: List[UploadFile] | None = File(None),
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:rooms:write")),
+):
+    service = TenantService(db)
+    return service.update_room(
+        tenant_id=tenant_id,
+        room_type_id=room_type_id,
+        name=name,
+        code=code,
+        price=price,
+        amenities=amenities or [],
+        images=images or [],
+    )
+
+
+@router.delete("/{tenant_id}/rooms/{room_type_id}")
+def delete_tenant_room(
+    tenant_id: UUID,
+    room_type_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:rooms:write")),
+):
+    service = TenantService(db)
+    deleted_bookings = service.delete_room(tenant_id=tenant_id, room_type_id=room_type_id)
+    return {"message": "Room type deleted", "deleted_bookings": deleted_bookings}
+
+
+@router.delete("/{tenant_id}/rooms/{room_type_id}/images", response_model=KioskRoomTypeRead)
+def delete_tenant_room_image(
+    tenant_id: UUID,
+    room_type_id: UUID,
+    image_url: str,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:rooms:write")),
+):
+    service = TenantService(db)
+    return service.delete_room_image(
+        tenant_id=tenant_id,
+        room_type_id=room_type_id,
+        image_url=image_url,
+    )
 
 
 @router.get("/{tenant_id}/bookings", response_model=List[KioskBookingRead])

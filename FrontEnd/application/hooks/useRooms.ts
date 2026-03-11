@@ -13,6 +13,7 @@ export interface RoomTypeData {
     code: string;
     price: number;
     amenities: string[];
+    imageUrls: string[];
 }
 
 const ROOM_TYPES_STORE = 'roomTypes';
@@ -29,6 +30,7 @@ function mapRoom(item: any): RoomTypeData {
         code: item.code,
         price: Number(item.price),
         amenities: item.amenities || [],
+        imageUrls: item.image_urls || item.imageUrls || [],
     };
 }
 
@@ -63,13 +65,13 @@ export function useRooms() {
         }
     }, []);
 
-    const createRoomType = useCallback(async (tenantId: string, payload: RoomTypeMutationPayload) => {
+    const createRoomType = useCallback(async (tenantId: string, payload: FormData) => {
         const created = await httpClient.post<any>(`api/tenants/${tenantId}/rooms`, payload);
         await deleteCacheKey(ROOM_TYPES_STORE, tenantKey(tenantId, ROOM_TYPES_STORE));
         return mapRoom(created);
     }, []);
 
-    const updateRoomType = useCallback(async (tenantId: string, roomTypeId: string, payload: RoomTypeMutationPayload) => {
+    const updateRoomType = useCallback(async (tenantId: string, roomTypeId: string, payload: FormData) => {
         const updated = await httpClient.put<any>(`api/tenants/${tenantId}/rooms/${roomTypeId}`, payload);
         await deleteCacheKey(ROOM_TYPES_STORE, tenantKey(tenantId, ROOM_TYPES_STORE));
         return mapRoom(updated);
@@ -80,6 +82,14 @@ export function useRooms() {
         await deleteCacheKey(ROOM_TYPES_STORE, tenantKey(tenantId, ROOM_TYPES_STORE));
     }, []);
 
+    const deleteRoomImage = useCallback(async (tenantId: string, roomTypeId: string, imageUrl: string) => {
+        const updated = await httpClient.delete<any>(`api/tenants/${tenantId}/rooms/${roomTypeId}/images`, {
+            params: { image_url: imageUrl },
+        });
+        await deleteCacheKey(ROOM_TYPES_STORE, tenantKey(tenantId, ROOM_TYPES_STORE));
+        return mapRoom(updated);
+    }, []);
+
     return {
         rooms,
         loading,
@@ -88,5 +98,6 @@ export function useRooms() {
         createRoomType,
         updateRoomType,
         deleteRoomType,
+        deleteRoomImage,
     };
 }

@@ -2,16 +2,23 @@ from uuid import UUID
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
 import os
 import shutil
 import datetime
-from fastapi import UploadFile
+from decimal import Decimal
+from fastapi import UploadFile, HTTPException, status
 
 from app.models.tenant import Tenant, TenantConfig
 from app.models.room import RoomType
 from app.models.booking import Booking
 from app.models.billing import Subscription, Plan
 from app.schemas.tenant import TenantCreate
+from app.utils.cloudinary_upload import (
+    upload_room_images,
+    delete_room_image,
+    CloudinaryUploadError,
+)
 
 
 class TenantService:
@@ -74,6 +81,166 @@ class TenantService:
 
     def get_rooms(self, tenant_id: UUID) -> List[RoomType]:
         return self.db.query(RoomType).filter(RoomType.tenant_id == tenant_id).all()
+
+    def create_room(
+        self,
+        tenant_id: UUID,
+        name: str,
+        code: str,
+        price: Decimal,
+        amenities: Optional[List[str]] = None,
+        images: Optional[List[UploadFile]] = None,
+    ) -> RoomType:
+        tenant = self.get_by_id(tenant_id)
+        if not tenant:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Tenant not found",
+            )
+
+        images = images or []
+        if len(images) > 5:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Maximum 5 images are allowed per room.",
+            )
+
+        image_urls: List[str] = []
+        if images:
+            try:
+                image_urls = upload_room_images(images, str(tenant_id))
+            except CloudinaryUploadError as exc:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=str(exc),
+                ) from exc
+
+        room = RoomType(
+            tenant_id=tenant_id,
+            name=name,
+            code=code,
+            price=price,
+            amenities=amenities or [],
+            image_urls=image_urls,
+        )
+        self.db.add(room)
+        self.db.commit()
+        self.db.refresh(room)
+        return room
+
+    def update_room(
+        self,
+        tenant_id: UUID,
+        room_type_id: UUID,
+        name: str,
+        code: str,
+        price: Decimal,
+        amenities: Optional[List[str]] = None,
+        images: Optional[List[UploadFile]] = None,
+    ) -> RoomType:
+        room = (
+            self.db.query(RoomType)
+            .filter(RoomType.id == room_type_id, RoomType.tenant_id == tenant_id)
+            .first()
+        )
+        if not room:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Room type not found",
+            )
+
+        images = images or []
+        existing_urls = room.image_urls or []
+
+        if len(existing_urls) + len(images) > 5:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Maximum 5 images are allowed per room.",
+            )
+
+        new_urls: List[str] = []
+        if images:
+            try:
+                new_urls = upload_room_images(images, str(tenant_id))
+            except CloudinaryUploadError as exc:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=str(exc),
+                ) from exc
+
+        room.name = name
+        room.code = code
+        room.price = price
+        room.amenities = amenities or []
+        if new_urls:
+            room.image_urls = [*existing_urls, *new_urls]
+
+        self.db.commit()
+        self.db.refresh(room)
+        return room
+
+    def delete_room(self, tenant_id: UUID, room_type_id: UUID) -> int:
+        room = (
+            self.db.query(RoomType)
+            .filter(RoomType.id == room_type_id, RoomType.tenant_id == tenant_id)
+            .first()
+        )
+        if not room:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Room type not found",
+            )
+
+        try:
+            # Remove dependent bookings first because bookings.room_type_id uses FK RESTRICT.
+            deleted_bookings = (
+                self.db.query(Booking)
+                .filter(Booking.room_type_id == room_type_id)
+                .delete(synchronize_session=False)
+            )
+            self.db.delete(room)
+            self.db.commit()
+            return int(deleted_bookings or 0)
+        except IntegrityError as exc:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Unable to delete room type due to linked records.",
+            ) from exc
+
+    def delete_room_image(
+        self, tenant_id: UUID, room_type_id: UUID, image_url: str
+    ) -> RoomType:
+        room = (
+            self.db.query(RoomType)
+            .filter(RoomType.id == room_type_id, RoomType.tenant_id == tenant_id)
+            .first()
+        )
+        if not room:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Room type not found",
+            )
+
+        current_urls = room.image_urls or []
+        if image_url not in current_urls:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Image not found for this room type.",
+            )
+
+        try:
+            delete_room_image(image_url)
+        except CloudinaryUploadError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=str(exc),
+            ) from exc
+
+        room.image_urls = [url for url in current_urls if url != image_url]
+        self.db.commit()
+        self.db.refresh(room)
+        return room
 
     def get_bookings(self, tenant_id: UUID) -> List[Booking]:
         return (

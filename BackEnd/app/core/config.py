@@ -37,6 +37,18 @@ class Settings(BaseSettings):
         default="lax",
         validation_alias="ACCESS_TOKEN_COOKIE_SAMESITE",
     )
+    cloudinary_cloud_name: str | None = Field(
+        default=None,
+        validation_alias="CLOUDINARY_CLOUD_NAME",
+    )
+    cloudinary_api_key: str | None = Field(
+        default=None,
+        validation_alias="CLOUDINARY_API_KEY",
+    )
+    cloudinary_api_secret: str | None = Field(
+        default=None,
+        validation_alias="CLOUDINARY_API_SECRET",
+    )
 
 
 @lru_cache

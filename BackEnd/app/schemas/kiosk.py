@@ -39,6 +39,7 @@ class KioskRoomTypeRead(ORMBase):
     code: str
     price: Decimal
     amenities: List[str] = []
+    image_urls: List[str] = []
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -6,17 +6,27 @@ import {
   Users,
   Tag,
   Plus,
-  Trash2,
   X,
+  ImagePlus,
 } from "lucide-react";
 import ModalShell from "../../components/ui/ModalShell";
-import GlassInput from "../../components/ui/GlassInput";
 import Button from "../../components/ui/Button";
+
+interface RoomTypeFormData {
+  id?: string;
+  name: string;
+  code: string;
+  rate: number;
+  occupancy: number;
+  amenities: string[];
+  images: File[];
+}
 
 interface ManageRoomTypeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (typeData: any) => void;
+  onSave: (typeData: RoomTypeFormData) => Promise<void>;
+  onDeleteExistingImage?: (imageUrl: string) => Promise<void>;
   initialData?: any;
 }
 
@@ -26,40 +36,72 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  onDeleteExistingImage,
   initialData,
 }) => {
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
   const [rate, setRate] = useState("");
   const [occupancy, setOccupancy] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
   const [newAmenity, setNewAmenity] = useState("");
+  const [images, setImages] = useState<File[]>([]);
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deletingImageUrl, setDeletingImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
 
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
         setName(initialData.name);
+        setCode(initialData.code || "");
         setRate(initialData.rate || initialData.price); // Handle both old and new data structures
         setOccupancy(initialData.occupancy || initialData.maxGuests || 2); // Fallback for occupancy
         setAmenities(initialData.amenities || []);
+        setExistingImageUrls(initialData.imageUrls || []);
       } else {
         setName("");
+        setCode("");
         setRate("");
         setOccupancy("");
         setAmenities(["WiFi", "TV"]);
+        setExistingImageUrls([]);
       }
+      setSubmitError(null);
+      setImages([]);
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+      setPreviewUrls([]);
     }
   }, [isOpen, initialData]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      id: initialData?.id || Math.random().toString(36).substr(2, 9),
-      name,
-      rate: Number(rate),
-      occupancy: Number(occupancy),
-      amenities,
-    });
-    onClose();
+    setSubmitError(null);
+    setSaving(true);
+    try {
+      await onSave({
+        id: initialData?.id || Math.random().toString(36).substring(2, 9),
+        name,
+        code: code.trim().toUpperCase(),
+        rate: Number(rate),
+        occupancy: Number(occupancy),
+        amenities,
+        images,
+      });
+      onClose();
+    } catch (err: any) {
+      setSubmitError(err?.message || "Failed to save room type");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const addAmenity = () => {
@@ -71,6 +113,40 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
 
   const removeAmenity = (idx: number) => {
     setAmenities(amenities.filter((_, i) => i !== idx));
+  };
+
+  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files || []);
+    if (selected.length === 0) {
+      return;
+    }
+
+    const nextImages = [...images, ...selected];
+    if (existingImageUrls.length + nextImages.length > 5) {
+      setSubmitError("Maximum 5 images are allowed.");
+      e.target.value = "";
+      return;
+    }
+
+    setImages(nextImages);
+    setPreviewUrls((prev) => [...prev, ...selected.map((file) => URL.createObjectURL(file))]);
+    e.target.value = "";
+  };
+
+  const handleDeleteExistingImage = async (imageUrl: string) => {
+    if (!onDeleteExistingImage) {
+      return;
+    }
+    setSubmitError(null);
+    setDeletingImageUrl(imageUrl);
+    try {
+      await onDeleteExistingImage(imageUrl);
+      setExistingImageUrls((prev) => prev.filter((url) => url !== imageUrl));
+    } catch (err: any) {
+      setSubmitError(err?.message || "Failed to delete image");
+    } finally {
+      setDeletingImageUrl(null);
+    }
   };
 
   return (
@@ -100,15 +176,17 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
           </Button>
           <Button
             variant="primary"
-            onClick={handleSubmit}
+            type="submit"
+            form="manage-room-type-form"
             icon={<CheckCircle2 size={16} />}
+            disabled={saving}
           >
-            Save Definition
+            {saving ? "Saving..." : "Save Definition"}
           </Button>
         </div>
       }
     >
-      <form onSubmit={handleSubmit} className="p-8 space-y-6">
+      <form id="manage-room-type-form" onSubmit={handleSubmit} className="p-8 space-y-6">
         <div>
           <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">
             Category Name
@@ -127,6 +205,21 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
               required
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">
+            Category Code
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. OVS"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className={inputClass}
+            maxLength={60}
+            required
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-6">
@@ -211,6 +304,65 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
             ))}
           </div>
         </div>
+
+        <div>
+          <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">
+            Room Images (max 5)
+          </label>
+          <div className="space-y-3">
+            <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-black/20 text-gray-600 dark:text-gray-300 cursor-pointer hover:border-accent/50 transition-all">
+              <ImagePlus size={16} />
+              <span className="text-xs font-semibold">Select Images</span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImagesChange}
+                className="hidden"
+              />
+            </label>
+            {previewUrls.length > 0 && (
+              <div className="grid grid-cols-5 gap-2">
+                {previewUrls.map((url, index) => (
+                  <img
+                    key={`${url}-${index}`}
+                    src={url}
+                    alt={`Room preview ${index + 1}`}
+                    className="h-14 w-full object-cover rounded-lg border border-white/10"
+                  />
+                ))}
+              </div>
+            )}
+            {existingImageUrls.length > 0 && (
+              <div className="grid grid-cols-5 gap-2">
+                {existingImageUrls.map((url, index) => (
+                  <div key={`${url}-${index}`} className="relative">
+                    <img
+                      src={url}
+                      alt={`Existing room image ${index + 1}`}
+                      className="h-14 w-full object-cover rounded-lg border border-white/10"
+                    />
+                    {initialData?.id && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteExistingImage(url)}
+                        disabled={deletingImageUrl === url}
+                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-600 text-white flex items-center justify-center shadow-sm disabled:opacity-60"
+                        title="Delete image"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {submitError && (
+          <p className="text-xs font-semibold text-red-500">{submitError}</p>
+        )}
       </form>
     </ModalShell>
   );
