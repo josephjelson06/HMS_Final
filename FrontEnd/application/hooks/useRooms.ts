@@ -12,6 +12,8 @@ export interface RoomTypeData {
     name: string;
     code: string;
     price: number;
+    maxAdults: number;
+    maxChildren: number;
     amenities: string[];
     imageUrls: string[];
     images: RoomImageData[];
@@ -52,6 +54,10 @@ function mapRoom(item: any): RoomTypeData {
         name: item.name,
         code: item.code,
         price: Number(item.price),
+        maxAdults: Number(item.max_adults ?? item.maxAdults ?? 2),
+        maxChildren: Number(
+            item.max_children ?? item.max_childeren ?? item.maxChildren ?? 0
+        ),
         amenities: item.amenities || [],
         imageUrls: item.image_urls || item.imageUrls || images.map((image) => image.url),
         images,

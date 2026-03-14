@@ -54,6 +54,8 @@ const Rooms: React.FC = () => {
     formData.append("name", typeData.name);
     formData.append("code", typeData.code);
     formData.append("price", String(typeData.rate));
+    formData.append("max_adults", String(typeData.maxAdults ?? 2));
+    formData.append("max_children", String(typeData.maxChildren ?? 0));
 
     (typeData.amenities || []).forEach((amenity: string) => {
       formData.append("amenities", amenity);
@@ -267,7 +269,11 @@ const Rooms: React.FC = () => {
                         Max Guests
                       </p>
                       <p className="text-lg font-black dark:text-white flex items-center gap-1">
-                        {2} <Users size={14} className="text-gray-400" />
+                        {(Number(rt.maxAdults ?? 0) + Number(rt.maxChildren ?? 0)) || 0}{" "}
+                        <Users size={14} className="text-gray-400" />
+                      </p>
+                      <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
+                        A {Number(rt.maxAdults ?? 0)} / C {Number(rt.maxChildren ?? 0)}
                       </p>
                     </div>
                   </div>

@@ -54,6 +54,9 @@ def create_tenant_room(
     name: str = Form(...),
     code: str = Form(...),
     price: Decimal = Form(...),
+    max_adults: int = Form(2),
+    max_children: int = Form(0),
+    max_childeren: int | None = Form(None),
     amenities: List[str] | None = Form(None),
     images: List[UploadFile] | None = File(None),
     image_metadata: str | None = Form(None),
@@ -61,11 +64,14 @@ def create_tenant_room(
     _=Depends(require_permission("hotel:rooms:write")),
 ):
     service = TenantService(db)
+    effective_max_children = max_childeren if max_childeren is not None else max_children
     return service.create_room(
         tenant_id=tenant_id,
         name=name,
         code=code,
         price=price,
+        max_adults=max_adults,
+        max_children=effective_max_children,
         amenities=amenities or [],
         images=images or [],
         image_metadata=service._parse_image_metadata_json(image_metadata, "image_metadata"),
@@ -79,6 +85,9 @@ def update_tenant_room(
     name: str = Form(...),
     code: str = Form(...),
     price: Decimal = Form(...),
+    max_adults: int | None = Form(None),
+    max_children: int | None = Form(None),
+    max_childeren: int | None = Form(None),
     amenities: List[str] | None = Form(None),
     images: List[UploadFile] | None = File(None),
     existing_images: str | None = Form(None),
@@ -87,12 +96,19 @@ def update_tenant_room(
     _=Depends(require_permission("hotel:rooms:write")),
 ):
     service = TenantService(db)
+    effective_max_children = (
+        max_childeren
+        if max_childeren is not None
+        else max_children
+    )
     return service.update_room(
         tenant_id=tenant_id,
         room_type_id=room_type_id,
         name=name,
         code=code,
         price=price,
+        max_adults=max_adults,
+        max_children=effective_max_children,
         amenities=amenities or [],
         images=images or [],
         existing_image_metadata=service._parse_image_metadata_json(

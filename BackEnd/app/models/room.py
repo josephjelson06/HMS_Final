@@ -20,6 +20,16 @@ class RoomType(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     code: Mapped[str] = mapped_column(String(60), nullable=False)
     price: Mapped[Decimal] = mapped_column(nullable=False)
+    max_adults: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=2, server_default="2"
+    )
+    # Back-compat: the project has historically used both spellings in different places.
+    max_children: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    max_childeren: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
     amenities: Mapped[list[str]] = mapped_column(
         ARRAY(String), nullable=False, default=list, server_default="{}"
     )

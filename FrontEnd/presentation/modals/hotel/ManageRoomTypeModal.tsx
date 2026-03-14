@@ -30,7 +30,8 @@ interface RoomTypeFormData {
   name: string;
   code: string;
   rate: number;
-  occupancy: number;
+  maxAdults: number;
+  maxChildren: number;
   amenities: string[];
   existingImages: ExistingRoomImageFormData[];
   newImages: NewRoomImageFormData[];
@@ -56,7 +57,8 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [rate, setRate] = useState("");
-  const [occupancy, setOccupancy] = useState("");
+  const [maxAdults, setMaxAdults] = useState("");
+  const [maxChildren, setMaxChildren] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
   const [newAmenity, setNewAmenity] = useState("");
   const [newImages, setNewImages] = useState<NewRoomImageFormData[]>([]);
@@ -71,7 +73,17 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
         setName(initialData.name);
         setCode(initialData.code || "");
         setRate(initialData.rate || initialData.price); // Handle both old and new data structures
-        setOccupancy(initialData.occupancy || initialData.maxGuests || 2); // Fallback for occupancy
+        setMaxAdults(
+          String(initialData.maxAdults ?? initialData.max_adults ?? 2)
+        );
+        setMaxChildren(
+          String(
+            initialData.maxChildren ??
+              initialData.max_children ??
+              initialData.max_childeren ??
+              0
+          )
+        );
         setAmenities(initialData.amenities || []);
         setExistingImages(
           (initialData.images || []).map((image: RoomImageData, index: number) => ({
@@ -87,7 +99,8 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
         setName("");
         setCode("");
         setRate("");
-        setOccupancy("");
+        setMaxAdults("2");
+        setMaxChildren("0");
         setAmenities(["WiFi", "TV"]);
         setExistingImages([]);
       }
@@ -122,7 +135,8 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
         name,
         code: code.trim().toUpperCase(),
         rate: Number(rate),
-        occupancy: Number(occupancy),
+        maxAdults: Number(maxAdults),
+        maxChildren: Number(maxChildren),
         amenities,
         existingImages: normalizedExistingImages,
         newImages: normalizedNewImages,
@@ -412,7 +426,7 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">
               Base Rack Rate
@@ -434,7 +448,7 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
           </div>
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">
-              Max Occupancy
+              Max Adults
             </label>
             <div className="relative">
               <Users
@@ -444,9 +458,29 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
               <input
                 type="number"
                 placeholder="2"
-                value={occupancy}
-                onChange={(e) => setOccupancy(e.target.value)}
+                value={maxAdults}
+                onChange={(e) => setMaxAdults(e.target.value)}
                 className={`${inputClass} pl-11`}
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">
+              Max Children
+            </label>
+            <div className="relative">
+              <Users
+                size={16}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 z-10"
+              />
+              <input
+                type="number"
+                placeholder="0"
+                value={maxChildren}
+                onChange={(e) => setMaxChildren(e.target.value)}
+                className={`${inputClass} pl-11`}
+                min={0}
                 required
               />
             </div>

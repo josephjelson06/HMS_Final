@@ -235,6 +235,8 @@ class TenantService:
         name: str,
         code: str,
         price: Decimal,
+        max_adults: int = 2,
+        max_children: int = 0,
         amenities: Optional[List[str]] = None,
         images: Optional[List[UploadFile]] = None,
         image_metadata: Optional[List[dict[str, Any]]] = None,
@@ -268,6 +270,9 @@ class TenantService:
             name=name,
             code=code,
             price=price,
+            max_adults=max(0, int(max_adults or 0)),
+            max_children=max(0, int(max_children or 0)),
+            max_childeren=max(0, int(max_children or 0)),
             amenities=amenities or [],
             image_urls=[],
         )
@@ -287,6 +292,8 @@ class TenantService:
         name: str,
         code: str,
         price: Decimal,
+        max_adults: Optional[int] = None,
+        max_children: Optional[int] = None,
         amenities: Optional[List[str]] = None,
         images: Optional[List[UploadFile]] = None,
         existing_image_metadata: Optional[List[dict[str, Any]]] = None,
@@ -325,6 +332,12 @@ class TenantService:
         room.name = name
         room.code = code
         room.price = price
+        if max_adults is not None:
+            room.max_adults = max(0, int(max_adults))
+        if max_children is not None:
+            normalized_children = max(0, int(max_children))
+            room.max_children = normalized_children
+            room.max_childeren = normalized_children
         room.amenities = amenities or []
         self._update_existing_room_images(room, existing_image_metadata or [])
         if new_urls:

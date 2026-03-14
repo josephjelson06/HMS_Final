@@ -48,6 +48,10 @@ class KioskRoomTypeRead(ORMBase):
     name: str
     code: str
     price: Decimal
+    max_adults: int = 2
+    max_children: int = 0
+    # Back-compat for older DBs / typos (kept in sync by service layer).
+    max_childeren: int = 0
     amenities: List[str] = []
     image_urls: List[str] = []
     images: List[RoomImageRead] = []
