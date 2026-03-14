@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Plus, CheckCircle2, Users, Edit3, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/application/hooks/useAuth";
-import { useRooms } from "@/application/hooks/useRooms";
+import { useRooms, type RoomImageData } from "@/application/hooks/useRooms";
 import GlassCard from "../../components/ui/GlassCard";
 import PageHeader from "../../components/ui/PageHeader";
 import ManageRoomTypeModal from "../../modals/hotel/ManageRoomTypeModal";
@@ -36,6 +36,15 @@ const Rooms: React.FC = () => {
   });
   const [imageIndices, setImageIndices] = useState<Record<string, number>>({});
 
+  const getOrderedImages = (room: any): RoomImageData[] => {
+    const images = Array.isArray(room.images) ? [...room.images] : [];
+    return images.sort((a, b) => {
+      if (a.isPrimary && !b.isPrimary) return -1;
+      if (!a.isPrimary && b.isPrimary) return 1;
+      return a.displayOrder - b.displayOrder;
+    });
+  };
+
   const handleSaveRoomType = async (typeData: any) => {
     if (!tenantId) {
       throw new Error("Tenant context missing. Please login again.");
@@ -50,7 +59,48 @@ const Rooms: React.FC = () => {
       formData.append("amenities", amenity);
     });
 
-    (typeData.images || []).forEach((file: File) => {
+    formData.append(
+      "existing_images",
+      JSON.stringify(
+        (typeData.existingImages || []).map((image: RoomImageData, index: number) => ({
+          id: image.id,
+          caption: image.caption,
+          tags: image.tags,
+          category: image.category,
+          is_primary: image.isPrimary,
+          display_order: image.displayOrder ?? index,
+        }))
+      )
+    );
+
+    formData.append(
+      "new_image_metadata",
+      JSON.stringify(
+        (typeData.newImages || []).map((image: any, index: number) => ({
+          caption: image.caption,
+          tags: image.tags,
+          category: image.category,
+          is_primary: image.isPrimary,
+          display_order: image.displayOrder ?? index,
+        }))
+      )
+    );
+
+    formData.append(
+      "image_metadata",
+      JSON.stringify(
+        (typeData.newImages || []).map((image: any, index: number) => ({
+          caption: image.caption,
+          tags: image.tags,
+          category: image.category,
+          is_primary: image.isPrimary,
+          display_order: image.displayOrder ?? index,
+        }))
+      )
+    );
+
+    (typeData.newImages || []).forEach((image: any) => {
+      const file = image.file as File;
       formData.append("images", file);
     });
 
@@ -86,11 +136,11 @@ const Rooms: React.FC = () => {
     }
   };
 
-  const handleDeleteExistingImage = async (imageUrl: string) => {
+  const handleDeleteExistingImage = async (image: RoomImageData) => {
     if (!tenantId || !editingType?.id) {
       throw new Error("Room context missing. Please reopen and try again.");
     }
-    const updatedRoom = await deleteRoomImage(tenantId, editingType.id, imageUrl);
+    const updatedRoom = await deleteRoomImage(tenantId, editingType.id, image.id);
     setEditingType(updatedRoom);
     await fetchRooms(tenantId);
   };
@@ -146,24 +196,26 @@ const Rooms: React.FC = () => {
               </p>
             </button>
 
-            {rooms.map((rt) => (
+            {rooms.map((rt) => {
+              const orderedImages = getOrderedImages(rt);
+              return (
               <div
                 key={rt.id}
                 className="p-6 rounded-[2.5rem] bg-black/5 dark:bg-white/[0.02] border border-white/5 flex flex-col justify-between group hover:border-blue-500/30 transition-all min-h-[250px]"
               >
                 <div className="space-y-4">
-                  {rt.imageUrls && rt.imageUrls.length > 0 && (
+                  {orderedImages.length > 0 && (
                     <div className="relative">
                       <img
-                        src={rt.imageUrls[imageIndices[rt.id] ?? 0]}
+                        src={orderedImages[imageIndices[rt.id] ?? 0]?.url}
                         alt={`${rt.name} preview`}
                         className="w-full h-24 object-cover rounded-2xl border border-white/10"
                       />
-                      {rt.imageUrls.length > 1 && (
+                      {orderedImages.length > 1 && (
                         <>
                           <button
                             type="button"
-                            onClick={() => slideRoomImage(rt.id, rt.imageUrls.length, "prev")}
+                            onClick={() => slideRoomImage(rt.id, orderedImages.length, "prev")}
                             className="absolute left-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/75 transition-all"
                             aria-label="Previous image"
                           >
@@ -171,14 +223,14 @@ const Rooms: React.FC = () => {
                           </button>
                           <button
                             type="button"
-                            onClick={() => slideRoomImage(rt.id, rt.imageUrls.length, "next")}
+                            onClick={() => slideRoomImage(rt.id, orderedImages.length, "next")}
                             className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/75 transition-all"
                             aria-label="Next image"
                           >
                             <ChevronRight size={14} />
                           </button>
                           <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-black/60 text-white text-[9px] font-bold">
-                            {(imageIndices[rt.id] ?? 0) + 1}/{rt.imageUrls.length}
+                            {(imageIndices[rt.id] ?? 0) + 1}/{orderedImages.length}
                           </div>
                         </>
                       )}
@@ -261,7 +313,8 @@ const Rooms: React.FC = () => {
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </GlassCard>
       </div>

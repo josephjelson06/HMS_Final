@@ -11,6 +11,19 @@ import {
 } from "lucide-react";
 import ModalShell from "../../components/ui/ModalShell";
 import Button from "../../components/ui/Button";
+import type { RoomImageData } from "@/application/hooks/useRooms";
+
+interface ExistingRoomImageFormData extends RoomImageData {}
+
+interface NewRoomImageFormData {
+  file: File;
+  previewUrl: string;
+  caption: string;
+  tags: string[];
+  category: string;
+  isPrimary: boolean;
+  displayOrder: number;
+}
 
 interface RoomTypeFormData {
   id?: string;
@@ -19,14 +32,15 @@ interface RoomTypeFormData {
   rate: number;
   occupancy: number;
   amenities: string[];
-  images: File[];
+  existingImages: ExistingRoomImageFormData[];
+  newImages: NewRoomImageFormData[];
 }
 
 interface ManageRoomTypeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (typeData: RoomTypeFormData) => Promise<void>;
-  onDeleteExistingImage?: (imageUrl: string) => Promise<void>;
+  onDeleteExistingImage?: (image: ExistingRoomImageFormData) => Promise<void>;
   initialData?: any;
 }
 
@@ -45,18 +59,11 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
   const [occupancy, setOccupancy] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
   const [newAmenity, setNewAmenity] = useState("");
-  const [images, setImages] = useState<File[]>([]);
-  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<NewRoomImageFormData[]>([]);
+  const [existingImages, setExistingImages] = useState<ExistingRoomImageFormData[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [deletingImageUrl, setDeletingImageUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    return () => {
-      previewUrls.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [previewUrls]);
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -66,19 +73,29 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
         setRate(initialData.rate || initialData.price); // Handle both old and new data structures
         setOccupancy(initialData.occupancy || initialData.maxGuests || 2); // Fallback for occupancy
         setAmenities(initialData.amenities || []);
-        setExistingImageUrls(initialData.imageUrls || []);
+        setExistingImages(
+          (initialData.images || []).map((image: RoomImageData, index: number) => ({
+            ...image,
+            displayOrder: image.displayOrder ?? index,
+            caption: image.caption ?? "",
+            tags: Array.isArray(image.tags) ? image.tags : [],
+            category: image.category ?? "",
+            isPrimary: Boolean(image.isPrimary),
+          }))
+        );
       } else {
         setName("");
         setCode("");
         setRate("");
         setOccupancy("");
         setAmenities(["WiFi", "TV"]);
-        setExistingImageUrls([]);
+        setExistingImages([]);
       }
       setSubmitError(null);
-      setImages([]);
-      previewUrls.forEach((url) => URL.revokeObjectURL(url));
-      setPreviewUrls([]);
+      setNewImages((prev) => {
+        prev.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+        return [];
+      });
     }
   }, [isOpen, initialData]);
 
@@ -87,6 +104,19 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
     setSubmitError(null);
     setSaving(true);
     try {
+      const normalizedExistingImages = [...existingImages]
+        .sort((a, b) => a.displayOrder - b.displayOrder)
+        .map((image, index) => ({
+          ...image,
+          displayOrder: index,
+        }));
+      const normalizedNewImages = [...newImages]
+        .sort((a, b) => a.displayOrder - b.displayOrder)
+        .map((image, index) => ({
+          ...image,
+          displayOrder: normalizedExistingImages.length + index,
+        }));
+
       await onSave({
         id: initialData?.id || Math.random().toString(36).substring(2, 9),
         name,
@@ -94,7 +124,8 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
         rate: Number(rate),
         occupancy: Number(occupancy),
         amenities,
-        images,
+        existingImages: normalizedExistingImages,
+        newImages: normalizedNewImages,
       });
       onClose();
     } catch (err: any) {
@@ -121,32 +152,191 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
       return;
     }
 
-    const nextImages = [...images, ...selected];
-    if (existingImageUrls.length + nextImages.length > 5) {
+    if (existingImages.length + newImages.length + selected.length > 5) {
       setSubmitError("Maximum 5 images are allowed.");
       e.target.value = "";
       return;
     }
 
-    setImages(nextImages);
-    setPreviewUrls((prev) => [...prev, ...selected.map((file) => URL.createObjectURL(file))]);
+    setNewImages((prev) => [
+      ...prev,
+      ...selected.map((file, index) => ({
+        file,
+        previewUrl: URL.createObjectURL(file),
+        caption: "",
+        tags: [],
+        category: "",
+        isPrimary: existingImages.length === 0 && prev.length + index === 0,
+        displayOrder: existingImages.length + prev.length + index,
+      })),
+    ]);
     e.target.value = "";
   };
 
-  const handleDeleteExistingImage = async (imageUrl: string) => {
+  const handleDeleteExistingImage = async (image: ExistingRoomImageFormData) => {
     if (!onDeleteExistingImage) {
       return;
     }
     setSubmitError(null);
-    setDeletingImageUrl(imageUrl);
+    setDeletingImageId(image.id);
     try {
-      await onDeleteExistingImage(imageUrl);
-      setExistingImageUrls((prev) => prev.filter((url) => url !== imageUrl));
+      await onDeleteExistingImage(image);
+      setExistingImages((prev) => prev.filter((item) => item.id !== image.id));
     } catch (err: any) {
       setSubmitError(err?.message || "Failed to delete image");
     } finally {
-      setDeletingImageUrl(null);
+      setDeletingImageId(null);
     }
+  };
+
+  const updateExistingImage = (
+    imageId: string,
+    key: keyof ExistingRoomImageFormData,
+    value: string | boolean | string[] | number
+  ) => {
+    setExistingImages((prev) =>
+      prev.map((image) => {
+        if (image.id !== imageId) {
+          return key === "isPrimary" && value === true ? { ...image, isPrimary: false } : image;
+        }
+        return {
+          ...image,
+          [key]: value,
+          ...(key === "isPrimary" && value === true ? { isPrimary: true } : {}),
+        };
+      })
+    );
+    if (key === "isPrimary" && value === true) {
+      setNewImages((prev) => prev.map((image) => ({ ...image, isPrimary: false })));
+    }
+  };
+
+  const updateNewImage = (
+    previewUrl: string,
+    key: keyof NewRoomImageFormData,
+    value: string | boolean | string[] | number
+  ) => {
+    setNewImages((prev) =>
+      prev.map((image) => {
+        if (image.previewUrl !== previewUrl) {
+          return key === "isPrimary" && value === true ? { ...image, isPrimary: false } : image;
+        }
+        return {
+          ...image,
+          [key]: value,
+          ...(key === "isPrimary" && value === true ? { isPrimary: true } : {}),
+        };
+      })
+    );
+    if (key === "isPrimary" && value === true) {
+      setExistingImages((prev) => prev.map((image) => ({ ...image, isPrimary: false })));
+    }
+  };
+
+  const removeNewImage = (previewUrl: string) => {
+    setNewImages((prev) => {
+      const target = prev.find((image) => image.previewUrl === previewUrl);
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+      return prev.filter((image) => image.previewUrl !== previewUrl);
+    });
+  };
+
+  const renderImageEditor = (
+    image: ExistingRoomImageFormData | NewRoomImageFormData,
+    source: "existing" | "new"
+  ) => {
+    const identifier =
+      source === "existing"
+        ? (image as ExistingRoomImageFormData).id
+        : (image as NewRoomImageFormData).previewUrl;
+    const imageUrl =
+      source === "existing"
+        ? (image as ExistingRoomImageFormData).url
+        : (image as NewRoomImageFormData).previewUrl;
+    const handleUpdate =
+      source === "existing"
+        ? updateExistingImage
+        : updateNewImage;
+
+    return (
+      <div key={identifier} className="rounded-2xl border border-white/10 bg-black/5 dark:bg-white/[0.03] p-3 space-y-3">
+        <div className="relative">
+          <img
+            src={imageUrl}
+            alt="Room"
+            className="h-24 w-full object-cover rounded-xl border border-white/10"
+          />
+          <button
+            type="button"
+            onClick={() =>
+              source === "existing"
+                ? handleDeleteExistingImage(image as ExistingRoomImageFormData)
+                : removeNewImage((image as NewRoomImageFormData).previewUrl)
+            }
+            disabled={source === "existing" && deletingImageId === (image as ExistingRoomImageFormData).id}
+            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-red-600 text-white flex items-center justify-center disabled:opacity-60"
+            title="Remove image"
+          >
+            <X size={12} />
+          </button>
+        </div>
+
+        <input
+          type="number"
+          min={0}
+          placeholder="Sort order"
+          value={image.displayOrder}
+          onChange={(e) =>
+            handleUpdate(identifier, "displayOrder", Number(e.target.value || 0))
+          }
+          className={inputClass}
+        />
+
+        <input
+          type="text"
+          placeholder="Caption"
+          value={image.caption ?? ""}
+          onChange={(e) => handleUpdate(identifier, "caption", e.target.value)}
+          className={inputClass}
+        />
+
+        <input
+          type="text"
+          placeholder="Tags (comma separated)"
+          value={(image.tags || []).join(", ")}
+          onChange={(e) =>
+            handleUpdate(
+              identifier,
+              "tags",
+              e.target.value
+                .split(",")
+                .map((tag) => tag.trim().toLowerCase())
+                .filter(Boolean)
+            )
+          }
+          className={inputClass}
+        />
+
+        <input
+          type="text"
+          placeholder="Category (e.g. balcony)"
+          value={image.category ?? ""}
+          onChange={(e) => handleUpdate(identifier, "category", e.target.value)}
+          className={inputClass}
+        />
+
+        <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+          <input
+            type="checkbox"
+            checked={Boolean(image.isPrimary)}
+            onChange={(e) => handleUpdate(identifier, "isPrimary", e.target.checked)}
+          />
+          Primary image
+        </label>
+      </div>
+    );
   };
 
   return (
@@ -321,40 +511,28 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
                 className="hidden"
               />
             </label>
-            {previewUrls.length > 0 && (
-              <div className="grid grid-cols-5 gap-2">
-                {previewUrls.map((url, index) => (
-                  <img
-                    key={`${url}-${index}`}
-                    src={url}
-                    alt={`Room preview ${index + 1}`}
-                    className="h-14 w-full object-cover rounded-lg border border-white/10"
-                  />
-                ))}
-              </div>
-            )}
-            {existingImageUrls.length > 0 && (
-              <div className="grid grid-cols-5 gap-2">
-                {existingImageUrls.map((url, index) => (
-                  <div key={`${url}-${index}`} className="relative">
-                    <img
-                      src={url}
-                      alt={`Existing room image ${index + 1}`}
-                      className="h-14 w-full object-cover rounded-lg border border-white/10"
-                    />
-                    {initialData?.id && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteExistingImage(url)}
-                        disabled={deletingImageUrl === url}
-                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-600 text-white flex items-center justify-center shadow-sm disabled:opacity-60"
-                        title="Delete image"
-                      >
-                        <X size={12} />
-                      </button>
-                    )}
+            {(existingImages.length > 0 || newImages.length > 0) && (
+              <div className="space-y-4">
+                {existingImages.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                      Existing images
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {existingImages.map((image) => renderImageEditor(image, "existing"))}
+                    </div>
                   </div>
-                ))}
+                )}
+                {newImages.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                      New uploads
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {newImages.map((image) => renderImageEditor(image, "new"))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

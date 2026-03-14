@@ -56,6 +56,7 @@ def create_tenant_room(
     price: Decimal = Form(...),
     amenities: List[str] | None = Form(None),
     images: List[UploadFile] | None = File(None),
+    image_metadata: str | None = Form(None),
     db: Session = Depends(get_db),
     _=Depends(require_permission("hotel:rooms:write")),
 ):
@@ -67,6 +68,7 @@ def create_tenant_room(
         price=price,
         amenities=amenities or [],
         images=images or [],
+        image_metadata=service._parse_image_metadata_json(image_metadata, "image_metadata"),
     )
 
 
@@ -79,6 +81,8 @@ def update_tenant_room(
     price: Decimal = Form(...),
     amenities: List[str] | None = Form(None),
     images: List[UploadFile] | None = File(None),
+    existing_images: str | None = Form(None),
+    new_image_metadata: str | None = Form(None),
     db: Session = Depends(get_db),
     _=Depends(require_permission("hotel:rooms:write")),
 ):
@@ -91,6 +95,12 @@ def update_tenant_room(
         price=price,
         amenities=amenities or [],
         images=images or [],
+        existing_image_metadata=service._parse_image_metadata_json(
+            existing_images, "existing_images"
+        ),
+        new_image_metadata=service._parse_image_metadata_json(
+            new_image_metadata, "new_image_metadata"
+        ),
     )
 
 
@@ -106,11 +116,14 @@ def delete_tenant_room(
     return {"message": "Room type deleted", "deleted_bookings": deleted_bookings}
 
 
-@router.delete("/{tenant_id}/rooms/{room_type_id}/images", response_model=KioskRoomTypeRead)
+@router.delete(
+    "/{tenant_id}/rooms/{room_type_id}/images/{image_id}",
+    response_model=KioskRoomTypeRead,
+)
 def delete_tenant_room_image(
     tenant_id: UUID,
     room_type_id: UUID,
-    image_url: str,
+    image_id: UUID,
     db: Session = Depends(get_db),
     _=Depends(require_permission("hotel:rooms:write")),
 ):
@@ -118,7 +131,7 @@ def delete_tenant_room_image(
     return service.delete_room_image(
         tenant_id=tenant_id,
         room_type_id=room_type_id,
-        image_url=image_url,
+        image_id=image_id,
     )
 
 

@@ -33,6 +33,16 @@ class KioskTenantRead(ORMBase):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
+class RoomImageRead(ORMBase):
+    id: UUID
+    url: str
+    display_order: int
+    caption: Optional[str] = None
+    tags: List[str] = []
+    category: Optional[str] = None
+    is_primary: bool = False
+
+
 class KioskRoomTypeRead(ORMBase):
     id: UUID
     name: str
@@ -40,6 +50,7 @@ class KioskRoomTypeRead(ORMBase):
     price: Decimal
     amenities: List[str] = []
     image_urls: List[str] = []
+    images: List[RoomImageRead] = []
 
 
 # ─────────────────────────────────────────────────────────────────────────────

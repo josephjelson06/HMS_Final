@@ -14,6 +14,17 @@ export interface RoomTypeData {
     price: number;
     amenities: string[];
     imageUrls: string[];
+    images: RoomImageData[];
+}
+
+export interface RoomImageData {
+    id: string;
+    url: string;
+    displayOrder: number;
+    caption: string | null;
+    tags: string[];
+    category: string | null;
+    isPrimary: boolean;
 }
 
 const ROOM_TYPES_STORE = 'roomTypes';
@@ -24,13 +35,26 @@ type RoomTypeMutationPayload = Partial<Omit<RoomTypeData, 'id'>> & {
 };
 
 function mapRoom(item: any): RoomTypeData {
+    const images = Array.isArray(item.images)
+        ? item.images.map((image: any, index: number) => ({
+            id: String(image.id),
+            url: image.url,
+            displayOrder: Number(image.display_order ?? image.displayOrder ?? index),
+            caption: image.caption ?? null,
+            tags: Array.isArray(image.tags) ? image.tags : [],
+            category: image.category ?? null,
+            isPrimary: Boolean(image.is_primary ?? image.isPrimary),
+        }))
+        : [];
+
     return {
         id: String(item.id),
         name: item.name,
         code: item.code,
         price: Number(item.price),
         amenities: item.amenities || [],
-        imageUrls: item.image_urls || item.imageUrls || [],
+        imageUrls: item.image_urls || item.imageUrls || images.map((image) => image.url),
+        images,
     };
 }
 
@@ -82,10 +106,8 @@ export function useRooms() {
         await deleteCacheKey(ROOM_TYPES_STORE, tenantKey(tenantId, ROOM_TYPES_STORE));
     }, []);
 
-    const deleteRoomImage = useCallback(async (tenantId: string, roomTypeId: string, imageUrl: string) => {
-        const updated = await httpClient.delete<any>(`api/tenants/${tenantId}/rooms/${roomTypeId}/images`, {
-            params: { image_url: imageUrl },
-        });
+    const deleteRoomImage = useCallback(async (tenantId: string, roomTypeId: string, imageId: string) => {
+        const updated = await httpClient.delete<any>(`api/tenants/${tenantId}/rooms/${roomTypeId}/images/${imageId}`);
         await deleteCacheKey(ROOM_TYPES_STORE, tenantKey(tenantId, ROOM_TYPES_STORE));
         return mapRoom(updated);
     }, []);
