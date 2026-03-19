@@ -10,6 +10,7 @@ import {
   User,
   HelpCircle,
   LifeBuoy,
+  Settings,
   PanelLeftClose,
   PanelLeft,
   X,
@@ -251,6 +252,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                           label="FAQs"
                           active={currentRoute === "faq"}
                           onClick={() => onNavigate("faq")}
+                          collapsed={isCollapsed}
+                        />
+                      )}
+                      {hasPerm("hotel:config:read") && (
+                        <SidebarItem
+                          icon={Settings}
+                          label="Settings"
+                          active={currentRoute === "hotel-settings"}
+                          onClick={() => onNavigate("hotel-settings")}
                           collapsed={isCollapsed}
                         />
                       )}

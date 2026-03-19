@@ -1,14 +1,23 @@
 from uuid import UUID
 from typing import List
 from decimal import Decimal
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.tenant import TenantRead, TenantCreate, TenantConfigRead
+from app.schemas.tenant import (
+    TenantRead,
+    TenantCreate,
+    TenantConfigRead,
+    TenantConfigUpdate,
+)
 from app.schemas.kiosk import KioskRoomTypeRead, KioskBookingRead
 from app.services.tenant_service import TenantService
 from app.modules.rbac import require_permission
+from app.core.auth.dependencies import get_current_user
+from app.models.platform import PlatformUser
+from app.models.tenant import TenantUser
 
 router = APIRouter(prefix="/api/tenants", tags=["Tenants"])
 
@@ -159,6 +168,48 @@ def get_tenant_bookings(
 ):
     service = TenantService(db)
     return service.get_bookings(tenant_id)
+
+
+@router.patch("/me/config", response_model=TenantConfigRead)
+def update_my_tenant_config(
+    payload: TenantConfigUpdate,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:config:write")),
+    current_user: PlatformUser | TenantUser = Depends(get_current_user),
+):
+    tenant_id = getattr(current_user, "tenant_id", None)
+    if not tenant_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only tenant users can update tenant config.",
+        )
+
+    service = TenantService(db)
+    config = service.get_config(tenant_id)
+    if not config:
+        raise HTTPException(status_code=404, detail="Tenant config not found")
+
+    updates = payload.model_dump(exclude_unset=True)
+    non_nullable_fields = {
+        "timezone",
+        "check_in_time",
+        "check_out_time",
+        "default_lang",
+        "available_lang",
+        "extra",
+    }
+    for field, value in updates.items():
+        if field in non_nullable_fields and value is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"{field} cannot be null",
+            )
+        setattr(config, field, value)
+
+    config.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(config)
+    return config
 
 
 @router.get("/{tenant_id}/config", response_model=TenantConfigRead)

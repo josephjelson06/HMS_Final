@@ -49,3 +49,16 @@ class TenantConfigRead(ORMBase):
     support_phone: str | None = None
     support_email: str | None = None
     extra: dict
+
+
+class TenantConfigUpdate(BaseModel):
+    timezone: str | None = None
+    check_in_time: str | None = None
+    check_out_time: str | None = None
+    default_lang: str | None = None
+    available_lang: list[str] | None = None
+    welcome_message: str | None = None
+    logo_url: str | None = None
+    support_phone: str | None = None
+    support_email: str | None = None
+    extra: dict | None = None

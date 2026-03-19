@@ -16,6 +16,7 @@ export function pathnameToLegacyRoute(pathname: string): string {
       case "plans": return "plans";
       case "subscriptions": return "subscriptions";
       case "users": return "users-mgmt";
+      case "settings": return "platform-settings";
       // Dead routes removed: kiosks, invoices, reports, audit-logs, settings
       case "reports":
         return "reports";
@@ -36,6 +37,7 @@ export function pathnameToLegacyRoute(pathname: string): string {
       case "rooms": return "rooms";
       case "guests": return "guests";
       case "faq": return "faq";
+      case "settings": return "hotel-settings";
       case "reports":
         return "reports";
       default:
@@ -56,6 +58,7 @@ export function legacyRouteToPath(route: string, viewMode: ViewMode): string {
       case "plans": return "/super/plans";
       case "subscriptions": return "/super/subscriptions";
       case "users-mgmt": return "/super/users";
+      case "platform-settings": return "/super/settings";
       case "reports":
         return "/super/reports";
       case "helpdesk": return "/super/helpdesk";
@@ -76,6 +79,7 @@ export function legacyRouteToPath(route: string, viewMode: ViewMode): string {
     case "rooms": return "/hotel/rooms";
     case "guests": return "/hotel/guests";
     case "faq": return "/hotel/faq";
+    case "hotel-settings": return "/hotel/settings";
     default: return "/hotel/dashboard";
   }
 }
