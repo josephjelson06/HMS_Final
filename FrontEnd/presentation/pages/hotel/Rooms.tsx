@@ -21,6 +21,9 @@ const Rooms: React.FC = () => {
     categories,
     fetchCategories,
     createCategory,
+    updateCategory,
+    uploadCategoryImages,
+    deleteCategoryImage,
     deleteCategory,
     loading: categoriesLoading,
   } = useRoomCategories();
@@ -177,6 +180,33 @@ const Rooms: React.FC = () => {
     }
     await deleteCategory(tenantId, categoryId);
     await Promise.all([fetchCategories(tenantId, true), fetchRooms(tenantId)]);
+  };
+
+  const handleUpdateCategory = async (
+    categoryId: string,
+    payload: { name?: string; description?: string | null; display_order?: number }
+  ) => {
+    if (!tenantId) {
+      throw new Error("Tenant context missing. Please login again.");
+    }
+    await updateCategory(tenantId, categoryId, payload);
+    await fetchCategories(tenantId, true);
+  };
+
+  const handleUploadCategoryImages = async (categoryId: string, files: File[]) => {
+    if (!tenantId) {
+      throw new Error("Tenant context missing. Please login again.");
+    }
+    await uploadCategoryImages(tenantId, categoryId, files);
+    await fetchCategories(tenantId, true);
+  };
+
+  const handleDeleteCategoryImage = async (categoryId: string, imageUrl: string) => {
+    if (!tenantId) {
+      throw new Error("Tenant context missing. Please login again.");
+    }
+    await deleteCategoryImage(tenantId, categoryId, imageUrl);
+    await fetchCategories(tenantId, true);
   };
 
   const slideRoomImage = (roomId: string, total: number, direction: "next" | "prev") => {
@@ -378,6 +408,9 @@ const Rooms: React.FC = () => {
         categories={categories}
         loading={categoriesLoading}
         onCreate={handleCreateCategory}
+        onUpdate={handleUpdateCategory}
+        onUploadImages={handleUploadCategoryImages}
+        onDeleteImage={handleDeleteCategoryImage}
         onDelete={handleDeleteCategory}
       />
 

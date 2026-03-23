@@ -119,6 +119,7 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
     }
   }, [isOpen, initialData]);
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
@@ -264,6 +265,7 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
       return prev.filter((image) => image.previewUrl !== previewUrl);
     });
   };
+
 
   const renderImageEditor = (
     image: ExistingRoomImageFormData | NewRoomImageFormData,

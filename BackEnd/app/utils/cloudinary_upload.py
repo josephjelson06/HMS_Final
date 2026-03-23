@@ -34,12 +34,11 @@ def _configure_cloudinary() -> None:
     )
 
 
-def upload_room_images(images: List[UploadFile], tenant_id: str) -> List[str]:
+def _upload_images(images: List[UploadFile], folder: str) -> List[str]:
     _configure_cloudinary()
 
     uploaded_public_ids: List[str] = []
     uploaded_urls: List[str] = []
-    folder = f"hms/tenants/{tenant_id}/rooms"
 
     try:
         for image in images:
@@ -59,6 +58,16 @@ def upload_room_images(images: List[UploadFile], tenant_id: str) -> List[str]:
         raise CloudinaryUploadError("Failed to upload room images to Cloudinary.") from exc
 
     return uploaded_urls
+
+
+def upload_room_images(images: List[UploadFile], tenant_id: str) -> List[str]:
+    folder = f"hms/tenants/{tenant_id}/rooms"
+    return _upload_images(images, folder)
+
+
+def upload_room_category_images(images: List[UploadFile], tenant_id: str) -> List[str]:
+    folder = f"hms/tenants/{tenant_id}/room-categories"
+    return _upload_images(images, folder)
 
 
 def _extract_public_id_from_cloudinary_url(image_url: str) -> str:

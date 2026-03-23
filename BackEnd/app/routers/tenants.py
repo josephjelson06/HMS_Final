@@ -122,6 +122,36 @@ def delete_tenant_room_category(
     return None
 
 
+@router.post(
+    "/{tenant_id}/categories/{category_id}/images",
+    response_model=RoomCategoryRead,
+)
+def upload_tenant_room_category_images(
+    tenant_id: UUID,
+    category_id: UUID,
+    images: List[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:rooms:write")),
+):
+    service = TenantService(db)
+    return service.upload_room_category_images(tenant_id, category_id, images)
+
+
+@router.delete(
+    "/{tenant_id}/categories/{category_id}/images",
+    response_model=RoomCategoryRead,
+)
+def delete_tenant_room_category_image(
+    tenant_id: UUID,
+    category_id: UUID,
+    image_url: str,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:rooms:write")),
+):
+    service = TenantService(db)
+    return service.delete_room_category_image(tenant_id, category_id, image_url)
+
+
 @router.post("/{tenant_id}/rooms", response_model=KioskRoomTypeRead)
 def create_tenant_room(
     tenant_id: UUID,

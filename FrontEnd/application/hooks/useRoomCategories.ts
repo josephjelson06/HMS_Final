@@ -13,12 +13,14 @@ export interface RoomCategoryData {
   tenantId?: string;
   name: string;
   description: string | null;
+  imageUrls: string[];
   displayOrder: number;
 }
 
 export interface RoomCategoryMutationPayload {
   name: string;
   description?: string | null;
+  image_urls?: string[];
   display_order?: number;
 }
 
@@ -31,6 +33,11 @@ function mapCategory(item: any): RoomCategoryData {
     tenantId: item.tenant_id ?? item.tenantId,
     name: item.name,
     description: item.description ?? null,
+    imageUrls: Array.isArray(item.image_urls)
+      ? item.image_urls.filter(Boolean)
+      : Array.isArray(item.imageUrls)
+      ? item.imageUrls.filter(Boolean)
+      : [],
     displayOrder: Number(item.display_order ?? item.displayOrder ?? 0),
   };
 }
@@ -118,6 +125,43 @@ export function useRoomCategories() {
     [categories, refreshLocal]
   );
 
+  const uploadCategoryImages = useCallback(
+    async (tenantId: string, categoryId: string, files: File[]) => {
+      if (!files.length) {
+        throw new Error("Please select at least one image.");
+      }
+      const formData = new FormData();
+      files.forEach((file) => formData.append("images", file));
+      const updated = await httpClient.post<any>(
+        `api/tenants/${tenantId}/categories/${categoryId}/images`,
+        formData
+      );
+      await deleteCacheKey(ROOM_CATEGORIES_STORE, tenantKey(tenantId, ROOM_CATEGORIES_STORE));
+      const mapped = mapCategory(updated);
+      refreshLocal(
+        categories.map((item) => (item.id === categoryId ? mapped : item))
+      );
+      return mapped;
+    },
+    [categories, refreshLocal]
+  );
+
+  const deleteCategoryImage = useCallback(
+    async (tenantId: string, categoryId: string, imageUrl: string) => {
+      const encoded = encodeURIComponent(imageUrl);
+      const updated = await httpClient.delete<any>(
+        `api/tenants/${tenantId}/categories/${categoryId}/images?image_url=${encoded}`
+      );
+      await deleteCacheKey(ROOM_CATEGORIES_STORE, tenantKey(tenantId, ROOM_CATEGORIES_STORE));
+      const mapped = mapCategory(updated);
+      refreshLocal(
+        categories.map((item) => (item.id === categoryId ? mapped : item))
+      );
+      return mapped;
+    },
+    [categories, refreshLocal]
+  );
+
   const deleteCategory = useCallback(
     async (tenantId: string, categoryId: string) => {
       await httpClient.delete(`api/tenants/${tenantId}/categories/${categoryId}`);
@@ -134,6 +178,8 @@ export function useRoomCategories() {
     fetchCategories,
     createCategory,
     updateCategory,
+    uploadCategoryImages,
+    deleteCategoryImage,
     deleteCategory,
   };
 }

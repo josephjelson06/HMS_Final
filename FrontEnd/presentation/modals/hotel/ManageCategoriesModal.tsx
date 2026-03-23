@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ListTree, Plus, Trash2 } from "lucide-react";
+import { BedDouble, ListTree, Plus, Save, Trash2, Upload } from "lucide-react";
 
 import Button from "../../components/ui/Button";
 import ModalShell from "../../components/ui/ModalShell";
@@ -16,6 +16,12 @@ interface ManageCategoriesModalProps {
     display_order?: number;
   }) => Promise<void>;
   onDelete: (categoryId: string) => Promise<void>;
+  onUpdate: (
+    categoryId: string,
+    payload: { name?: string; description?: string | null; display_order?: number }
+  ) => Promise<void>;
+  onUploadImages: (categoryId: string, files: File[]) => Promise<void>;
+  onDeleteImage: (categoryId: string, imageUrl: string) => Promise<void>;
 }
 
 const inputClass =
@@ -28,6 +34,9 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
   loading = false,
   onCreate,
   onDelete,
+  onUpdate,
+  onUploadImages,
+  onDeleteImage,
 }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -35,6 +44,12 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [deletingImageKey, setDeletingImageKey] = useState<string | null>(null);
+  const [editingState, setEditingState] = useState<
+    Record<string, { name: string; description: string; displayOrder: string }>
+  >({});
 
   useEffect(() => {
     if (!isOpen) {
@@ -58,6 +73,18 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
       }),
     [categories]
   );
+
+  useEffect(() => {
+    const next: Record<string, { name: string; description: string; displayOrder: string }> = {};
+    sortedCategories.forEach((category) => {
+      next[category.id] = {
+        name: category.name,
+        description: category.description ?? "",
+        displayOrder: String(category.displayOrder ?? 0),
+      };
+    });
+    setEditingState(next);
+  }, [sortedCategories]);
 
   const submitCreate = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -93,6 +120,62 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
       setError(err?.message || "Failed to delete category");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleSave = async (categoryId: string) => {
+    const edit = editingState[categoryId];
+    if (!edit) return;
+    setError(null);
+    setSavingId(categoryId);
+    try {
+      await onUpdate(categoryId, {
+        name: edit.name.trim(),
+        description: edit.description.trim() || null,
+        display_order: Number(edit.displayOrder || "0"),
+      });
+    } catch (err: any) {
+      setError(err?.message || "Failed to update category");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const handleSelectImages = async (
+    category: RoomCategoryData,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const selected = Array.from(event.target.files || []);
+    event.target.value = "";
+    if (selected.length === 0) return;
+
+    const remaining = Math.max(0, 3 - (category.imageUrls?.length ?? 0));
+    if (remaining <= 0) {
+      setError("Maximum 3 images are allowed per category.");
+      return;
+    }
+    const files = selected.slice(0, remaining);
+    setError(null);
+    setUploadingId(category.id);
+    try {
+      await onUploadImages(category.id, files);
+    } catch (err: any) {
+      setError(err?.message || "Failed to upload category images");
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
+  const handleDeleteImage = async (categoryId: string, imageUrl: string) => {
+    const key = `${categoryId}::${imageUrl}`;
+    setError(null);
+    setDeletingImageKey(key);
+    try {
+      await onDeleteImage(categoryId, imageUrl);
+    } catch (err: any) {
+      setError(err?.message || "Failed to delete category image");
+    } finally {
+      setDeletingImageKey(null);
     }
   };
 
@@ -173,28 +256,141 @@ const ManageCategoriesModal: React.FC<ManageCategoriesModalProps> = ({
               {sortedCategories.map((category) => (
                 <div
                   key={category.id}
-                  className="flex items-center justify-between rounded-xl border border-white/10 bg-white/30 dark:bg-black/20 px-4 py-3"
+                  className="rounded-xl border border-white/10 bg-white/30 dark:bg-black/20 px-4 py-4 space-y-4"
                 >
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
-                      {category.name}
-                    </p>
-                    <p className="text-[11px] text-gray-500 truncate">
-                      {category.description || "No description"}
-                    </p>
-                    <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400">
-                      Order: {category.displayOrder}
-                    </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <input
+                      type="text"
+                      value={editingState[category.id]?.name ?? ""}
+                      onChange={(e) =>
+                        setEditingState((prev) => ({
+                          ...prev,
+                          [category.id]: {
+                            ...(prev[category.id] || {
+                              name: category.name,
+                              description: category.description ?? "",
+                              displayOrder: String(category.displayOrder ?? 0),
+                            }),
+                            name: e.target.value,
+                          },
+                        }))
+                      }
+                      className={inputClass}
+                      placeholder="Category name"
+                    />
+                    <input
+                      type="text"
+                      value={editingState[category.id]?.description ?? ""}
+                      onChange={(e) =>
+                        setEditingState((prev) => ({
+                          ...prev,
+                          [category.id]: {
+                            ...(prev[category.id] || {
+                              name: category.name,
+                              description: category.description ?? "",
+                              displayOrder: String(category.displayOrder ?? 0),
+                            }),
+                            description: e.target.value,
+                          },
+                        }))
+                      }
+                      className={inputClass}
+                      placeholder="Description"
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      value={editingState[category.id]?.displayOrder ?? "0"}
+                      onChange={(e) =>
+                        setEditingState((prev) => ({
+                          ...prev,
+                          [category.id]: {
+                            ...(prev[category.id] || {
+                              name: category.name,
+                              description: category.description ?? "",
+                              displayOrder: String(category.displayOrder ?? 0),
+                            }),
+                            displayOrder: e.target.value,
+                          },
+                        }))
+                      }
+                      className={inputClass}
+                      placeholder="Display order"
+                    />
                   </div>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    icon={<Trash2 size={12} />}
-                    onClick={() => handleDelete(category.id)}
-                    disabled={deletingId === category.id}
-                  >
-                    {deletingId === category.id ? "Deleting..." : "Delete"}
-                  </Button>
+
+                  <div className="space-y-2">
+                    <p className="text-[10px] uppercase font-bold tracking-widest text-gray-500">
+                      Category Images (max 3)
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {(category.imageUrls || []).map((imageUrl) => {
+                        const imageKey = `${category.id}::${imageUrl}`;
+                        const imageDeleting = deletingImageKey === imageKey;
+                        return (
+                          <div
+                            key={imageUrl}
+                            className="relative rounded-xl overflow-hidden border border-white/10"
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`${category.name} category`}
+                              className="h-24 w-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              className="absolute top-1 right-1 h-6 w-6 rounded-full bg-red-600 text-white flex items-center justify-center disabled:opacity-60"
+                              onClick={() => handleDeleteImage(category.id, imageUrl)}
+                              disabled={imageDeleting}
+                              title="Delete image"
+                            >
+                              <Trash2 size={11} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {(category.imageUrls || []).length < 3 && (
+                        <label className="h-24 rounded-xl border border-dashed border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-black/20 text-gray-600 dark:text-gray-300 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-accent/50 transition-all text-[10px] font-semibold uppercase tracking-wider">
+                          <Upload size={14} />
+                          {uploadingId === category.id ? "Uploading..." : "Upload"}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(event) => handleSelectImages(category, event)}
+                            disabled={uploadingId === category.id}
+                          />
+                        </label>
+                      )}
+                      {(category.imageUrls || []).length === 0 && (
+                        <div className="h-24 rounded-xl border border-dashed border-white/20 bg-gradient-to-br from-slate-700/30 via-slate-500/20 to-slate-400/10 text-gray-400 flex items-center justify-center">
+                          <BedDouble size={20} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={<Save size={12} />}
+                      onClick={() => handleSave(category.id)}
+                      disabled={savingId === category.id}
+                    >
+                      {savingId === category.id ? "Saving..." : "Save"}
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      icon={<Trash2 size={12} />}
+                      onClick={() => handleDelete(category.id)}
+                      disabled={deletingId === category.id}
+                    >
+                      {deletingId === category.id ? "Deleting..." : "Delete"}
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

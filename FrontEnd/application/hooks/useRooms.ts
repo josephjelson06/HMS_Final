@@ -36,6 +36,7 @@ export interface RoomCategorySummary {
     tenantId?: string;
     name: string;
     description: string | null;
+    imageUrls: string[];
     displayOrder: number;
 }
 
@@ -70,6 +71,11 @@ function mapRoom(item: any): RoomTypeData {
                 tenantId: item.category.tenant_id ?? item.category.tenantId,
                 name: item.category.name,
                 description: item.category.description ?? null,
+                imageUrls: Array.isArray(item.category.image_urls)
+                    ? item.category.image_urls.filter(Boolean)
+                    : Array.isArray(item.category.imageUrls)
+                    ? item.category.imageUrls.filter(Boolean)
+                    : [],
                 displayOrder: Number(
                     item.category.display_order ?? item.category.displayOrder ?? 0
                 ),
