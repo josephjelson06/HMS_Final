@@ -11,6 +11,8 @@ export interface RoomTypeData {
     id: string;
     name: string;
     code: string;
+    categoryId: string | null;
+    category: RoomCategorySummary | null;
     price: number;
     maxAdults: number;
     maxChildren: number;
@@ -27,6 +29,14 @@ export interface RoomImageData {
     tags: string[];
     category: string | null;
     isPrimary: boolean;
+}
+
+export interface RoomCategorySummary {
+    id: string;
+    tenantId?: string;
+    name: string;
+    description: string | null;
+    displayOrder: number;
 }
 
 const ROOM_TYPES_STORE = 'roomTypes';
@@ -53,6 +63,18 @@ function mapRoom(item: any): RoomTypeData {
         id: String(item.id),
         name: item.name,
         code: item.code,
+        categoryId: item.category_id ?? item.categoryId ?? null,
+        category: item.category
+            ? {
+                id: String(item.category.id),
+                tenantId: item.category.tenant_id ?? item.category.tenantId,
+                name: item.category.name,
+                description: item.category.description ?? null,
+                displayOrder: Number(
+                    item.category.display_order ?? item.category.displayOrder ?? 0
+                ),
+            }
+            : null,
         price: Number(item.price),
         maxAdults: Number(item.max_adults ?? item.maxAdults ?? 2),
         maxChildren: Number(

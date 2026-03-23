@@ -1,7 +1,7 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 
 const DB_NAME = "hms-cache";
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 const STORE_NAMES = [
   "plans",
@@ -12,6 +12,7 @@ const STORE_NAMES = [
   "tenantConfigs",
   "roles",
   "roomTypes",
+  "roomCategories",
   "permissions",
   "supportCategories",
 ] as const;
@@ -59,6 +60,10 @@ interface CacheDB extends DBSchema {
     value: CacheEntry<unknown>;
   };
   roomTypes: {
+    key: string;
+    value: CacheEntry<unknown>;
+  };
+  roomCategories: {
     key: string;
     value: CacheEntry<unknown>;
   };

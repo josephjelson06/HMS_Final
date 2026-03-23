@@ -8,3 +8,4 @@ from .billing import PlanRead, SubscriptionRead
 from .support import SupportTicketCreate, SupportTicketRead
 from .onboarding import TenantOnboardRequest
 from .auth import LoginRequest, Token, UserResponse
+from .room import RoomCategoryCreate, RoomCategoryUpdate, RoomCategoryRead

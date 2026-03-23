@@ -13,6 +13,7 @@ from app.schemas.tenant import (
     TenantConfigUpdate,
 )
 from app.schemas.kiosk import KioskRoomTypeRead, KioskBookingRead
+from app.schemas.room import RoomCategoryCreate, RoomCategoryRead, RoomCategoryUpdate
 from app.services.tenant_service import TenantService
 from app.modules.rbac import require_permission
 from app.core.auth.dependencies import get_current_user
@@ -20,6 +21,21 @@ from app.models.platform import PlatformUser
 from app.models.tenant import TenantUser
 
 router = APIRouter(prefix="/api/tenants", tags=["Tenants"])
+
+
+def _parse_optional_uuid(raw_value: str | None, field_name: str) -> UUID | None:
+    if raw_value is None:
+        return None
+    normalized = raw_value.strip()
+    if not normalized:
+        return None
+    try:
+        return UUID(normalized)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid UUID for {field_name}",
+        ) from exc
 
 
 @router.get("", response_model=List[TenantRead])
@@ -57,12 +73,62 @@ def get_tenant_rooms(
     return service.get_rooms(tenant_id)
 
 
+@router.get("/{tenant_id}/categories", response_model=List[RoomCategoryRead])
+def get_tenant_room_categories(
+    tenant_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:rooms:read")),
+):
+    service = TenantService(db)
+    return service.get_room_categories(tenant_id)
+
+
+@router.post(
+    "/{tenant_id}/categories",
+    response_model=RoomCategoryRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_tenant_room_category(
+    tenant_id: UUID,
+    payload: RoomCategoryCreate,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:rooms:write")),
+):
+    service = TenantService(db)
+    return service.create_room_category(tenant_id, payload)
+
+
+@router.put("/{tenant_id}/categories/{category_id}", response_model=RoomCategoryRead)
+def update_tenant_room_category(
+    tenant_id: UUID,
+    category_id: UUID,
+    payload: RoomCategoryUpdate,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:rooms:write")),
+):
+    service = TenantService(db)
+    return service.update_room_category(tenant_id, category_id, payload)
+
+
+@router.delete("/{tenant_id}/categories/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_tenant_room_category(
+    tenant_id: UUID,
+    category_id: UUID,
+    db: Session = Depends(get_db),
+    _=Depends(require_permission("hotel:rooms:write")),
+):
+    service = TenantService(db)
+    service.delete_room_category(tenant_id, category_id)
+    return None
+
+
 @router.post("/{tenant_id}/rooms", response_model=KioskRoomTypeRead)
 def create_tenant_room(
     tenant_id: UUID,
     name: str = Form(...),
     code: str = Form(...),
     price: Decimal = Form(...),
+    category_id: str | None = Form(None),
     max_adults: int = Form(2),
     max_children: int = Form(0),
     max_childeren: int | None = Form(None),
@@ -79,6 +145,7 @@ def create_tenant_room(
         name=name,
         code=code,
         price=price,
+        category_id=_parse_optional_uuid(category_id, "category_id"),
         max_adults=max_adults,
         max_children=effective_max_children,
         amenities=amenities or [],
@@ -94,6 +161,7 @@ def update_tenant_room(
     name: str = Form(...),
     code: str = Form(...),
     price: Decimal = Form(...),
+    category_id: str | None = Form(None),
     max_adults: int | None = Form(None),
     max_children: int | None = Form(None),
     max_childeren: int | None = Form(None),
@@ -116,6 +184,7 @@ def update_tenant_room(
         name=name,
         code=code,
         price=price,
+        category_id=_parse_optional_uuid(category_id, "category_id"),
         max_adults=max_adults,
         max_children=effective_max_children,
         amenities=amenities or [],

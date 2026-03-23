@@ -12,6 +12,7 @@ import {
 import ModalShell from "../../components/ui/ModalShell";
 import Button from "../../components/ui/Button";
 import type { RoomImageData } from "@/application/hooks/useRooms";
+import type { RoomCategoryData } from "@/application/hooks/useRoomCategories";
 
 interface ExistingRoomImageFormData extends RoomImageData {}
 
@@ -29,6 +30,7 @@ interface RoomTypeFormData {
   id?: string;
   name: string;
   code: string;
+  categoryId: string | null;
   rate: number;
   maxAdults: number;
   maxChildren: number;
@@ -42,6 +44,7 @@ interface ManageRoomTypeModalProps {
   onClose: () => void;
   onSave: (typeData: RoomTypeFormData) => Promise<void>;
   onDeleteExistingImage?: (image: ExistingRoomImageFormData) => Promise<void>;
+  categories?: RoomCategoryData[];
   initialData?: any;
 }
 
@@ -52,11 +55,13 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
   onClose,
   onSave,
   onDeleteExistingImage,
+  categories = [],
   initialData,
 }) => {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [rate, setRate] = useState("");
+  const [categoryId, setCategoryId] = useState<string>("");
   const [maxAdults, setMaxAdults] = useState("");
   const [maxChildren, setMaxChildren] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
@@ -73,6 +78,7 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
         setName(initialData.name);
         setCode(initialData.code || "");
         setRate(initialData.rate || initialData.price); // Handle both old and new data structures
+        setCategoryId(initialData.categoryId ?? initialData.category_id ?? "");
         setMaxAdults(
           String(initialData.maxAdults ?? initialData.max_adults ?? 2)
         );
@@ -99,6 +105,7 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
         setName("");
         setCode("");
         setRate("");
+        setCategoryId("");
         setMaxAdults("2");
         setMaxChildren("0");
         setAmenities(["WiFi", "TV"]);
@@ -134,6 +141,7 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
         id: initialData?.id || Math.random().toString(36).substring(2, 9),
         name,
         code: code.trim().toUpperCase(),
+        categoryId: categoryId || null,
         rate: Number(rate),
         maxAdults: Number(maxAdults),
         maxChildren: Number(maxChildren),
@@ -409,6 +417,24 @@ const ManageRoomTypeModal: React.FC<ManageRoomTypeModalProps> = ({
               required
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-bold uppercase tracking-widest mb-2 text-gray-500 dark:text-gray-400">
+            Room Category
+          </label>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="">No Category / Uncategorized</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

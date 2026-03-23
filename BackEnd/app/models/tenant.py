@@ -58,6 +58,9 @@ class Tenant(Base):
     room_types = relationship(
         "RoomType", back_populates="tenant", cascade="all, delete-orphan"
     )
+    room_categories = relationship(
+        "RoomCategory", back_populates="tenant", cascade="all, delete-orphan"
+    )
     bookings = relationship(
         "Booking", back_populates="tenant", cascade="all, delete-orphan"
     )

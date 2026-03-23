@@ -11,6 +11,7 @@ from typing import Optional, List
 from pydantic import BaseModel, field_validator
 
 from app.schemas.base import ORMBase
+from app.schemas.room import RoomCategoryRead
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -47,6 +48,8 @@ class KioskRoomTypeRead(ORMBase):
     id: UUID
     name: str
     code: str
+    category_id: Optional[UUID] = None
+    category: Optional[RoomCategoryRead] = None
     price: Decimal
     max_adults: int = 2
     max_children: int = 0
