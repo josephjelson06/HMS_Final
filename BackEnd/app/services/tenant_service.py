@@ -11,15 +11,13 @@ from decimal import Decimal
 from fastapi import UploadFile, HTTPException, status
 
 from app.models.tenant import Tenant, TenantConfig
-from app.models.room import RoomCategory, RoomImage, RoomType
+from app.models.room import RoomImage, RoomType
 from app.models.booking import Booking
 from app.models.billing import Subscription, Plan
-from app.schemas.room import RoomCategoryCreate, RoomCategoryUpdate
 from app.schemas.tenant import TenantCreate
 from app.services.tenant_config_defaults import build_default_tenant_config
 from app.utils.cloudinary_upload import (
     upload_room_images,
-    upload_room_category_images,
     delete_room_image,
     CloudinaryUploadError,
 )
@@ -28,8 +26,6 @@ from app.utils.cloudinary_upload import (
 class TenantService:
     def __init__(self, db: Session):
         self.db = db
-
-    CATEGORY_IMAGE_LIMIT = 3
 
     def _ordered_room_images(self, room: RoomType) -> List[RoomImage]:
         return sorted(
@@ -233,222 +229,12 @@ class TenantService:
             self._sync_room_image_urls(room)
         return rooms
 
-    def _validate_room_category(
-        self, tenant_id: UUID, category_id: Optional[UUID]
-    ) -> Optional[RoomCategory]:
-        if category_id is None:
-            return None
-
-        category = (
-            self.db.query(RoomCategory)
-            .filter(
-                RoomCategory.id == category_id,
-                RoomCategory.tenant_id == tenant_id,
-            )
-            .first()
-        )
-        if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Room category not found",
-            )
-        return category
-
-    def get_room_categories(self, tenant_id: UUID) -> List[RoomCategory]:
-        return (
-            self.db.query(RoomCategory)
-            .filter(RoomCategory.tenant_id == tenant_id)
-            .order_by(RoomCategory.display_order.asc(), RoomCategory.name.asc())
-            .all()
-        )
-
-    def create_room_category(
-        self, tenant_id: UUID, payload: RoomCategoryCreate
-    ) -> RoomCategory:
-        tenant = self.get_by_id(tenant_id)
-        if not tenant:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Tenant not found",
-            )
-
-        normalized_image_urls = [
-            str(url).strip() for url in (payload.image_urls or []) if str(url).strip()
-        ]
-        if len(normalized_image_urls) > self.CATEGORY_IMAGE_LIMIT:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Maximum {self.CATEGORY_IMAGE_LIMIT} images are allowed per room category.",
-            )
-
-        category = RoomCategory(
-            tenant_id=tenant_id,
-            name=payload.name.strip(),
-            description=payload.description.strip() if payload.description else None,
-            image_urls=normalized_image_urls,
-            display_order=int(payload.display_order or 0),
-        )
-        self.db.add(category)
-        self.db.commit()
-        self.db.refresh(category)
-        return category
-
-    def update_room_category(
-        self, tenant_id: UUID, category_id: UUID, payload: RoomCategoryUpdate
-    ) -> RoomCategory:
-        category = (
-            self.db.query(RoomCategory)
-            .filter(
-                RoomCategory.id == category_id,
-                RoomCategory.tenant_id == tenant_id,
-            )
-            .first()
-        )
-        if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Room category not found",
-            )
-
-        updates = payload.model_dump(exclude_unset=True)
-        if "name" in updates and updates["name"] is not None:
-            updates["name"] = updates["name"].strip()
-        if "description" in updates:
-            raw_description = updates["description"]
-            updates["description"] = raw_description.strip() if raw_description else None
-        if "image_urls" in updates and updates["image_urls"] is not None:
-            normalized_image_urls = [
-                str(url).strip() for url in updates["image_urls"] if str(url).strip()
-            ]
-            if len(normalized_image_urls) > self.CATEGORY_IMAGE_LIMIT:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=(
-                        f"Maximum {self.CATEGORY_IMAGE_LIMIT} images are allowed per room category."
-                    ),
-                )
-            updates["image_urls"] = normalized_image_urls
-
-        for key, value in updates.items():
-            setattr(category, key, value)
-
-        self.db.commit()
-        self.db.refresh(category)
-        return category
-
-    def delete_room_category(self, tenant_id: UUID, category_id: UUID) -> None:
-        category = (
-            self.db.query(RoomCategory)
-            .filter(
-                RoomCategory.id == category_id,
-                RoomCategory.tenant_id == tenant_id,
-            )
-            .first()
-        )
-        if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Room category not found",
-            )
-
-        self.db.delete(category)
-        self.db.commit()
-
-    def upload_room_category_images(
-        self, tenant_id: UUID, category_id: UUID, images: List[UploadFile]
-    ) -> RoomCategory:
-        category = (
-            self.db.query(RoomCategory)
-            .filter(
-                RoomCategory.id == category_id,
-                RoomCategory.tenant_id == tenant_id,
-            )
-            .first()
-        )
-        if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Room category not found",
-            )
-
-        valid_images = [image for image in (images or []) if image and image.filename]
-        if not valid_images:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="At least one image file is required.",
-            )
-
-        existing_urls = list(category.image_urls or [])
-        if len(existing_urls) + len(valid_images) > self.CATEGORY_IMAGE_LIMIT:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Maximum {self.CATEGORY_IMAGE_LIMIT} images are allowed per room category.",
-            )
-
-        try:
-            uploaded_urls = upload_room_category_images(valid_images, str(tenant_id))
-        except CloudinaryUploadError as exc:
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=str(exc),
-            ) from exc
-
-        category.image_urls = existing_urls + uploaded_urls
-        self.db.commit()
-        self.db.refresh(category)
-        return category
-
-    def delete_room_category_image(
-        self, tenant_id: UUID, category_id: UUID, image_url: str
-    ) -> RoomCategory:
-        category = (
-            self.db.query(RoomCategory)
-            .filter(
-                RoomCategory.id == category_id,
-                RoomCategory.tenant_id == tenant_id,
-            )
-            .first()
-        )
-        if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Room category not found",
-            )
-
-        normalized_url = (image_url or "").strip()
-        if not normalized_url:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="image_url is required.",
-            )
-
-        existing_urls = list(category.image_urls or [])
-        if normalized_url not in existing_urls:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Category image not found.",
-            )
-
-        try:
-            delete_room_image(normalized_url)
-        except CloudinaryUploadError as exc:
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=str(exc),
-            ) from exc
-
-        category.image_urls = [url for url in existing_urls if url != normalized_url]
-        self.db.commit()
-        self.db.refresh(category)
-        return category
-
     def create_room(
         self,
         tenant_id: UUID,
         name: str,
         code: str,
         price: Decimal,
-        category_id: Optional[UUID] = None,
         max_adults: int = 2,
         max_children: int = 0,
         amenities: Optional[List[str]] = None,
@@ -461,7 +247,6 @@ class TenantService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Tenant not found",
             )
-        category = self._validate_room_category(tenant_id, category_id)
 
         images = images or []
         if len(images) > 5:
@@ -482,7 +267,6 @@ class TenantService:
 
         room = RoomType(
             tenant_id=tenant_id,
-            category_id=category.id if category else None,
             name=name,
             code=code,
             price=price,
@@ -508,7 +292,6 @@ class TenantService:
         name: str,
         code: str,
         price: Decimal,
-        category_id: Optional[UUID] = None,
         max_adults: Optional[int] = None,
         max_children: Optional[int] = None,
         amenities: Optional[List[str]] = None,
@@ -549,8 +332,6 @@ class TenantService:
         room.name = name
         room.code = code
         room.price = price
-        category = self._validate_room_category(tenant_id, category_id)
-        room.category_id = category.id if category else None
         if max_adults is not None:
             room.max_adults = max(0, int(max_adults))
         if max_children is not None:

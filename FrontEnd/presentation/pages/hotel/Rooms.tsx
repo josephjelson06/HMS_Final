@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, CheckCircle2, Users, Edit3, Trash2, ChevronLeft, ChevronRight, Tags } from "lucide-react";
+import { Plus, CheckCircle2, Users, Edit3, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/application/hooks/useAuth";
 import { useRooms, type RoomImageData } from "@/application/hooks/useRooms";
-import { useRoomCategories } from "@/application/hooks/useRoomCategories";
 import GlassCard from "../../components/ui/GlassCard";
 import PageHeader from "../../components/ui/PageHeader";
 import ManageRoomTypeModal from "../../modals/hotel/ManageRoomTypeModal";
-import ManageCategoriesModal from "../../modals/hotel/ManageCategoriesModal";
 // We don't have ConfirmationModal imported yet in this branch, so we will use a basic window.confirm or skip it if it's missing. Let's just create a generic one or use window.confirm for simplicity, or try importing it. I will try importing it.
 // To be safe, let's just make a simple modal for confirmations or skip it. I will import it and see if it fails.
 import ConfirmationModal from "../../components/ui/ConfirmationModal";
@@ -17,27 +15,15 @@ const Rooms: React.FC = () => {
   const { user } = useAuth();
   const tenantId = user?.tenantId;
   const { rooms, fetchRooms, createRoomType, updateRoomType, deleteRoomType, deleteRoomImage, loading } = useRooms();
-  const {
-    categories,
-    fetchCategories,
-    createCategory,
-    updateCategory,
-    uploadCategoryImages,
-    deleteCategoryImage,
-    deleteCategory,
-    loading: categoriesLoading,
-  } = useRoomCategories();
 
   useEffect(() => {
     if (tenantId) {
       fetchRooms(tenantId);
-      fetchCategories(tenantId);
     }
-  }, [tenantId, fetchRooms, fetchCategories]);
+  }, [tenantId, fetchRooms]);
 
   // Modal State
   const [isManageTypeModalOpen, setIsManageTypeModalOpen] = useState(false);
-  const [isManageCategoriesModalOpen, setIsManageCategoriesModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<any>(null);
   const [confirmDelete, setConfirmDelete] = useState<{
     isOpen: boolean;
@@ -68,7 +54,6 @@ const Rooms: React.FC = () => {
     formData.append("name", typeData.name);
     formData.append("code", typeData.code);
     formData.append("price", String(typeData.rate));
-    formData.append("category_id", typeData.categoryId || "");
     formData.append("max_adults", String(typeData.maxAdults ?? 2));
     formData.append("max_children", String(typeData.maxChildren ?? 0));
 
@@ -162,53 +147,6 @@ const Rooms: React.FC = () => {
     await fetchRooms(tenantId);
   };
 
-  const handleCreateCategory = async (payload: {
-    name: string;
-    description?: string | null;
-    display_order?: number;
-  }) => {
-    if (!tenantId) {
-      throw new Error("Tenant context missing. Please login again.");
-    }
-    await createCategory(tenantId, payload);
-    await fetchCategories(tenantId, true);
-  };
-
-  const handleDeleteCategory = async (categoryId: string) => {
-    if (!tenantId) {
-      throw new Error("Tenant context missing. Please login again.");
-    }
-    await deleteCategory(tenantId, categoryId);
-    await Promise.all([fetchCategories(tenantId, true), fetchRooms(tenantId)]);
-  };
-
-  const handleUpdateCategory = async (
-    categoryId: string,
-    payload: { name?: string; description?: string | null; display_order?: number }
-  ) => {
-    if (!tenantId) {
-      throw new Error("Tenant context missing. Please login again.");
-    }
-    await updateCategory(tenantId, categoryId, payload);
-    await fetchCategories(tenantId, true);
-  };
-
-  const handleUploadCategoryImages = async (categoryId: string, files: File[]) => {
-    if (!tenantId) {
-      throw new Error("Tenant context missing. Please login again.");
-    }
-    await uploadCategoryImages(tenantId, categoryId, files);
-    await fetchCategories(tenantId, true);
-  };
-
-  const handleDeleteCategoryImage = async (categoryId: string, imageUrl: string) => {
-    if (!tenantId) {
-      throw new Error("Tenant context missing. Please login again.");
-    }
-    await deleteCategoryImage(tenantId, categoryId, imageUrl);
-    await fetchCategories(tenantId, true);
-  };
-
   const slideRoomImage = (roomId: string, total: number, direction: "next" | "prev") => {
     if (total < 2) {
       return;
@@ -235,12 +173,6 @@ const Rooms: React.FC = () => {
             className="flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black font-bold uppercase tracking-widest text-[10px] shadow-lg hover:bg-gray-100 transition-all border border-transparent"
           >
             <Plus size={16} strokeWidth={3} /> Add Room
-          </button>
-          <button
-            onClick={() => setIsManageCategoriesModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 rounded-full bg-black text-white dark:bg-white dark:text-black font-bold uppercase tracking-widest text-[10px] shadow-lg hover:opacity-90 transition-all border border-transparent"
-          >
-            <Tags size={16} strokeWidth={3} /> Manage Categories
           </button>
         </div>
       </PageHeader>
@@ -398,20 +330,7 @@ const Rooms: React.FC = () => {
         onClose={() => setIsManageTypeModalOpen(false)}
         onSave={handleSaveRoomType}
         onDeleteExistingImage={handleDeleteExistingImage}
-        categories={categories}
         initialData={editingType}
-      />
-
-      <ManageCategoriesModal
-        isOpen={isManageCategoriesModalOpen}
-        onClose={() => setIsManageCategoriesModalOpen(false)}
-        categories={categories}
-        loading={categoriesLoading}
-        onCreate={handleCreateCategory}
-        onUpdate={handleUpdateCategory}
-        onUploadImages={handleUploadCategoryImages}
-        onDeleteImage={handleDeleteCategoryImage}
-        onDelete={handleDeleteCategory}
       />
 
       <ConfirmationModal
