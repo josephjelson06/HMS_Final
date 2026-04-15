@@ -1,6 +1,0 @@
-Remaining Work (Updated on 28-02-2026 -> Saturday)
-
-1. Requires Add Roles, Users and Signing in with those creds -> Both Hotel and Platforms
-2. Requires managing the Permission Matrix -> The Supend, Delete Methods -> Both
-3. CRUD for Plans, Hotels
-
