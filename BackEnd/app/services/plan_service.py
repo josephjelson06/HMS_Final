@@ -26,7 +26,7 @@ class PlanService:
 
     def update(self, plan_id: UUID, plan_in: PlanUpdate) -> Optional[Plan]:
         db_obj = self.get_by_id(plan_id)
-        if not db_obj or db_obj.is_archived:
+        if not db_obj:
             return None
 
         update_data = plan_in.model_dump(exclude_unset=True)
@@ -40,8 +40,16 @@ class PlanService:
 
     def delete(self, plan_id: UUID) -> bool:
         db_obj = self.get_by_id(plan_id)
-        if not db_obj or db_obj.is_archived:
+        if not db_obj:
             return False
+
+        if len(db_obj.tenants) > 0:
+            from fastapi import HTTPException
+
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot delete plan because hotels are actively subscribed to it. Please archive it instead.",
+            )
 
         self.db.delete(db_obj)
         self.db.commit()

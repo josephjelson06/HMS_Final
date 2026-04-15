@@ -19,8 +19,7 @@ import { useSupport } from "@/application/hooks/useSupport";
 import type { SupportTicket } from "@/domain/entities/Support";
 
 const Helpdesk: React.FC = () => {
-  const { tickets, loading, error, fetchTickets, resolveTicket, addMessage } =
-    useSupport();
+  const { tickets, loading, error, fetchTickets, resolveTicket } = useSupport();
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(
     null,
   );
@@ -65,7 +64,7 @@ const Helpdesk: React.FC = () => {
     <div className="p-8 space-y-8 min-h-screen pb-24 animate-in fade-in duration-500">
       <PageHeader
         title="Support Center"
-        subtitle="Tenant Inquiries & Incident Management"
+        subtitle="Hotel Inquiries & Incident Management"
       >
         <div className="flex gap-2">
           <button
@@ -113,7 +112,7 @@ const Helpdesk: React.FC = () => {
                 <tr className="bg-black/5 dark:bg-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-500 border-b border-white/10">
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4">Subject</th>
-                  <th className="px-6 py-4">Tenant</th>
+                  <th className="px-6 py-4">Hotel</th>
                   <th className="px-6 py-4">Created</th>
                   <th className="px-6 py-4">Last Activity</th>
                 </tr>
@@ -193,7 +192,6 @@ const Helpdesk: React.FC = () => {
           ticket={selectedTicket}
           onClose={() => setSelectedTicket(null)}
           onResolve={handleResolve}
-          onAddMessage={addMessage}
         />
       )}
     </div>

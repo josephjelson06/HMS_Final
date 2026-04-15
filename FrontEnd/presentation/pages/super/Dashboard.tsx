@@ -97,7 +97,7 @@ const WarRoomCard = ({
       <div className="flex-1 p-6 flex flex-col justify-between">
         <div className="flex justify-between items-start">
           <div className="space-y-1">
-            <p className="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+            <p className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               {title}
             </p>
             <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ const WarRoomCard = ({
       <div
         className={`w-full py-3 px-6 border-t border-black/5 dark:border-white/5 ${current.footer}`}
       >
-        <p className="text-[9px] font-bold uppercase tracking-[0.2em]">
+        <p className="text-[11px] font-bold uppercase tracking-wider">
           {subtext}
         </p>
       </div>
@@ -198,7 +198,7 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <WarRoomCard
-          title="Active Tenants"
+          title="Active Hotels"
           value={isLoading ? "--" : String(activeTenants)}
           subtext="Customer base health"
           icon={Building}
@@ -259,9 +259,9 @@ const Dashboard: React.FC = () => {
           <div className="p-8 border-b border-black/5 dark:border-white/5 flex justify-between items-center bg-black/5 dark:bg-white/[0.02]">
             <div>
               <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter">
-                Tenant Onboarding
+                Hotel Onboarding
               </h3>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">
                 Growth Metrics
               </p>
             </div>

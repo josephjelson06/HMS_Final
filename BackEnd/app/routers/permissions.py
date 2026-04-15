@@ -14,8 +14,8 @@ router = APIRouter(prefix="/api/permissions", tags=["Permissions"])
 def get_permissions(
     db: Session = Depends(get_db),
     _=Depends(
-        require_permission("platform:roles:read")
-    ),  # Only platform admins typically need to see raw permissions list
+        require_permission(["platform:roles:read", "hotel:roles:read"])
+    ),  # Allow both platform and hotel admins to see permissions list for role management
 ):
     service = PermissionService(db)
     return service.get_all()

@@ -6,6 +6,7 @@
 /* ─── Design System Tokens ─── */
 @theme {
   /* Typography Scale */
+  --font-sans: var(--font-poppins), sans-serif;
   --font-size-micro: 9px;
   --font-size-caption: 10px;
   --font-size-label: 11px;
@@ -97,7 +98,7 @@ button:focus-visible {
 
 body {
   margin: 0;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-poppins), sans-serif;
   color: var(--text-primary);
   transition: color 0.3s ease;
   overflow: hidden;

@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from app.models.platform import PlatformRole
+from app.models.platform import PlatformRole, PlatformUser
 from app.models.mappings import platform_role_permissions
 from app.models.permissions import Permission
 
@@ -18,9 +18,30 @@ class PlatformRoleService:
     def get_by_id(self, role_id: UUID) -> Optional[PlatformRole]:
         return self.db.query(PlatformRole).filter(PlatformRole.id == role_id).first()
 
-    def create(self, name: str) -> PlatformRole:
-        role = PlatformRole(name=name)
+    def create(
+        self, name: str, description: str | None = None, color: str | None = "blue"
+    ) -> PlatformRole:
+        role = PlatformRole(name=name, description=description, color=color)
         self.db.add(role)
+        self.db.commit()
+        self.db.refresh(role)
+        return role
+
+    def update(self, role_id: UUID, payload: dict) -> Optional[PlatformRole]:
+        role = self.get_by_id(role_id)
+        if not role:
+            return None
+
+        # Explicitly handle fields to ensure they are updated correctly
+        if "name" in payload:
+            role.name = payload["name"]
+        if "description" in payload:
+            role.description = payload["description"]
+        if "color" in payload:
+            role.color = payload["color"]
+        if "status" in payload:
+            role.status = payload["status"]
+
         self.db.commit()
         self.db.refresh(role)
         return role
@@ -62,4 +83,22 @@ class PlatformRoleService:
                     role_id=role_id, permission_id=p.id
                 )
             )
+        self.db.commit()
+
+    def delete(self, role_id: UUID):
+        role = self.get_by_id(role_id)
+        if not role:
+            raise HTTPException(status_code=404, detail="Role not found")
+
+        # Check for assigned users
+        user_count = (
+            self.db.query(PlatformUser).filter(PlatformUser.role_id == role_id).count()
+        )
+        if user_count > 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot delete role: {user_count} platform users are still assigned.",
+            )
+
+        self.db.delete(role)
         self.db.commit()

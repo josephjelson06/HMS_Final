@@ -14,9 +14,11 @@ import {
   ArrowUpRight,
   Server,
   Download,
+  Image as ImageIcon,
 } from "lucide-react";
 import GlassCard from "../../components/ui/GlassCard";
 import ConfirmationModal from "../../components/ui/ConfirmationModal";
+import EditHotelModal from "../../modals/super/EditHotelModal";
 import { useTheme } from "../../hooks/useTheme";
 import { useTenants } from "@/application/hooks/useTenants";
 import type { Tenant } from "@/domain/entities/Tenant";
@@ -41,11 +43,13 @@ export default function HotelDetails({
 }: HotelDetailsProps) {
   const { isDarkMode } = useTheme();
   const [activeTab, setActiveTab] = useState("Overview");
-  const { getTenant, updateTenant, deleteTenant } = useTenants();
+  const { getTenant, updateTenant, deleteTenant, uploadImages } = useTenants();
 
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
@@ -79,6 +83,25 @@ export default function HotelDetails({
 
   const closeConfirm = () => {
     setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0 || !tenant) return;
+
+    const files = Array.from(e.target.files).slice(0, 3);
+    const formData = new FormData();
+    files.forEach((file) => formData.append("images", file));
+
+    setUploadingImages(true);
+    try {
+      const updatedTenant = await uploadImages(tenant.id, formData);
+      setTenant(updatedTenant);
+    } catch (err) {
+      console.error("Failed to upload images:", err);
+      alert("Failed to upload images");
+    } finally {
+      setUploadingImages(false);
+    }
   };
 
   const isMissingRequestedHotel =
@@ -119,10 +142,10 @@ export default function HotelDetails({
         </button>
         <GlassCard className="p-8 text-center">
           <h2 className="text-xl font-black dark:text-white tracking-tight">
-            {error ? "Error loading" : "Tenant not found"}
+            {error ? "Error loading" : "Hotel not found"}
           </h2>
           <p className="mt-2 text-sm text-gray-500">
-            {error || `No tenant exists for ID: ${hotelId}`}
+            {error || `No hotel exists for ID: ${hotelId}`}
           </p>
         </GlassCard>
       </div>
@@ -130,7 +153,7 @@ export default function HotelDetails({
   }
 
   if (loading) {
-    return <div className="p-8 text-gray-500">Loading tenant details...</div>;
+    return <div className="p-8 text-gray-500">Loading hotel details...</div>;
   }
 
   return (
@@ -147,9 +170,17 @@ export default function HotelDetails({
       </button>
 
       {/* UNIFIED CONTAINER: Header Info Section */}
-      <GlassCard noPadding clipContent className="relative">
+      <GlassCard noPadding clipContent className="relative overflow-hidden">
         <div
-          className={`absolute top-0 right-0 w-96 h-96 bg-accent/5 dark:bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none ${hotelStatus === "Suspended" ? "grayscale opacity-10" : ""}`}
+          className="absolute inset-0 z-0 opacity-20 bg-cover bg-center transition-all bg-no-repeat"
+          style={{
+            backgroundImage: `url('${tenant?.imageUrls && tenant.imageUrls.length > 0 ? `http://localhost:8080${tenant.imageUrls[0]}` : "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&auto=format&fit=crop&q=60"}')`,
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent dark:from-black dark:via-black/90 dark:to-transparent z-[1]" />
+
+        <div
+          className={`absolute top-0 right-0 w-96 h-96 bg-accent/5 dark:bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none z-[2] ${hotelStatus === "Suspended" ? "grayscale opacity-10" : ""}`}
         ></div>
         <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6 p-8 relative z-10">
           <div className="flex items-start gap-5">
@@ -187,6 +218,12 @@ export default function HotelDetails({
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="px-5 py-2.5 rounded-xl text-sm font-bold border border-gray-200 dark:border-white/10 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-all flex items-center gap-2"
+            >
+              <Edit size={16} /> Edit Details
+            </button>
+            <button
               onClick={() => {
                 if (tenant?.id) {
                   onLoginAsAdmin(tenant.id);
@@ -205,7 +242,7 @@ export default function HotelDetails({
         {[
           {
             label: "Subscription",
-            value: hotelPlan,
+            value: tenant?.planName || hotelPlan,
             color: "text-accent",
             footer: "Active plan assigned",
           },
@@ -217,8 +254,9 @@ export default function HotelDetails({
             footer: "Operational status",
           },
           {
-            label: "Tenant ID",
-            value: tenant?.id?.split("-")?.[0] || "Unknown",
+            label: "Hotel ID",
+            value:
+              tenant?.readableId || tenant?.id?.split("-")?.[0] || "Unknown",
             color: "text-accent",
             footer: "Unique identity block",
           },
@@ -276,14 +314,14 @@ export default function HotelDetails({
             >
               <div className="p-8 border-b border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/[0.02]">
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">
-                  Tenant Profile
+                  Hotel Profile
                 </h3>
               </div>
               <div className="p-8 space-y-4 text-sm flex-1">
                 {[
                   { l: "Trade Name", v: hotelName },
                   { l: "GSTIN", v: hotelGstin, mono: true },
-                  { l: "PAN", v: hotelPan, mono: true },
+                  { l: "PAN", v: tenant?.pan || hotelPan, mono: true },
                   { l: "Registered Address", v: hotelAddress },
                   { l: "State Code", v: hotelStateCode },
                 ].map((it, i) => (
@@ -317,12 +355,14 @@ export default function HotelDetails({
                 {[
                   {
                     l: "Current Plan",
-                    v: `${hotelPlan} Plan`,
+                    v: tenant?.planName
+                      ? `${tenant.planName} Plan`
+                      : `${hotelPlan} Plan`,
                     badge: "Orange",
                   },
                   { l: "Billing Cycle", v: `Active` },
-                  { l: "Tenant ID", v: tenant?.id || "-" },
-                  { l: "Owner ID", v: tenant?.ownerId || "-", mono: true },
+                  { l: "Hotel ID", v: tenant?.readableId || tenant?.id || "-" },
+                  { l: "Owner", v: tenant?.ownerName || "-", mono: false },
                 ].map((it, i) => (
                   <div
                     key={i}
@@ -339,6 +379,66 @@ export default function HotelDetails({
                     </span>
                   </div>
                 ))}
+              </div>
+            </GlassCard>
+
+            <GlassCard
+              noPadding
+              clipContent
+              className="border-white/5 dark:border-white/10 flex flex-col lg:col-span-2"
+            >
+              <div className="p-8 border-b border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/[0.02] flex items-center justify-between">
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                  <ImageIcon size={14} /> Property Photos
+                </h3>
+                <div>
+                  <input
+                    type="file"
+                    id="hotel-detail-image-upload"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                    disabled={uploadingImages}
+                  />
+                  <label
+                    htmlFor="hotel-detail-image-upload"
+                    className={`cursor-pointer px-4 py-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${uploadingImages ? "opacity-50 pointer-events-none" : ""}`}
+                  >
+                    {uploadingImages
+                      ? "Uploading..."
+                      : "Upload / Replace Photos"}
+                  </label>
+                </div>
+              </div>
+              <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {tenant?.imageUrls && tenant.imageUrls.length > 0 ? (
+                  tenant.imageUrls.map((url, idx) => (
+                    <div
+                      key={idx}
+                      className="relative aspect-video rounded-xl overflow-hidden group border border-white/5 shadow-lg"
+                    >
+                      <img
+                        src={`http://localhost:8080${url}`}
+                        alt={`Property Photo ${idx + 1}`}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-12 text-center text-gray-500 border-2 border-dashed border-gray-300 dark:border-white/10 rounded-xl">
+                    <ImageIcon
+                      className="mx-auto mb-3 text-gray-400"
+                      size={32}
+                    />
+                    <p className="text-sm font-bold dark:text-gray-300">
+                      No photos uploaded yet
+                    </p>
+                    <p className="text-xs mt-1">
+                      Click the button above to upload up to 3 photos
+                    </p>
+                  </div>
+                )}
               </div>
             </GlassCard>
           </div>
@@ -358,7 +458,7 @@ export default function HotelDetails({
                 Architecture Node
               </h3>
               <p className="text-xs text-gray-400 max-w-xs mx-auto">
-                This tenant is provisioned onto standard infrastructure
+                This hotel is provisioned onto standard infrastructure
                 processing lanes.
               </p>
             </div>
@@ -430,8 +530,7 @@ export default function HotelDetails({
           <div>
             <h3 className="text-lg font-bold text-red-500 mb-1">Danger Zone</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Irreversible actions for this tenant account. Proceed with
-              caution.
+              Irreversible actions for this hotel account. Proceed with caution.
             </p>
           </div>
           <div className="flex gap-4">
@@ -439,7 +538,7 @@ export default function HotelDetails({
               onClick={() => {
                 const isSuspended = hotelStatus === "Suspended";
                 openConfirm({
-                  title: isSuspended ? "Activate Tenant" : "Suspend Tenant",
+                  title: isSuspended ? "Activate Hotel" : "Suspend Hotel",
                   message: isSuspended
                     ? `Are you sure you want to activate ${hotelName}? This will restore access to all services.`
                     : `Are you sure you want to suspend ${hotelName}? This will immediately suspend the account and restrict all involved services.`,
@@ -458,14 +557,12 @@ export default function HotelDetails({
               }}
               className="px-5 py-2.5 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors text-sm font-bold"
             >
-              {hotelStatus === "Suspended"
-                ? "Activate Tenant"
-                : "Suspend Tenant"}
+              {hotelStatus === "Suspended" ? "Activate Hotel" : "Suspend Hotel"}
             </button>
             <button
               onClick={() => {
                 openConfirm({
-                  title: "Delete Tenant",
+                  title: "Delete Hotel",
                   message: `Are you sure you want to permanently delete ${hotelName}? This action cannot be undone and will remove all associated data including users and invoices.`,
                   variant: "danger",
                   confirmLabel: "Delete Forever",
@@ -479,7 +576,7 @@ export default function HotelDetails({
               }}
               className="px-5 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-colors text-sm font-bold shadow-lg shadow-red-500/20"
             >
-              Delete Tenant
+              Delete Hotel
             </button>
           </div>
         </div>
@@ -497,6 +594,35 @@ export default function HotelDetails({
         variant={modalConfig.variant}
         confirmLabel={modalConfig.confirmLabel}
       />
+
+      {tenant && (
+        <EditHotelModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          hotel={{
+            id: tenant.id,
+            readableId: tenant.readableId || "",
+            name: tenant.name,
+            address: tenant.address || "",
+            status: tenant.status || "Active",
+            plan: tenant.planId || "",
+            gstin: tenant.gstin || "",
+            pan: tenant.pan || "",
+            owner: tenant.ownerName || "",
+            mobile: tenant.ownerPhone || "",
+            email: tenant.ownerEmail || "",
+            kiosks: 0,
+            mrr: 0,
+            ownerId: tenant.ownerId,
+            imageUrls: tenant.imageUrls,
+          }}
+          onUpdateHotel={async (id, data) => {
+            const updated = await updateTenant(id, data);
+            setTenant(updated);
+            return updated;
+          }}
+        />
+      )}
     </div>
   );
 }

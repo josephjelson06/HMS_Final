@@ -202,28 +202,54 @@ export default function HotelUsers({ initialTab = "STAFF" }: HotelUsersProps) {
           fetchRolePerms={getRolePermissions}
           saveRolePerms={setRolePermissions as any}
           onUpdateStatus={async () => {
-            await updateRole(selectedRoleForView.id, {
-              status:
-                selectedRoleForView.status === "Active" ? "Inactive" : "Active",
-            });
-            fetchRoles();
+            try {
+              await updateRole(selectedRoleForView.id, {
+                status:
+                  selectedRoleForView.status === "Active"
+                    ? "Inactive"
+                    : "Active",
+              });
+              fetchRoles();
+            } catch (error: any) {
+              alert(
+                error?.response?.data?.detail ||
+                  error?.message ||
+                  "Failed to update role status",
+              );
+            }
           }}
           onDelete={async () => {
-            await deleteRole(selectedRoleForView.id);
-            setActiveTab("ROLES");
-            fetchRoles();
+            try {
+              await deleteRole(selectedRoleForView.id);
+              setActiveTab("ROLES");
+              fetchRoles();
+            } catch (error: any) {
+              alert(
+                error?.response?.data?.detail ||
+                  error?.message ||
+                  "Failed to delete role",
+              );
+            }
           }}
           onEditRole={async (roleId, payload) => {
-            const targetRole = allRoles.find(
-              (r) => r.id === roleId || r.name === roleId,
-            );
-            if (!targetRole) {
-              throw new Error("Role not found");
+            try {
+              const targetRole = allRoles.find(
+                (r) => r.id === roleId || r.name === roleId,
+              );
+              if (!targetRole) {
+                throw new Error("Role not found");
+              }
+              await updateRole(targetRole.id, {
+                description: payload.description,
+              });
+              await fetchRoles();
+            } catch (error: any) {
+              alert(
+                error?.response?.data?.detail ||
+                  error?.message ||
+                  "Failed to edit role",
+              );
             }
-            await updateRole(targetRole.id, {
-              description: payload.description,
-            });
-            await fetchRoles();
           }}
         />
       </div>
@@ -359,7 +385,7 @@ export default function HotelUsers({ initialTab = "STAFF" }: HotelUsersProps) {
                         {s.name}
                       </h3>
                       <p className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest">
-                        {s.id.split("-")[0]}
+                        {s.readableId || s.id}
                       </p>
                     </div>
 

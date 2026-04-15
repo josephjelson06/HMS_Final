@@ -36,18 +36,28 @@ export function useTenants() {
       setTenants((prev) => prev.map((t) => (t.id === id ? updated : t)));
       return updated;
     } catch (err) {
-       throw new Error('Failed to update tenant');
+      throw new Error('Failed to update tenant');
     }
   };
 
   const deleteTenant = async (id: string) => {
-      try {
-          await repositories.tenants.delete(id);
-          setTenants((prev) => prev.filter(t => t.id !== id));
-      } catch (err) {
-          throw new Error('Failed to delete tenant');
-      }
+    try {
+      await repositories.tenants.delete(id);
+      setTenants((prev) => prev.filter(t => t.id !== id));
+    } catch (err) {
+      throw new Error('Failed to delete tenant');
+    }
   }
+
+  const uploadImages = async (id: string, formData: FormData) => {
+    try {
+      const updated = await repositories.tenants.uploadImages(id, formData);
+      setTenants((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      return updated;
+    } catch (err) {
+      throw new Error('Failed to upload hotel images');
+    }
+  };
 
   const getTenant = useCallback((id: string) => repositories.tenants.getById(id), []);
 
@@ -59,6 +69,7 @@ export function useTenants() {
     createTenant,
     updateTenant,
     deleteTenant,
-    getTenant
+    getTenant,
+    uploadImages
   };
 }

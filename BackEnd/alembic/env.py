@@ -23,6 +23,8 @@ import app.models.permissions  # noqa: F401
 import app.models.mappings  # noqa: F401
 import app.models.billing  # noqa: F401
 import app.models.support  # noqa: F401
+import app.models.faq  # noqa: F401
+import app.models.room  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

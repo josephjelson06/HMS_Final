@@ -2,22 +2,29 @@ import { useState, useCallback } from 'react';
 import type { Subscription } from '../../domain/entities/Subscription';
 import { repositories } from '../../infrastructure/config/container';
 
-export function useSubscriptions() {
+export function useSubscriptions(tenantId?: string) {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [tenantSubscription, setTenantSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSubscriptions = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await repositories.subscriptions.getAll();
-      setSubscriptions(data);
+      if (tenantId) {
+        const data = await repositories.subscriptions.getByTenantId(tenantId);
+        setTenantSubscription(data);
+        setSubscriptions(data ? [data] : []);
+      } else {
+        const data = await repositories.subscriptions.getAll();
+        setSubscriptions(data);
+      }
     } catch (err) {
       setError('Failed to load subscriptions');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tenantId]);
 
   const updateSubscription = useCallback(async (id: string, data: Partial<Subscription>) => {
     setLoading(true);
@@ -31,5 +38,5 @@ export function useSubscriptions() {
     }
   }, [fetchSubscriptions]);
 
-  return { subscriptions, loading, error, fetchSubscriptions, updateSubscription };
+  return { subscriptions, tenantSubscription, loading, error, fetchSubscriptions, updateSubscription };
 }

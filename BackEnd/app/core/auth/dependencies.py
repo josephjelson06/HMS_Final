@@ -73,8 +73,17 @@ def get_current_user(
             detail="User not found",
         )
 
-    # Note: 'is_active' field is removed in new schema, status is on Role or we assume active if exists?
-    # New schema doesn't have is_active on User. PlatformRole/TenantRole have status.
-    # We can check role status if needed, but for now just returning user.
+    # Suspend Checks
+    if user_table == "tenant":
+        if getattr(user, "status", True) is False:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your account has been suspended.",
+            )
+        if user.tenant and getattr(user.tenant, "status", True) is False:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your hotel's account is currently suspended.",
+            )
 
     return user

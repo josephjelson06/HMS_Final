@@ -35,10 +35,10 @@ class HttpClient {
     // Simple robust join
     const base = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
     const endpoint = path.startsWith('/') ? path : `/${path}`;
-    
+
     // Construct new URL object to handle query params easily
     const url = new URL(base + endpoint);
-    
+
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         url.searchParams.append(key, value);
@@ -49,7 +49,7 @@ class HttpClient {
 
   private async request<T>(method: HttpMethod, path: string, body?: unknown, options?: RequestOptions): Promise<T> {
     const url = this.buildUrl(path, options?.params);
-    
+
     // Read token from client-side cookie and send via Authorization header
     // This is needed because cross-origin cookies (localhost:3000 → localhost:8000)
     // are NOT automatically sent by the browser with SameSite=lax
@@ -57,16 +57,20 @@ class HttpClient {
     if (!headers['Authorization']) {
       const cookieToken = getCookie('access_token');
       if (cookieToken) {
-        // Cookie value already includes "Bearer " prefix
         headers['Authorization'] = cookieToken;
       }
     }
-    
+
+    // Let the browser automatically set the correct Content-Type with boundary for FormData
+    if (body instanceof FormData) {
+      delete headers['Content-Type'];
+    }
+
     console.log(`[HttpClient] Requesting: ${method} ${url}`);
     const res = await fetch(url, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
       credentials: 'include',
       cache: 'no-store',
     });
@@ -74,7 +78,7 @@ class HttpClient {
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({ detail: res.statusText }));
       let message = errorData.detail || errorData.message || `HTTP ${res.status}: ${res.statusText}`;
-      
+
       if (typeof message === 'object') {
         message = JSON.stringify(message);
       }
@@ -86,7 +90,7 @@ class HttpClient {
       if (res.status === 403) {
         throw new Error('Access denied');
       }
-      
+
       throw new Error(message);
     }
 
@@ -118,7 +122,7 @@ class HttpClient {
 // Singleton instance — all API repositories import this
 const API_URL = typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL
   ? process.env.NEXT_PUBLIC_API_URL
-  : 'http://localhost:8000';
+  : 'http://localhost:8080';
 
 export const httpClient = new HttpClient(API_URL);
 export default HttpClient;

@@ -1,4 +1,5 @@
 import datetime
+import os
 from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
@@ -8,11 +9,15 @@ from app.schemas.onboarding import TenantOnboardRequest
 from app.core.auth.security import get_password_hash
 from app.models.mappings import tenant_role_permissions
 from app.models.permissions import Permission
+from app.services.tenant_config_defaults import build_default_tenant_config
 
 
 class OnboardingService:
     def __init__(self, db: Session):
         self.db = db
+
+    def _build_slug(self, hotel_name: str) -> str:
+        return hotel_name.lower().replace(" ", "-") + "-" + str(os.urandom(4).hex())
 
     def onboard_tenant(self, payload: TenantOnboardRequest) -> Tenant:
         # 1. Create Tenant (owner_user_id = NULL)
@@ -25,9 +30,12 @@ class OnboardingService:
             hotel_name=payload.hotel_name,
             address=payload.address,
             plan_id=default_plan.id,
+            slug=self._build_slug(payload.hotel_name),
         )
         self.db.add(tenant)
         self.db.flush()  # Get ID
+
+        self.db.add(build_default_tenant_config(tenant.id))
 
         # 2. Create Tenant Role (Owner)
         owner_role = TenantRole(tenant_id=tenant.id, name="Owner", status=True)
@@ -63,6 +71,7 @@ class OnboardingService:
         # 6. Create initial subscription
         sub = Subscription(
             tenant_id=tenant.id,
+            plan_id=default_plan.id,
             start_date=datetime.datetime.utcnow(),
             end_date=datetime.datetime.utcnow() + datetime.timedelta(days=30),
             status="active",

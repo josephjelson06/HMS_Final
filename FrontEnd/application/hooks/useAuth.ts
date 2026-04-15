@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { AuthUser, ProfileUpdatePayload } from '../../domain/entities/Auth';
 import { authService } from '../../infrastructure/config/container';
+import { clearAllCache } from '../../infrastructure/storage/idbClient';
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -41,6 +42,7 @@ export function useAuth() {
 
   const logout = useCallback(async () => {
     await authService.logout();
+    await clearAllCache();
     setUser(null);
     setIsAuthenticated(false);
   }, []);

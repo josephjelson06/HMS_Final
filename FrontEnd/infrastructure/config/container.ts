@@ -10,6 +10,7 @@ import type { IAuthService } from '../../domain/contracts/IAuthService';
 import type { IHotelStaffRepository } from '../../domain/contracts/IHotelStaffRepository';
 import type { ISubscriptionRepository } from '../../domain/contracts/ISubscriptionRepository';
 import type { ISupportRepository } from '../../domain/contracts/ISupportRepository';
+import type { ISettingsRepository } from '../../domain/contracts/ISettingsRepository';
 
 // --- API Repositories ---
 import { ApiTenantRepository } from '../repositories/TenantRepository';
@@ -18,6 +19,7 @@ import { ApiPlanRepository } from '../repositories/PlanRepository';
 import { ApiHotelStaffRepository } from '../repositories/HotelStaffRepository';
 import { ApiSubscriptionRepository } from '../repositories/SubscriptionRepository';
 import { ApiSupportRepository } from '../repositories/SupportRepository';
+import { ApiSettingsRepository } from '../repositories/SettingsRepository';
 
 import { ApiAuthService } from '../services/ApiAuthService';
 
@@ -28,6 +30,7 @@ export interface Repositories {
   hotelStaff: IHotelStaffRepository;
   subscriptions: ISubscriptionRepository;
   support: ISupportRepository;
+  settings: ISettingsRepository;
 }
 
 function createRepositories(): Repositories {
@@ -38,6 +41,7 @@ function createRepositories(): Repositories {
     hotelStaff: new ApiHotelStaffRepository(),
     subscriptions: new ApiSubscriptionRepository(),
     support: new ApiSupportRepository(),
+    settings: new ApiSettingsRepository(),
   };
 }
 

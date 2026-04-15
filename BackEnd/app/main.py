@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 from app.routers import (
     auth_simple,
     tenants,
@@ -10,6 +12,8 @@ from app.routers import (
     permissions,
     support,
     onboarding,
+    kiosk,
+    faqs,
 )
 
 app = FastAPI(
@@ -18,12 +22,23 @@ app = FastAPI(
     version="2.0.0",
 )
 
+# Ensure uploads directory exists
+os.makedirs("uploads/tenants", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 # Configure CORS to allow requests from the frontend
 origins = [
+    # HMS Frontend (Next.js)
     "http://localhost:3000",
+    "http://localhost:3001",
     "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    # Kiosk (Vite / Express dev)
+    "http://localhost:4000",
     "http://localhost:5173",
+    "http://localhost:5174",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:4000",
 ]
 
 app.add_middleware(
@@ -44,6 +59,8 @@ app.include_router(permissions.router)
 app.include_router(auth_simple.router)
 app.include_router(support.router)
 app.include_router(onboarding.router)
+app.include_router(kiosk.router)
+app.include_router(faqs.router)
 
 
 @app.get("/")

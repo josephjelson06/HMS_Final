@@ -8,6 +8,7 @@ from . import (
     users,
     support,
     onboarding,
+    faqs,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "users",
     "support",
     "onboarding",
+    "faqs",
 ]

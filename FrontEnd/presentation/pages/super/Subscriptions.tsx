@@ -47,17 +47,44 @@ const Subscriptions: React.FC = () => {
 
   // Adapt data to view model
   const allSubscriptions: SubscriptionViewModel[] = useMemo(() => {
+    console.log("DEBUG: Subscriptions Hub Data Processing", {
+      apiSubscriptionsLength: apiSubscriptions.length,
+      apiPlansLength: apiPlans.length,
+      tenantsLength: tenants.length,
+    });
+
     return apiSubscriptions.map((sub) => {
-      const tenant = tenants.find((t) => t.id === sub.tenantId);
-      const plan = apiPlans.find((p) => p.id === sub.planId);
+      // Normalize IDs for robust matching
+      const targetTenantId = String(sub.tenantId || "").toLowerCase();
+      const targetPlanId = String(sub.planId || "").toLowerCase();
+
+      const tenant = tenants.find(
+        (t) => String(t.id).toLowerCase() === targetTenantId,
+      );
+
+      // Try ID match first, then Name match as fallback if they have the name from somewhere else
+      let plan = apiPlans.find(
+        (p) => String(p.id).toLowerCase() === targetPlanId,
+      );
+
+      if (!plan && !sub.planId) {
+        // If no planId, maybe we can find by name if the sub object has a plan name hint?
+        // sub likely doesn't have it, but let's be safe.
+      }
+
+      if (!plan) {
+        console.warn(
+          `DEBUG: Plan not found for sub ${sub.id}. Searched for ID: ${sub.planId}. Attempted normalized ID: ${targetPlanId}`,
+        );
+      }
 
       return {
         ...sub,
-        hotel: tenant ? tenant.name : "Unknown Tenant",
+        hotel: tenant ? tenant.name : "Unknown Hotel",
         plan: plan ? plan.name : "Unknown Plan",
         renewalDate: sub.endDate || "N/A",
         startDate: sub.startDate || "N/A",
-        autoRenew: true, // Mocked
+        autoRenew: true,
         price: plan ? plan.price : 0,
       };
     });

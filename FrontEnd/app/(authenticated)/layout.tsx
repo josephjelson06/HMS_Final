@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import AppShell from "@/presentation/components/layout/AppShell";
 import ImpersonationModal from "@/presentation/components/ui/ImpersonationModal";
 import { useAuth } from "@/application/hooks/useAuth";
+import { repositories } from "@/infrastructure/config/container";
 
 import {
   deleteCookie,
@@ -18,6 +19,10 @@ import {
   type ViewMode,
 } from "@/application/navigation/legacyRouteMap";
 import { ImpersonationProvider } from "./impersonation";
+import {
+  clearAllCache,
+  clearTenantCache,
+} from "@/infrastructure/storage/idbClient";
 
 const AUTH_COOKIE = "hms_auth";
 const ROLE_COOKIE = "hms_role";
@@ -103,6 +108,25 @@ export default function AuthenticatedLayout({
     setReady(true);
   }, [authLoading, authUser?.isOrphan, pathname, router, viewMode]);
 
+  useEffect(() => {
+    if (!ready || !authUser) return;
+
+    const role = getCookie(ROLE_COOKIE) as ViewMode;
+    if (role === "hotel") {
+      const tenantId = authUser.tenantId || impersonatedHotel;
+      if (!tenantId) return;
+      void repositories.hotelStaff.getAllRoles(tenantId);
+      void repositories.hotelStaff.getAvailablePermissions(tenantId);
+      void repositories.settings.getTenantConfig(tenantId);
+      return;
+    }
+
+    if (role === "super") {
+      void repositories.users.getRoles();
+      void repositories.users.getAvailablePermissions();
+    }
+  }, [ready, authUser, impersonatedHotel]);
+
   const startImpersonation = useCallback((hotelName: string) => {
     setImpersonatedHotel(hotelName);
     setIsImpModalOpen(true);
@@ -125,6 +149,7 @@ export default function AuthenticatedLayout({
       sameSite: "lax",
     });
     setIsImpersonating(true);
+    void clearTenantCache(impersonatedHotel);
 
     router.push("/hotel/dashboard");
   }, [impersonatedHotel, router]);
@@ -141,6 +166,7 @@ export default function AuthenticatedLayout({
     deleteCookie(ROLE_COOKIE);
     deleteCookie(IMPERSONATING_COOKIE);
     deleteCookie(IMPERSONATED_HOTEL_COOKIE);
+    void clearAllCache();
     router.replace("/login");
   }, [router]);
 

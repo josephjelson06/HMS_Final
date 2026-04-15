@@ -18,8 +18,9 @@ export interface Role {
 export interface User {
   id: string;
   email: string;
+  readableId?: string;
   name: string;
-  role?: Role;     // Nested role object
+  role?: Role; // Nested role object
   tenantId?: string;
   status?: string;
   phone?: string;

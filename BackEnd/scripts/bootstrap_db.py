@@ -134,9 +134,6 @@ def bootstrap():
             exists = db.query(Plan).filter(Plan.name == p_data["name"]).first()
             if not exists:
                 db.add(Plan(**p_data))
-            else:
-                # Update existing plan price if needed (optional, but good for this request)
-                exists.price = p_data["price"]
 
         db.commit()
 

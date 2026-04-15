@@ -48,6 +48,19 @@ class AuthService:
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
             )
 
+        # Suspend Blocks
+        if user_table == "tenant":
+            if getattr(user, "status", True) is False:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your account is suspended.",
+                )
+            if user.tenant and getattr(user.tenant, "status", True) is False:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your hotel's account is currently suspended.",
+                )
+
         # Generate Token
         role_id = user.role_id
         tenant_id = getattr(user, "tenant_id", None)

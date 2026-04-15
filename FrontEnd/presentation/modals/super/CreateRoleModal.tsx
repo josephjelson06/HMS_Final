@@ -21,6 +21,7 @@ const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
   const { createRole } = useUsers();
   const [step, setStep] = useState(1);
   const [roleName, setRoleName] = useState("");
+  const [description, setDescription] = useState("");
   const [cloneFrom, setCloneFrom] = useState<string | null>(null);
 
   const existingRoles = ["Super Admin", "Finance", "Operations", "Support"];
@@ -29,6 +30,7 @@ const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
     if (isOpen) {
       setStep(1);
       setRoleName("");
+      setDescription("");
       setCloneFrom(null);
     }
   }, [isOpen]);
@@ -39,7 +41,8 @@ const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
     try {
       await createRole({
         name: roleName,
-        description: `Custom role based on ${cloneFrom || "scratch"}.`,
+        description:
+          description || `Custom role based on ${cloneFrom || "scratch"}.`,
         color: "blue",
         status: "Active",
         permissions: [], // Default empty permissions
@@ -102,6 +105,13 @@ const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
               value={roleName}
               onChange={(e) => setRoleName(e.target.value)}
               autoFocus
+            />
+
+            <GlassInput
+              label="Functional Description"
+              placeholder="Describe the responsibilities of this role..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             />
 
             <div>

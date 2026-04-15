@@ -37,6 +37,7 @@ class PlanRead(ORMBase):
 class SubscriptionRead(ORMBase):
     id: UUID
     tenant_id: UUID
+    plan_id: UUID
     start_date: datetime
     end_date: datetime
     status: str

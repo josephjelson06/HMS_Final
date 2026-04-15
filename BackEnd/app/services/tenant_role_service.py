@@ -60,3 +60,31 @@ class TenantRoleService:
                 )
             )
         self.db.commit()
+
+    def update(self, tenant_id: UUID, role_id: UUID, payload: dict) -> TenantRole:
+        role = self.get_by_id(tenant_id, role_id)
+        if not role:
+            raise HTTPException(status_code=404, detail="Role not found")
+
+        for key, value in payload.items():
+            if hasattr(role, key):
+                setattr(role, key, value)
+
+        self.db.commit()
+        self.db.refresh(role)
+        return role
+
+    def delete(self, tenant_id: UUID, role_id: UUID):
+        role = self.get_by_id(tenant_id, role_id)
+        if not role:
+            raise HTTPException(status_code=404, detail="Role not found")
+
+        # Prevent deletion if active users are still assigned to this role
+        if role.users and len(role.users) > 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot delete a role that is currently assigned to users. Reassign them first.",
+            )
+
+        self.db.delete(role)
+        self.db.commit()

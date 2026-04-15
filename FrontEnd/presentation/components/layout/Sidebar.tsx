@@ -10,9 +10,14 @@ import {
   User,
   HelpCircle,
   LifeBuoy,
+  Settings,
   PanelLeftClose,
   PanelLeft,
   X,
+  ChevronDown,
+  ChevronRight,
+  Bed,
+  CalendarCheck,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -83,22 +88,40 @@ const SidebarSection = ({
   title,
   children,
   collapsed = false,
+  defaultOpen = true,
 }: {
   title: string;
   children?: React.ReactNode;
   collapsed?: boolean;
-}) => (
-  <div className={`mb-6 ${collapsed ? "" : "px-2"}`}>
-    {!collapsed ? (
-      <h3 className="px-5 text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-4 opacity-70">
-        {title}
-      </h3>
-    ) : (
-      <div className="h-px bg-black/5 dark:bg-white/5 mx-2 mb-4" />
-    )}
-    <div className="space-y-1">{children}</div>
-  </div>
-);
+  defaultOpen?: boolean;
+}) => {
+  const [isOpen, setIsOpen] = React.useState(defaultOpen);
+
+  return (
+    <div className={`mb-6 ${collapsed ? "" : "px-2"}`}>
+      {!collapsed ? (
+        <div
+          className="flex items-center justify-between px-5 mb-4 cursor-pointer group"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <h3 className="text-[11px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] opacity-70 group-hover:opacity-100 transition-opacity">
+            {title}
+          </h3>
+          <div className="text-gray-400 opacity-50 group-hover:opacity-100 transition-opacity">
+            {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          </div>
+        </div>
+      ) : (
+        <div className="h-px bg-black/5 dark:bg-white/5 mx-2 mb-4" />
+      )}
+      <div
+        className={`space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${isOpen || collapsed ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
 
 const Sidebar: React.FC<SidebarProps> = ({
   currentRoute,
@@ -145,7 +168,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
             {!isCollapsed && (
               <span className="text-[20px] font-black text-[#1e293b] dark:text-white tracking-tight whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-300">
-                {isHotelMode ? "HMS Tenant" : "ATC Admin"}
+                {isHotelMode ? "HMS Hotel" : "ATC Admin"}
               </span>
             )}
           </div>
@@ -175,6 +198,32 @@ const Sidebar: React.FC<SidebarProps> = ({
                           collapsed={isCollapsed}
                         />
                       )}
+                      {hasPerm("hotel:rooms:read") && (
+                        <SidebarItem
+                          icon={Bed}
+                          label="Rooms"
+                          active={currentRoute === "rooms"}
+                          onClick={() => onNavigate("rooms")}
+                          collapsed={isCollapsed}
+                        />
+                      )}
+                      {hasPerm("hotel:bookings:read") && (
+                        <SidebarItem
+                          icon={CalendarCheck}
+                          label="Guests"
+                          active={currentRoute === "guests"}
+                          onClick={() => onNavigate("guests")}
+                          collapsed={isCollapsed}
+                        />
+                      )}
+
+                      <SidebarItem
+                        icon={FileText}
+                        label="Reports"
+                        active={currentRoute === "reports"}
+                        onClick={() => onNavigate("reports")}
+                        collapsed={isCollapsed}
+                      />
                     </SidebarSection>
 
                     <SidebarSection title="Management" collapsed={isCollapsed}>
@@ -197,6 +246,24 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onClick={() => onNavigate("billing")}
                         collapsed={isCollapsed}
                       />
+                      {hasPerm("hotel:config:read") && (
+                        <SidebarItem
+                          icon={FileText}
+                          label="FAQs"
+                          active={currentRoute === "faq"}
+                          onClick={() => onNavigate("faq")}
+                          collapsed={isCollapsed}
+                        />
+                      )}
+                      {hasPerm("hotel:config:read") && (
+                        <SidebarItem
+                          icon={Settings}
+                          label="Settings"
+                          active={currentRoute === "hotel-settings"}
+                          onClick={() => onNavigate("hotel-settings")}
+                          collapsed={isCollapsed}
+                        />
+                      )}
                     </SidebarSection>
 
                     <SidebarSection title="Support" collapsed={isCollapsed}>
@@ -235,12 +302,19 @@ const Sidebar: React.FC<SidebarProps> = ({
                       />
                       <SidebarItem
                         icon={Building2}
-                        label="Tenants"
+                        label="Hotels"
                         active={
                           currentRoute === "tenants" ||
                           currentRoute === "tenant-details"
                         }
                         onClick={() => onNavigate("tenants")}
+                        collapsed={isCollapsed}
+                      />
+                      <SidebarItem
+                        icon={FileText}
+                        label="Reports"
+                        active={currentRoute === "reports"}
+                        onClick={() => onNavigate("reports")}
                         collapsed={isCollapsed}
                       />
                     </SidebarSection>

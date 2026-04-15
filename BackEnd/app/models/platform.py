@@ -14,6 +14,8 @@ class PlatformRole(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    color: Mapped[str | None] = mapped_column(String, default="blue")
     status: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.utcnow)
 
@@ -39,6 +41,7 @@ class PlatformUser(Base):
     role_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("platform_roles.id"), nullable=False
     )
+    readable_id: Mapped[str | None] = mapped_column(String(20), unique=True)
 
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.utcnow)
 

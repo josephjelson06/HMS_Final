@@ -1,7 +1,7 @@
 from uuid import UUID
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
 from app.models.platform import PlatformUser
 from app.schemas.platform import PlatformUserCreate
@@ -11,6 +11,10 @@ from app.core.auth.security import get_password_hash
 class PlatformUserService:
     def __init__(self, db: Session):
         self.db = db
+
+    def _generate_readable_id(self) -> str:
+        count = self.db.query(PlatformUser).count()
+        return f"USR-{count + 1:04d}"
 
     def get_all(self, skip: int = 0, limit: int = 100) -> List[PlatformUser]:
         return self.db.query(PlatformUser).offset(skip).limit(limit).all()
@@ -30,6 +34,7 @@ class PlatformUserService:
         data = payload.model_dump()
         password = data.pop("password")
         data["password_hash"] = get_password_hash(password)
+        data["readable_id"] = self._generate_readable_id()
 
         user = PlatformUser(**data)
         self.db.add(user)

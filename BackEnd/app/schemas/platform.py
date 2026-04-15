@@ -6,6 +6,8 @@ from app.schemas.base import ORMBase
 class PlatformRoleRead(ORMBase):
     id: UUID
     name: str
+    description: str | None
+    color: str | None
     status: bool
 
 
@@ -22,4 +24,5 @@ class PlatformUserRead(ORMBase):
     email: EmailStr
     phone: str | None
     name: str | None
+    readable_id: str | None
     role: PlatformRoleRead

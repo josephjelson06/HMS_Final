@@ -1,42 +1,16 @@
-version: '3.8'
+version: "3.8"
 
 services:
   backend:
     build: .
+    image: hms_backend_alt
+    container_name: hms_backend_alt_container
     ports:
-      - "8000:8000"
+      - "8080:8000"
     volumes:
       - .:/app
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@hms_postgres:5432/hms_db
+      - DATABASE_URL=postgresql://neondb_owner:npg_lE5P7uVCzLMf@ep-super-frog-a19xt3it-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
       - JWT_SECRET=change_this_to_a_secure_secret_in_production_at_least_32_chars
       - COOKIE_SECURE=False
     restart: always
-
-  db:
-    image: postgres:15-alpine
-    container_name: hms_postgres
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: hms_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: hms_pgadmin
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    depends_on:
-      - db
-
-volumes:
-  postgres_data:

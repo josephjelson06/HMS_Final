@@ -28,7 +28,7 @@ function LoginPageContent() {
     if (!isAuthed) return;
 
     // Verify the session is actually valid with the backend before redirecting
-    fetch("http://localhost:8000/auth/me", {
+    fetch("http://localhost:8080/auth/me", {
       credentials: "include",
       headers: {
         ...(getCookie("access_token")
